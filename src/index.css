@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: auto;
+}
+
+@layer utilities {
+  .writing-mode-vertical-rl {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+}
