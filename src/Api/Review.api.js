@@ -9,5 +9,9 @@ export const ReviewgApi = {
     Api.put(`user/update-subscription-review/${id}`, payload),
   createTrainerReview: (payload) =>
     Api.post("user/create-trainer-rating-review", payload),
-  getAllRatingReviews: () => Api.get("user/get-all-subscription-rating-review")
+  getSingleTrainerReview: (id) => Api.get(`user/get-trainer-review/${id}`),
+
+  updateTrainerReview: (id, payload) =>
+    Api.put(`user/update-trainer-review/${id}`, payload),
+  getAllRatingReviews: () => Api.get("user/get-all-subscription-rating-review"),
 };

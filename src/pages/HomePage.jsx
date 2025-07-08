@@ -10,6 +10,7 @@ import { CategoryApi } from "../Api/Category.api";
 import { useLoading } from "../loader/LoaderContext";
 import { FilterApi } from "../Api/Filteration.api";
 import { BookingApi } from "../Api/Booking.api";
+import PackageCard from "../components/PackageCard";
 
 const HomePage = () => {
   const user = useSelector((state) => state.auth.user);
@@ -25,13 +26,13 @@ const HomePage = () => {
   const [nearMeLocation, setNearMeLocation] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [traing, setTraing] = useState([]);
+  const [packdata, setPackdata] = useState([]);
   const [recentSearches, setRecentSearches] = useState(() => {
     const saved = localStorage.getItem("recentSearches");
     return saved ? JSON.parse(saved) : [];
   });
   const [showRecent, setShowRecent] = useState(false);
   const navigate = useNavigate();
-
 
   const { handleLoading } = useLoading();
 
@@ -52,6 +53,23 @@ const HomePage = () => {
     try {
       const res = await CategoryApi.getAllSubscription();
       setSubscription(res?.data?.data);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  console.log(" this is pakage  data ", packdata);
+  const getAllPakages = async () => {
+    handleLoading(true);
+    try {
+      const res = await CategoryApi.getpackages();
+      // Ensure packdata is always an array
+      const packages = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : res?.data?.data?.packages || [];
+      setPackdata(packages);
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -107,11 +125,15 @@ const HomePage = () => {
     getAllSubscription();
     getNearByLocation();
     getAllTraining();
+    getAllPakages();
   }, []);
 
   const handleSearchSubmit = (term) => {
     if (!term.trim()) return;
-    let updated = [term, ...recentSearches.filter((s) => s !== term)].slice(0, 5);
+    let updated = [term, ...recentSearches.filter((s) => s !== term)].slice(
+      0,
+      5
+    );
     setRecentSearches(updated);
     localStorage.setItem("recentSearches", JSON.stringify(updated));
     setShowRecent(false);
@@ -180,7 +202,9 @@ const HomePage = () => {
       },
       (error) => {
         setLocLoading(false);
-        setLocError("Please enable location permissions in your browser settings");
+        setLocError(
+          "Please enable location permissions in your browser settings"
+        );
         console.error("Geolocation permission error:", error);
       },
       {
@@ -214,7 +238,8 @@ const HomePage = () => {
           </h1>
           {/* Subheading */}
           <p className="text-base sm:text-lg md:text-xl mb-6 md:mb-8 max-w-xl md:max-w-2xl mx-auto text-center animate-slide-up text-primary">
-            Your next workout, wellness class, or live session is just a click away
+            Your next workout, wellness class, or live session is just a click
+            away
           </p>
           {/* Search Bar with Location - Side by Side */}
           <div className="w-full max-w-lg sm:max-w-3xl mx-auto mb-6 md:mb-8 animate-slide-up flex flex-col sm:flex-row gap-2 bg-white rounded-lg shadow-lg">
@@ -362,8 +387,10 @@ const HomePage = () => {
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-wrap">
               {category.map((cat) => {
                 let bgColorClass = "bg-sixth";
-                if (cat.cName?.toLowerCase().includes("wellness")) bgColorClass = "bg-fourth";
-                if (cat.cName?.toLowerCase().includes("liveness")) bgColorClass = "bg-fifth";
+                if (cat.cName?.toLowerCase().includes("wellness"))
+                  bgColorClass = "bg-fourth";
+                if (cat.cName?.toLowerCase().includes("liveness"))
+                  bgColorClass = "bg-fifth";
 
                 return (
                   <Link
@@ -376,7 +403,9 @@ const HomePage = () => {
                       alt={cat.alt}
                       className="w-full h-56 object-cover"
                     />
-                    <div className={`absolute inset-0 ${bgColorClass} bg-opacity-70`}></div>
+                    <div
+                      className={`absolute inset-0 ${bgColorClass} bg-opacity-70`}
+                    ></div>
                     <div className="absolute bottom-0 left-0 p-6 z-10">
                       <span className="text-white text-2xl font-bold drop-shadow-lg">
                         {cat.cName}
@@ -539,6 +568,39 @@ const HomePage = () => {
           </div>
         </section>
       )}
+
+      {/* your Pakages   */}
+
+      <section className=" py-10 md:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
+            <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
+              All Packages
+            </h2>
+            <Link
+              to="/subscriptions"
+              className="text-primary-600 font-semibold flex items-center gap-1"
+            >
+              Show all ({Array.isArray(packdata) ? packdata.length : 0}){" "}
+              <span>&rarr;</span>
+            </Link>
+          </div>
+          <HorizontalScroll
+            items={Array.isArray(packdata) ? packdata : []}
+            renderItem={(pkg) => (
+              <PackageCard
+                key={pkg?._id || pkg?.id || Math.random()}
+                image={pkg?.image || "/default-image.png"}
+                name={pkg?.name || "No Name"}
+                price={pkg?.price || 0}
+                numberOfClasses={pkg?.numberOfClasses || 0}
+                duration={pkg?.duration || "N/A"}
+              />
+            )}
+            itemClass="mr-4 md:mr-6"
+          />
+        </div>
+      </section>
 
       {/* Location near you Sessions */}
       {nearMeLocation?.length > 0 && (

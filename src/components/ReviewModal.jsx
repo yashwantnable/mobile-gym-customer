@@ -14,7 +14,9 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
   const { handleLoading } = useLoading();
   const [existingReview, setExistingReview] = useState(null);
   const [updateReview, setUpdateReview] = useState("");
+  const [trainer, setTrainer] = useState([]);
 
+  // Update existing review by review ID (not subscription ID)
   const updateSubscriptionReview = async (id, payload) => {
     handleLoading(true);
     try {
@@ -29,6 +31,48 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
     }
   };
 
+  const updatesingleTrainer = async (id, payload) => {
+    handleLoading(true);
+    try {
+      const res = await ReviewgApi.updateTrainerReview(id, payload);
+      console.log("Review updated successfully:", res);
+      return res?.data?.data;
+    } catch (error) {
+      console.log("Error updating review:", error);
+      throw error;
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  const getTrainerReview = async (id) => {
+    handleLoading(true);
+    try {
+      const res = await ReviewgApi.getSingleTrainerReview(id);
+      setTrainer(res?.data?.data);
+      // Set the first review as existingReview (or filter by user if needed)
+      if (res?.data?.data?.length > 0) {
+        setExistingReview(res.data.data[0]);
+      } else {
+        setExistingReview(null);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && type === "trainer") {
+      // Try to get trainerId from bookingData
+      const trainerId = bookingData?.trainer?._id || bookingData?.trainerId;
+      if (trainerId) {
+        getTrainerReview(trainerId);
+      }
+    }
+  }, [isOpen, type, bookingData]);
+
   useEffect(() => {
     // Only fetch review if modal is open and it's a subscription review
     if (
@@ -37,10 +81,14 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
       (bookingData?.subscriptionId || bookingData?._id)
     ) {
       const fetchReview = async () => {
+        console.log("bookingData:", bookingData);
         handleLoading(true);
         try {
+          // Robustly extract subscriptionId from bookingData
           const subscriptionId =
-            bookingData?.subscriptionId || bookingData?._id;
+            bookingData?.subscriptionId?._id ||
+            bookingData?.subscriptionId ||
+            bookingData?._id;
           console.log("Fetching review for subscription ID:", subscriptionId);
 
           if (!subscriptionId) {
@@ -50,6 +98,7 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
             );
             return;
           }
+          console.log("subscriptionId:", subscriptionId);
 
           const res = await ReviewgApi.getSingleSubscriptionReview(
             subscriptionId
@@ -106,16 +155,11 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
       };
 
       // Try different possible trainer ID locations
-      const trainerId =
-        bookingData?.trainer?._id ||
-        bookingData?.trainerId ||
-        bookingData?.trainer?.id ||
-        bookingData?.trainer_id ||
-        bookingData?.trainer?.trainerId ||
-        bookingData?.trainer?.trainer_id;
+      console.log("Booking data", bookingData);
+      const trainerId = bookingData?.trainer?._id || bookingData?.trainerId;
 
       const payloadTrainer = {
-        trainerId: trainerId,
+        trainer: trainerId,
         rating: values.rating,
         review: values.review,
       };
@@ -144,19 +188,33 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
       let response;
       if (isSubscription) {
         if (existingReview) {
-          // Update existing review
-          console.log("Updating existing review with ID:", existingReview._id);
+          console.log("exting data", existingReview);
+          // Update existing review (remove subscriptionId from payload)
+          const { rating, review } = payload;
           response = await updateSubscriptionReview(
-            existingReview._id,
-            payload
+            existingReview.subscriptionId._id,
+            {
+              rating,
+              review,
+            }
           );
         } else {
-          // Create new review
-          console.log("Creating new review");
+          // Create new review (keep subscriptionId in payload)
           response = await ReviewgApi.createSubscriptionReview(payload);
         }
       } else {
-        response = await ReviewgApi.createTrainerReview(payloadTrainer);
+        if (existingReview) {
+          console.log(" Trainer exting data", existingReview);
+          // Update existing trainer review
+          const { rating, review } = payloadTrainer;
+          response = await updatesingleTrainer(trainerId, {
+            rating,
+            review,
+          });
+        } else {
+          // Create new trainer review
+          response = await ReviewgApi.createTrainerReview(payloadTrainer);
+        }
       }
 
       console.log("Review submitted successfully:", response);
