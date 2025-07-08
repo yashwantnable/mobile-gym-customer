@@ -6,9 +6,8 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { useLoading } from "../loader/LoaderContext";
 import { CategoryApi } from "../Api/Category.api";
 import moment from "moment";
-import { BsCalendarDateFill } from "react-icons/bs";
 import { FilterApi } from "../Api/Filteration.api";
-// import PackageCard from "../components/PackageCard";
+import PackageCard from "../components/PackageCard";
 
 const SubscriptionsPage = () => {
   const [selectedTab, setSelectedTab] = useState("classes");

@@ -24,6 +24,7 @@ import MainPage from "./pages/MainPage.jsx";
 import { ParallaxProvider } from "react-scroll-parallax";
 import InvoicePage from "./pages/InvoicePage.jsx";
 import HistoryDetails from "./pages/HistoryDetails.jsx";
+import Classes from "./pages/Classes.jsx";
 
 const router = createBrowserRouter([
   {
@@ -52,7 +53,6 @@ const router = createBrowserRouter([
         path: "profile",
         element: (
           <ProtectedRoute>
-            {" "}
             <ProfilePage />
           </ProtectedRoute>
         ),
@@ -61,8 +61,7 @@ const router = createBrowserRouter([
         path: "my-sessions",
         element: (
           <ProtectedRoute>
-            {" "}
-            <MySessionPage />{" "}
+            <MySessionPage />
           </ProtectedRoute>
         ),
       },
@@ -70,8 +69,7 @@ const router = createBrowserRouter([
         path: "my-session/:id",
         element: (
           <ProtectedRoute>
-            {" "}
-            <MySessionDetail />{" "}
+            <MySessionDetail />
           </ProtectedRoute>
         ),
       },
@@ -79,8 +77,7 @@ const router = createBrowserRouter([
         path: "payment",
         element: (
           <ProtectedRoute>
-            {" "}
-            <PaymentPage />{" "}
+            <PaymentPage />
           </ProtectedRoute>
         ),
       },
@@ -88,8 +85,7 @@ const router = createBrowserRouter([
         path: "subscriptions/:id",
         element: (
           <ProtectedRoute>
-            {" "}
-            <SubscriptionsPage />{" "}
+            <SubscriptionsPage />
           </ProtectedRoute>
         ),
       },
@@ -105,8 +101,7 @@ const router = createBrowserRouter([
         path: "subscriptions",
         element: (
           <ProtectedRoute>
-            {" "}
-            <SubscriptionsPage />{" "}
+            <SubscriptionsPage />
           </ProtectedRoute>
         ),
       },
@@ -114,8 +109,7 @@ const router = createBrowserRouter([
         path: "payments",
         element: (
           <ProtectedRoute>
-            {" "}
-            <PaymentsPage />{" "}
+            <PaymentsPage />
           </ProtectedRoute>
         ),
       },
@@ -123,8 +117,7 @@ const router = createBrowserRouter([
         path: "history",
         element: (
           <ProtectedRoute>
-            {" "}
-            <HistoryPage />{" "}
+            <HistoryPage />
           </ProtectedRoute>
         ),
       },
@@ -132,7 +125,6 @@ const router = createBrowserRouter([
         path: "chat",
         element: (
           <ProtectedRoute>
-            {" "}
             <ChatPage />
           </ProtectedRoute>
         ),
@@ -175,6 +167,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <HistoryDetails />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "classes",
+        element: (
+          <ProtectedRoute>
+            <Classes />
           </ProtectedRoute>
         ),
       },

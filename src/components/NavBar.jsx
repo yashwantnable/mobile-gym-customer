@@ -20,9 +20,9 @@ const NavBar = () => {
   const dispatch = useDispatch();
 
   const navItems = [
-    // { path: "/", label: "Home", icon: Home },
     { path: "/subscriptions", label: "DEALS", icon: Calendar },
     { path: "/explore", label: "EXPLORE", icon: MapPin },
+    { path: "/classes", label: "CLASSES", icon: MapPin },
   ];
 
   const userMenuItems = [
