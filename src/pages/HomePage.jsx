@@ -11,6 +11,7 @@ import { useLoading } from "../loader/LoaderContext";
 import { FilterApi } from "../Api/Filteration.api";
 import { BookingApi } from "../Api/Booking.api";
 import PackageCard from "../components/PackageCard";
+import { PackagesApi } from "../Api/Package.api";
 
 const HomePage = () => {
   const user = useSelector((state) => state.auth.user);
@@ -60,11 +61,10 @@ const HomePage = () => {
     }
   };
 
-  console.log(" this is pakage  data ", packdata);
   const getAllPakages = async () => {
     handleLoading(true);
     try {
-      const res = await CategoryApi.getpackages();
+      const res = await PackagesApi.getpackages();
       // Ensure packdata is always an array
       const packages = Array.isArray(res?.data?.data)
         ? res.data.data
@@ -76,6 +76,7 @@ const HomePage = () => {
       handleLoading(false);
     }
   };
+
 
   const getNearByLocation = async () => {
     const lat = localStorage.getItem("latitude");
@@ -377,50 +378,9 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Explore OutBox Section */}
-      {category?.length > 0 && (
-        <section className="bg-primary py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-third">
-              Explore OutBox
-            </h2>
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-wrap">
-              {category.map((cat) => {
-                let bgColorClass = "bg-sixth";
-                if (cat.cName?.toLowerCase().includes("wellness"))
-                  bgColorClass = "bg-fourth";
-                if (cat.cName?.toLowerCase().includes("liveness"))
-                  bgColorClass = "bg-fifth";
-
-                return (
-                  <Link
-                    key={cat._id}
-                    to={`/subscriptions/${cat._id}?name=cat`}
-                    className="relative cursor-pointer hover:scale-105 transition-transform duration-300 flex-1 rounded-2xl overflow-hidden shadow-lg min-w-[300px] max-w-[400px]"
-                  >
-                    <img
-                      src={cat.image}
-                      alt={cat.alt}
-                      className="w-full h-56 object-cover"
-                    />
-                    <div
-                      className={`absolute inset-0 ${bgColorClass} bg-opacity-70`}
-                    ></div>
-                    <div className="absolute bottom-0 left-0 p-6 z-10">
-                      <span className="text-white text-2xl font-bold drop-shadow-lg">
-                        {cat.cName}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* My Sessions */}
-      {user && traing?.length > 0 && (
+      {/* {user && traing?.length > 0 && (
         <section className="bg-primary pb-10 md:pb-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-left mb-8 md:mb-12">
@@ -477,9 +437,9 @@ const HomePage = () => {
                           {city ? city : "Location"}
                         </span>
                       </div>
-                      {/* Dates, Time, Price Row */}
+
                       <div className="flex items-center text-xs text-third mb-1 gap-2">
-                        {/* Dates */}
+
                         <span>
                           {dates
                             .map((date) =>
@@ -491,11 +451,11 @@ const HomePage = () => {
                             )
                             .join(", ")}
                         </span>
-                        {/* Time */}
+
                         <span className="ml-3">
                           {sub.startTime} - {sub.endTime}
                         </span>
-                        {/* Price */}
+
                         <span className="ml-auto font-semibold text-fourth">
                           AED{sub.price}
                         </span>
@@ -514,6 +474,48 @@ const HomePage = () => {
               }}
               itemClass="mr-4 md:mr-6"
             />
+          </div>
+        </section>
+      )} */}
+
+      {/* Explore OutBox Section */}
+      {category?.length > 0 && (
+        <section className="bg-primary py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-third">
+              Explore OutBox
+            </h2>
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-wrap">
+              {category.map((cat) => {
+                let bgColorClass = "bg-sixth";
+                if (cat.cName?.toLowerCase().includes("wellness"))
+                  bgColorClass = "bg-fourth";
+                if (cat.cName?.toLowerCase().includes("liveness"))
+                  bgColorClass = "bg-fifth";
+
+                return (
+                  <Link
+                    key={cat._id}
+                    to={`/subscriptions/${cat._id}?name=cat`}
+                    className="relative cursor-pointer hover:scale-105 transition-transform duration-300 flex-1 rounded-2xl overflow-hidden shadow-lg min-w-[300px] max-w-[400px]"
+                  >
+                    <img
+                      src={cat.image}
+                      alt={cat.alt}
+                      className="w-full h-56 object-cover"
+                    />
+                    <div
+                      className={`absolute inset-0 ${bgColorClass} bg-opacity-70`}
+                    ></div>
+                    <div className="absolute bottom-0 left-0 p-6 z-10">
+                      <span className="text-white text-2xl font-bold drop-shadow-lg">
+                        {cat.cName}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}
@@ -569,21 +571,13 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* your Pakages   */}
-
+      {/* Pakages   */}
       <section className=" py-10 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
             <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
-              All Packages
+              Find Your New Latest Packages
             </h2>
-            <Link
-              to="/subscriptions"
-              className="text-primary-600 font-semibold flex items-center gap-1"
-            >
-              Show all ({Array.isArray(packdata) ? packdata.length : 0}){" "}
-              <span>&rarr;</span>
-            </Link>
           </div>
           <HorizontalScroll
             items={Array.isArray(packdata) ? packdata : []}
@@ -595,6 +589,7 @@ const HomePage = () => {
                 price={pkg?.price || 0}
                 numberOfClasses={pkg?.numberOfClasses || 0}
                 duration={pkg?.duration || "N/A"}
+                features={pkg?.features}
               />
             )}
             itemClass="mr-4 md:mr-6"

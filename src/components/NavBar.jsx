@@ -29,6 +29,7 @@ const NavBar = () => {
     { path: "/profile", label: "Profile" },
     { path: "/my-sessions", label: "My Sessions" },
     { path: "/history", label: "History" },
+    { path: "/promocode", label: "Promo Codes" },
   ];
 
   const handleLogout = async () => {
@@ -86,8 +87,8 @@ const NavBar = () => {
                 key={path}
                 to={path}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === path
-                    ? "bg-white/20 text-third"
-                    : "text-third/80 hover:text-third hover:bg-white/10"
+                    ? "text-third"
+                    : "text-third/80 hover:text-third "
                   }`}
               >
                 {/* <Icon size={18} /> */}

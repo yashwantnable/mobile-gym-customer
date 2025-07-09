@@ -13,5 +13,4 @@ export const CategoryApi = {
   getSubscriptionBySessionId: (id) =>
     Api.get(`subscription/get-subscriptions-by-session/${id}`),
   getAllTrainers: () => Api.get("trainer/get-all-trainers"),
-  getpackages: () => Api.post("package/get-all-packages"),
 };

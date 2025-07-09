@@ -25,6 +25,7 @@ import { ParallaxProvider } from "react-scroll-parallax";
 import InvoicePage from "./pages/InvoicePage.jsx";
 import HistoryDetails from "./pages/HistoryDetails.jsx";
 import Classes from "./pages/Classes.jsx";
+import PromoCode from "./pages/PromoCode.jsx";
 
 const router = createBrowserRouter([
   {
@@ -177,6 +178,14 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <Classes />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: "promocode",
+        element: (
+          <PromoCode>
+            <Classes />
+          </PromoCode>
         ),
       },
     ],

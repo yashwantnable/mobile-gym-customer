@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import CustomDatePicker from "../components/CustomDatePicker";
 import CustomDistanceFilter from "../components/CustomDistanceFilter";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useLoading } from "../loader/LoaderContext";
 import { CategoryApi } from "../Api/Category.api";
 import moment from "moment";
 import { FilterApi } from "../Api/Filteration.api";
-import PackageCard from "../components/PackageCard";
+import SubscriptionCard from "./SubscriptionCard";
 
 const SubscriptionsPage = () => {
   const [selectedTab, setSelectedTab] = useState("classes");
@@ -295,8 +295,8 @@ const SubscriptionsPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+    <div className="bg-primary min-h-screen">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Top bar */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex items-center gap-4 mb-4 md:mb-0 flex-wrap">
@@ -462,8 +462,9 @@ const SubscriptionsPage = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {paginatedClasses.map((classItem, index) => (
-                    <PackageCard
+                    <SubscriptionCard
                       key={index}
+                      _id={classItem?._id}
                       image={classItem.media}
                       name={classItem.name}
                       price={classItem.price}

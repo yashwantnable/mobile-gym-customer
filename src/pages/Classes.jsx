@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Filter, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import SmallCalendar from '../components/SmallCalendar';
 import FilterPanel from '../components/FilterPanel';
 import WeekView from '../components/WeekView';
 import ClassModal from '../components/ClassModal';
 import PackageSelectModal from '../components/PackageSelectModal';
 import { generateDummyData } from '../dummyData';
-import { CategoryApi } from '../Api/Category.api';
 
 const mockPackages = [
     {
@@ -60,25 +59,12 @@ const Classes = () => {
         sessionType: ''
     });
 
-    const getAllPackages = async () => {
-        try{
-            const res = await CategoryApi.getpackages();
-            console.log(res.data?.data)
-        }
-        catch(err){
-            console.log(err)
-        }
-    }
-
-
-
     // On mount, fetch packages and open modal if none active
     useEffect(() => {
         setUserPackages(mockPackages);
         if (!activePackageId && mockPackages.length > 0) {
             setShowPackageModal(true);
         }
-        getAllPackages()
     }, []);
 
     // Keep selectedPackage in sync
@@ -252,7 +238,7 @@ const Classes = () => {
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-[100vh]">
                             <div className="px-4 py-3 border-b border-gray-200">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-medium text-gray-900">
+                                    <h2 className="text-lg  text-gray-900 font-bold">
                                         Schedule for {selectedDate.toLocaleDateString('en-US', {
                                             weekday: 'long',
                                             year: 'numeric',

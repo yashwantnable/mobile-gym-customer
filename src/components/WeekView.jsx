@@ -39,12 +39,13 @@ const DayView = ({ classes, selectedDate, onClassClick }) => {
     const handleExpand = (time) => {
         setExpandedSlots(prev => ({ ...prev, [time]: true }));
     };
+    
     const handleCollapse = (time) => {
         setExpandedSlots(prev => ({ ...prev, [time]: false }));
     };
 
     return (
-        <div className="w-full  mx-auto p-4 md:p-8 overflow-auto h-[90vh] ">
+        <div className="w-full mx-auto p-4 md:p-8 overflow-auto h-[90vh] ">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-sixth to-indigo-500 bg-clip-text text-transparent">
                 {selectedDate
                     ? (typeof selectedDate === 'string'

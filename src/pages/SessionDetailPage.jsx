@@ -1,19 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Formik, Form } from "formik";
-import InputField from "../components/InputField";
-import { ErrorMessage } from "formik";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import yogaImage from "../Assests/yoga.jpg";
-import trainer from "../Assests/trainer.jpg";
 import { CategoryApi } from "../Api/Category.api";
 import { useLoading } from "../loader/LoaderContext";
 import { IoIosArrowForward } from "react-icons/io";
 
 export default function SessionDetailPage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
   const [visibleReviews, setVisibleReviews] = useState(3);
   const { handleLoading } = useLoading();
 
@@ -25,7 +18,6 @@ export default function SessionDetailPage() {
     handleLoading(true);
     try {
       const res = await CategoryApi.getAllDetails(id);
-      console.log("Details ka data hai", res?.data?.data);
       setclassData(res?.data?.data || {});
     } catch (error) {
       console.log("Error", error);
@@ -46,15 +38,10 @@ export default function SessionDetailPage() {
 
   const hasMoreReviews = visibleReviews < dummyReviews.length;
 
-  // const handlePurchase = () => {
-  //   navigate("/checkout");
-  // };
-
   const handlePurchase = () => {
     navigate("/checkout", { state: { classData } });
   };
 
-  // Helper to format time to 12-hour with AM/PM
   function formatTimeTo12Hour(time24) {
     if (!time24) return "";
     const [hourStr, minute] = time24.split(":");
