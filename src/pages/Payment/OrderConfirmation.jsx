@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaDumbbell, FaHeartbeat, FaRunning } from "react-icons/fa";
 import moment from "moment";
 import { BookingApi } from "../../Api/Booking.api";
 import { useLoading } from "../../loader/LoaderContext";
 import favicon2 from "../../Assests/favicon2.png";
+import { PackagesApi } from "../../Api/Package.api";
 
 export default function OrderConfirmation() {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -20,9 +21,26 @@ export default function OrderConfirmation() {
   const orderPlaced = sessionStorage.getItem("orderPlaced");
   const { id } = useParams();
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const type = queryParams.get('type');
+
   const getOrderDetails = async () => {
-    const res = await BookingApi.getSubscriptionDetailsById(id);
-    setOrderDetails(res?.data?.data || null);
+    handleLoading(true)
+    try {
+      const res = type === "package" ? await PackagesApi.getPackageById(id) : await BookingApi.getSubscriptionDetailsById(id);
+      if(type === "package"){
+        setOrderDetails(res?.data?.data?.package || null);
+      }else{
+        setOrderDetails(res?.data?.data || null);
+      }
+    }
+    catch (err) {
+      console.log(err)
+    }
+    finally {
+      handleLoading(false)
+    }
   };
 
   useEffect(() => {
@@ -76,7 +94,7 @@ export default function OrderConfirmation() {
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
       fontSize: `${Math.random() * 20 + 10}px`,
-      color: Math.random() > 0.5 ? "#28a745" : "#007bff",
+      color: Math.random() > 0.5 ? "#FE5D55" : "#21C8B1",
     }));
   }, []);
 
@@ -100,7 +118,7 @@ export default function OrderConfirmation() {
           height={windowSize.height}
           recycle={false}
           numberOfPieces={200}
-          colors={["#28a745", "#007bff", "#ffffff"]}
+          colors={["#21C8B1", "#FE5D55", "#AD8654"]}
           gravity={0.2}
         />
       )}
@@ -135,7 +153,7 @@ export default function OrderConfirmation() {
           </p>
           <div className="flex gap-4 w-full">
             <button
-              className="bg-primary text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-custom-dark transition flex-1"
+              className="bg-fourth text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-custom-dark transition flex-1"
               onClick={() => handleNavigation("/orders")}
             >
               View class details
@@ -155,7 +173,7 @@ export default function OrderConfirmation() {
           <div className="bg-white rounded-xl shadow p-8 flex items-center justify-between">
             <div>
               <div className="text-3xl font-bold">
-                AED {orderDetails?.price || 500}
+                AED {orderDetails?.price}
               </div>
               <div className="text-gray-500 text-sm mt-1">Payment success!</div>
             </div>
@@ -184,11 +202,11 @@ export default function OrderConfirmation() {
                 <span className="text-right">
                   {orderDetails?.date && Array.isArray(orderDetails.date)
                     ? orderDetails.date.map((d, idx) => (
-                        <span key={d}>
-                          {moment(d).format("MMMM Do YYYY")}
-                          {idx < orderDetails.date.length - 1 ? ", " : ""}
-                        </span>
-                      ))
+                      <span key={d}>
+                        {moment(d).format("MMMM Do YYYY")}
+                        {idx < orderDetails.date.length - 1 ? ", " : ""}
+                      </span>
+                    ))
                     : "-"}
                 </span>
               </div>
@@ -197,8 +215,8 @@ export default function OrderConfirmation() {
                 <span>
                   {orderDetails?.startTime && orderDetails?.endTime
                     ? `${formatTime(orderDetails.startTime)} - ${formatTime(
-                        orderDetails.endTime
-                      )}`
+                      orderDetails.endTime
+                    )}`
                     : "-"}
                 </span>
               </div>

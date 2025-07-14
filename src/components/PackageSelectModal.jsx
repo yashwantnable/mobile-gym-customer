@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 
 const PackageSelectModal = ({ packages, activePackageId, onActivate, onClose }) => {
     const [activating, setActivating] = useState('');
 
     const handleActivate = (pkgId) => {
+        console.log(pkgId)
         setActivating(pkgId);
         setTimeout(() => {
             onActivate(pkgId);
             setActivating('');
-        }, 500); // Simulate async
+        }, 500);
     };
 
     return (
@@ -32,18 +33,15 @@ const PackageSelectModal = ({ packages, activePackageId, onActivate, onClose }) 
                         return (
                             <div
                                 key={pkg.id}
-                                className={`relative flex flex-col items-center bg-white rounded-xl border-2 ${isActive ? 'border-sixth shadow-lg' : 'border-gray-200'} p-6 transition-all duration-200`}
+                                onClick={() => handleActivate(pkg?.originalData?._id)}
+                                className={`relative flex flex-col items-center hover:bg-primary bg-white rounded-xl border-2 ${isActive ? 'border-sixth shadow-lg' : 'border-gray-200'} p-6 transition-all duration-200 cursor-pointer`}
                             >
-                                {/* Image */}
                                 <div className="w-16 h-16 mb-3 flex items-center justify-center rounded-full bg-gray-50 overflow-hidden border border-gray-200">
-                                    <img src={pkg.image} alt={pkg.name} className="object-contain w-12 h-12" />
+                                    <img src={pkg.image} alt={pkg.name} className="object-contain w-full" />
                                 </div>
-                                {/* Title & Description */}
                                 <h3 className="text-lg font-bold text-gray-800 mb-1 text-center">{pkg.name}</h3>
                                 <div className="text-xs text-gray-500 mb-2 text-center">{pkg.description}</div>
-                                {/* Duration */}
                                 <div className="text-xs text-sixth font-semibold mb-2">{pkg.duration}</div>
-                                {/* Features */}
                                 <ul className="mb-4 space-y-1 w-full">
                                     {pkg.features.map((f, i) => (
                                         <li key={i} className="flex items-center text-xs text-gray-700">
@@ -51,18 +49,6 @@ const PackageSelectModal = ({ packages, activePackageId, onActivate, onClose }) 
                                         </li>
                                     ))}
                                 </ul>
-                                {/* Activate Button */}
-                                <button
-                                    className={`w-full px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow ${isActive ? 'bg-sixth text-white cursor-default' : 'bg-sixth text-white '} ${activating === pkg.id ? 'opacity-70' : ''}`}
-                                    disabled={isActive || activating === pkg.id}
-                                    onClick={() => handleActivate(pkg.id)}
-                                >
-                                    {isActive ? 'Active' : activating === pkg.id ? 'Activating...' : 'Activate'}
-                                </button>
-                                {/* Active badge */}
-                                {isActive && (
-                                    <span className="absolute top-3 right-3 bg-sixth text-white text-xs font-bold px-3 py-1 rounded-full shadow">Active</span>
-                                )}
                             </div>
                         );
                     })}

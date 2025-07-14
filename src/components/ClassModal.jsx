@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { X, Clock, MapPin, User, Tag, Users, FileText, Calendar, CheckCircle } from 'lucide-react';
+import { ClassesApi } from '../Api/Classes.api';
+import toast from 'react-hot-toast';
+import { useLoading } from '../loader/LoaderContext';
 
 const ClassModal = ({ classData, onClose, selectedPackage }) => {
     const [joined, setJoined] = useState(false);
@@ -7,44 +10,48 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
     const [success, setSuccess] = useState('');
     const [remaining, setRemaining] = useState(selectedPackage?.remaining || 0);
     const [buying, setBuying] = useState(false);
+    const {handleLoading} = useLoading()
 
-    if (!classData) return null;
+    if (!classData || classData.isExpired) return null;
 
-    // Package join logic
-    let canJoin = false;
-    let joinError = '';
-    if (selectedPackage) {
-        if (selectedPackage.type === 'class') {
-            canJoin = remaining > 0 && !joined;
-            if (remaining <= 0) joinError = 'No remaining classes left in your package.';
-        } else if (selectedPackage.type === 'day') {
-            // Only allow join if class is on the same day as today
-            const today = new Date();
-            const classDate = new Date(classData.date);
-            const isSameDay = today.toDateString() === classDate.toDateString();
-            canJoin = isSameDay && remaining > 0 && !joined;
-            if (!isSameDay) joinError = 'Day pass only valid for today.';
-            else if (remaining <= 0) joinError = 'No remaining days left in your package.';
-        }
-    }
+    console.log(classData)
 
-    const handleJoin = () => {
+    const packageId = localStorage.getItem("packageId")
+    const classId = classData && classData?.id
+
+    const handleJoin = async () => {
         if (!selectedPackage) {
             setError('Please select a package to join this class.');
             return;
         }
-        if (!canJoin) {
-            setError(joinError || 'Cannot join this class.');
-            return;
+        const payload = {
+            "subscriptionId": classId,
+            "packageId": packageId
         }
-        setRemaining(r => r - 1);
-        setJoined(true);
-        setSuccess('Successfully joined the class!');
-        setError('');
+
+        handleLoading(true)
+
+        try{
+            const res = await ClassesApi.joinClass(payload);
+            console.log(res.data?.data)
+            setSuccess('Successfully joined the class!');
+            toast.success("Congrulation you successfully joined the class")
+            setJoined(true);
+        }
+        catch(err){
+            console.log(err)
+        }
+        finally{
+            handleLoading(false)
+        }
     };
 
     // Buy class logic (mock)
     const handleBuy = () => {
+        if (classData.isExpired) {
+            setError('This class has expired and cannot be purchased.');
+            return;
+        }
         setBuying(true);
         setTimeout(() => {
             setBuying(false);
@@ -74,6 +81,11 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
                 {/* Content */}
                 <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                     {/* Class Name */}
+                    {classData.isExpired && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 font-medium">
+                            This class has expired and is no longer available for joining or purchase.
+                        </div>
+                    )}
                     <div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">
                             {classData.name}
@@ -145,7 +157,7 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
                         {/* Additional Info */}
                         {classData.additionalInfo && (
                             <div className="flex items-start space-x-3">
-                                <FileText className="h-5 w-5 text-sixth mt-0.5" />
+                                <FileText className="h-12 w-12 text-sixth" />
                                 <div>
                                     <div className="text-sm font-medium text-gray-900">Additional Information</div>
                                     <div className="text-sm text-gray-600">{classData.additionalInfo}</div>
@@ -176,16 +188,14 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
                             <CheckCircle className="h-5 w-5" /> {success}
                         </div>
                     )}
+                    
                     {/* Show price if no package is selected */}
-                    {!selectedPackage && (
+                    {!selectedPackage && !classData.isExpired && (
                         <div className="flex items-center gap-2 text-lg font-bold text-sixth mt-2">
                             Price: <span className="text-gray-900">AED {classPrice}</span>
                         </div>
                     )}
-                    {/* Show join error if any */}
-                    {selectedPackage && joinError && !canJoin && (
-                        <div className="text-red-500 text-sm font-medium">{joinError}</div>
-                    )}
+                    
                 </div>
 
                 {/* Footer */}
@@ -200,16 +210,22 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
                     {selectedPackage ? (
                         <button
                             onClick={handleJoin}
-                            disabled={!canJoin}
-                            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${canJoin ? 'bg-sixth hover:bg-sixth' : 'bg-gray-300 cursor-not-allowed'}`}
+                            disabled={classData.isExpired}
+                            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${!classData.isExpired
+                                    ? 'bg-sixth hover:bg-sixth'
+                                    : 'bg-gray-300 cursor-not-allowed'
+                                }`}
                         >
                             {joined ? 'Joined' : 'Join'}
                         </button>
                     ) : (
                         <button
                             onClick={handleBuy}
-                            disabled={buying}
-                            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow bg-sixth hover:bg-sixth ${buying ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            disabled={buying || classData.isExpired}
+                            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${!classData.isExpired
+                                    ? 'bg-sixth hover:bg-sixth'
+                                    : 'bg-gray-300 cursor-not-allowed'
+                                } ${buying ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                             {buying ? 'Buying...' : 'Buy Class'}
                         </button>

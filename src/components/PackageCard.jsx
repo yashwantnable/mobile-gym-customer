@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const PackageCard = ({
   image,
@@ -6,31 +7,18 @@ const PackageCard = ({
   price,
   numberOfClasses,
   duration,
-  features = []
+  features = [],
+  packageData
 }) => {
-  // Determine card style based on package type
-  const getCardStyle = () => {
-    switch (duration.toLowerCase()) {
-      case 'monthly':
-        return {
-          bg: 'bg-primary',
-          border: 'border-fifth',
-          button: 'bg-fourth hover:bg-fifth',
-          text: 'text-third',
-          accent: 'bg-sixth'
-        };
-      default:
-        return {
-          bg: 'bg-custom-cream',
-          border: 'border-custom-brown',
-          button: 'bg-fifth hover:bg-fourth',
-          text: 'text-custom-dark',
-          accent: 'bg-sixth'
-        };
-    }
+  
+  const style = {
+    bg: 'bg-primary',
+    border: 'border-fifth',
+    button: 'bg-fourth hover:bg-fifth',
+    text: 'text-third',
+    accent: 'bg-sixth'
   };
-
-  const style = getCardStyle();
+  const navigate = useNavigate()
 
   // Feature pagination state
   const [visibleCount, setVisibleCount] = useState(3);
@@ -44,6 +32,11 @@ const PackageCard = ({
   const handleShowLess = () => {
     setVisibleCount(3);
   };
+
+  const handleCheckout = () => {
+    navigate('/checkout', { state: { packageData } })
+  }
+
 
   return (
     <div className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 transition-all duration-300 border ${style.border} ${style.bg} flex flex-col cursor-pointer relative shadow-lg group font-sans animate-scale-in`} style={{ minHeight: 480 }}>
@@ -107,7 +100,8 @@ const PackageCard = ({
 
       {/* CTA button */}
       <div className="px-5 pb-5 relative z-10 mt-auto">
-        <button className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} shadow-md group-hover:scale-105 group-hover:shadow-xl`}>
+        <button className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} shadow-md group-hover:scale-105 group-hover:shadow-xl`}
+        onClick={handleCheckout}>
           Buy Now
         </button>
       </div>

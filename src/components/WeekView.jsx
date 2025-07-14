@@ -1,48 +1,31 @@
-import React from 'react';
-import { Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin, CheckCircle } from 'lucide-react';
+import moment from 'moment/moment';
 
-const DayView = ({ classes, selectedDate, onClassClick }) => {
-    // State to track expanded slots
-    const [expandedSlots, setExpandedSlots] = React.useState({});
-    // Generate 45-minute slots from 00:00 to 23:45
-    const generateTimeSlots = () => {
-        const slots = [];
-        let hour = 0;
-        let minute = 0;
-        while (hour < 24) {
-            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            const displayTime = formatTime(time);
-            slots.push({ time, displayTime });
-            minute += 45;
-            if (minute >= 60) {
-                hour += 1;
-                minute = minute % 60;
+const DayView = ({ classes, selectedDate, onClassClick, joinedClassIds = [] }) => {
+    // Filter classes for the selected date
+    const filteredClasses = classes.filter(cls => {
+        const classDate = new Date(cls.date);
+        return classDate.toDateString() === new Date(selectedDate).toDateString();
+    });
+
+    // Sort classes by start time
+    const sortedClasses = filteredClasses.sort((a, b) => {
+        // Assume time is in format 'HH:MM AM/PM' or 'HH:MM'
+        const parseTime = (t) => {
+            // If time is already in 24h format, just split
+            if (/AM|PM/i.test(t)) {
+                const [time, ampm] = t.split(' ');
+                let [h, m] = time.split(':').map(Number);
+                if (ampm.toUpperCase() === 'PM' && h !== 12) h += 12;
+                if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+                return h * 60 + m;
+            } else {
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
             }
-        }
-        return slots;
-    };
-
-    const formatTime = (time) => {
-        const [hours, minutes] = time.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-        return `${displayHour}:${minutes} ${ampm}`;
-    };
-
-    const getClassesForTimeSlot = (timeSlot) => {
-        return classes.filter(cls => cls.time === timeSlot);
-    };
-
-    const timeSlots = generateTimeSlots();
-
-    const handleExpand = (time) => {
-        setExpandedSlots(prev => ({ ...prev, [time]: true }));
-    };
-    
-    const handleCollapse = (time) => {
-        setExpandedSlots(prev => ({ ...prev, [time]: false }));
-    };
+        };
+        return parseTime(a.time) - parseTime(b.time);
+    });
 
     return (
         <div className="w-full mx-auto p-4 md:p-8 overflow-auto h-[90vh] ">
@@ -51,82 +34,59 @@ const DayView = ({ classes, selectedDate, onClassClick }) => {
                     ? (typeof selectedDate === 'string'
                         ? selectedDate
                         : selectedDate instanceof Date
-                            ? selectedDate.toLocaleDateString()
+                            ? moment(selectedDate).format("DD-MM-YYYY")
                             : String(selectedDate))
-                    : 'Today'}'s Schedule
+                    : 'Today'} Schedule
             </h2>
             <div className="space-y-6">
-                {timeSlots.map(({ time, displayTime }) => {
-                    const slotClasses = getClassesForTimeSlot(displayTime);
-                    const isExpanded = expandedSlots[time];
-                    const showCollapse = isExpanded && slotClasses.length > 2;
-                    return (
-                        <div
-                            key={time}
-                            className="rounded-xl shadow-lg bg-gradient-to-r from-white via-slate-50 to-slate-100 border border-slate-200 flex flex-col md:flex-row items-center md:items-stretch transition hover:shadow-2xl"
-                        >
-                            <div className="w-full md:w-32 flex-shrink-0 flex items-center justify-center py-4 md:py-0 bg-gradient-to-b from-sixth/10 to-indigo-100 rounded-t-xl md:rounded-l-xl md:rounded-tr-none">
-                                <span className="text-lg font-semibold text-sixth">{displayTime}</span>
-                            </div>
-                            <div className="flex-1 w-full px-4 py-3 flex flex-col justify-center">
-                                {slotClasses.length === 0 ? (
-                                    <div className="text-gray-400 text-sm italic text-center md:text-left">No classes scheduled</div>
-                                ) : (
-                                    <>
-                                        {(isExpanded || slotClasses.length <= 2)
-                                            ? slotClasses.map((cls, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    onClick={() => onClassClick(cls)}
-                                                    className="mb-2 last:mb-0 cursor-pointer"
-                                                >
-                                                    <ClassCard classData={cls} />
-                                                </div>
-                                            ))
-                                            : (
-                                                <>
-                                                    {slotClasses.slice(0, 2).map((cls, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            onClick={() => onClassClick(cls)}
-                                                            className="mb-2 last:mb-0 cursor-pointer"
-                                                        >
-                                                            <ClassCard classData={cls} />
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => handleExpand(time)}
-                                                        className="text-sm text-sixth font-medium hover:underline focus:outline-none"
-                                                    >
-                                                        +{slotClasses.length - 2} more
-                                                    </button>
-                                                </>
-                                            )}
-                                        {showCollapse && (
-                                            <button
-                                                onClick={() => handleCollapse(time)}
-                                                className="text-xs text-gray-500 mt-2 hover:underline focus:outline-none"
-                                            >
-                                                Show less
-                                            </button>
-                                        )}
-                                    </>
+                {sortedClasses.length === 0 ? (
+                    <div className="text-gray-400 text-sm italic text-center">No classes scheduled for this day.</div>
+                ) : (
+                    sortedClasses.map((cls, idx) => {
+                        const isJoined = joinedClassIds.includes(cls.id);
+                        return (
+                            <div
+                                key={idx}
+                                className={`rounded-xl shadow-lg bg-gradient-to-r from-white via-slate-50 to-slate-100 border flex flex-col md:flex-row items-center md:items-stretch transition hover:shadow-2xl cursor-pointer
+                                    ${isJoined ? 'border-green-500 bg-green-50' : 'border-slate-200'}
+                                `}
+                                onClick={() => onClassClick(cls)}
+                            >
+                                <div className={`w-full md:w-32 flex-shrink-0 flex items-center justify-center py-4 md:py-0 bg-gradient-to-b from-sixth/10 to-indigo-100 rounded-t-xl md:rounded-l-xl md:rounded-tr-none
+                                    ${isJoined ? 'bg-green-100' : ''}
+                                `}>
+                                    <span className="text-lg font-semibold text-sixth">
+                                        {cls.duration}
+                                    </span>
+                                </div>
+                                <div className="flex-1 w-full px-4 py-3 flex flex-col justify-center">
+                                    <ClassCard classData={cls} isJoined={isJoined} />
+                                </div>
+                                {isJoined && (
+                                    <div className="flex items-center gap-1 px-4 py-2">
+                                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-400">
+                                            <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Joined
+                                        </span>
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })
+                )}
             </div>
         </div>
     );
 };
 
-const ClassCard = ({ classData }) => {
+const ClassCard = ({ classData, isJoined }) => {
     return (
-        <div className="bg-white/80 border border-sixth/30 rounded-lg p-4 shadow-md hover:bg-sixth/10 transition-colors flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className={`bg-white/80 border rounded-lg p-4 shadow-md transition-colors flex flex-col md:flex-row md:items-center md:justify-between 
+            ${classData.isExpired ? 'border-gray-300 opacity-50 cursor-not-allowed' : 'border-sixth/30 hover:bg-sixth/10 cursor-pointer'}`}
+        >
             <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 text-base mb-1 md:mb-0">
+                <h4 className="font-semibold text-gray-900 text-base mb-1 md:mb-0 capitalize">
                     {classData.name}
+                    {classData.isExpired && <span className="ml-2 text-xs text-red-500">(Expired)</span>}
                 </h4>
                 <div className="flex items-center text-xs text-gray-600 mb-1">
                     <MapPin className="h-3 w-3 mr-1" />

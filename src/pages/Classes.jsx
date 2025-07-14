@@ -1,80 +1,160 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import SmallCalendar from '../components/SmallCalendar';
-import FilterPanel from '../components/FilterPanel';
-import WeekView from '../components/WeekView';
-import ClassModal from '../components/ClassModal';
-import PackageSelectModal from '../components/PackageSelectModal';
-import { generateDummyData } from '../dummyData';
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import SmallCalendar from "../components/SmallCalendar";
+import FilterPanel from "../components/FilterPanel";
+import WeekView from "../components/WeekView";
+import ClassModal from "../components/ClassModal";
+import PackageSelectModal from "../components/PackageSelectModal";
+import { useLoading } from "../loader/LoaderContext";
+import { PackagesApi } from "../Api/Package.api";
+import { useSelector } from "react-redux";
+import { ClassesApi } from "../Api/Classes.api";
+import { useNavigate } from "react-router-dom";
 
-const mockPackages = [
-    {
-        id: 'pkg1',
-        name: '10-Class Pass',
-        type: 'class',
-        remaining: 7,
-        total: 10,
-        description: 'Attend any 10 classes of your choice.',
-        duration: 'Valid for 3 months',
-        features: [
-            '10 classes to use anytime',
-            'Book any class type',
-            'Priority booking',
-            'Free guest pass'
-        ],
-        image: '/public/Logos/fitness-logo.png',
-    },
-    {
-        id: 'pkg2',
-        name: 'Day Pass',
-        type: 'day',
-        remaining: 3,
-        total: 5,
-        description: 'Unlimited classes per day, up to 5 days.',
-        duration: 'Valid until midnight',
-        features: [
-            'Access to all classes today',
-            'No booking limits',
-            'Perfect for trying us out'
-        ],
-        image: '/public/Logos/liveness-logo-red.png',
-    }
-];
+const transformPackageData = (apiPackage) => {
+    return {
+        id: apiPackage.package._id,
+        name: apiPackage.package.name,
+        type: apiPackage.package.duration === "monthly" ? "class" : "day",
+        remaining:
+            apiPackage.package.numberOfClasses - apiPackage.joinClasses.length,
+        total: apiPackage.package.numberOfClasses,
+        description: apiPackage.package.name,
+        duration:
+            apiPackage.package.duration === "monthly"
+                ? "Valid for 1 month"
+                : apiPackage.package.duration === "weekly"
+                    ? "Valid for 1 week"
+                    : apiPackage.package.duration === "yearly"
+                        ? "Valid for 1 year"
+                        : "Valid for 1 day",
+        features: apiPackage.package.features,
+        image: apiPackage.package.image,
+        originalData: {
+            ...apiPackage,
+            package: {
+                ...apiPackage.package,
+            },
+        },
+    };
+};
 
 const Classes = () => {
     const [userPackages, setUserPackages] = useState([]);
-    const [selectedPackageId, setSelectedPackageId] = useState('');
+    const [selectedPackageId, setSelectedPackageId] = useState("");
+    const packageId = localStorage.getItem("packageId");
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [showPackageModal, setShowPackageModal] = useState(false);
-    const [activePackageId, setActivePackageId] = useState('');
+    const [activePackageId, setActivePackageId] = useState("");
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedClass, setSelectedClass] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [classes, setClasses] = useState([]);
     const [filteredClasses, setFilteredClasses] = useState([]);
+    const navigate = useNavigate()
     const [filters, setFilters] = useState({
-        location: '',
-        category: '',
-        sessionType: ''
+        location: "",
+        category: "",
+        sessionType: "",
     });
 
-    // On mount, fetch packages and open modal if none active
     useEffect(() => {
-        setUserPackages(mockPackages);
-        if (!activePackageId && mockPackages.length > 0) {
-            setShowPackageModal(true);
+        setActivePackageId(packageId);
+    }, [packageId]);
+
+    const { handleLoading } = useLoading();
+    const user = useSelector((state) => state.auth.user);
+
+    const handleGetUserPackages = async () => {
+        const userId = user?._id;
+        handleLoading(true);
+        try {
+            const res = await PackagesApi.getUserPackage(userId);
+            const transformedPackages = res.data?.data.map((pkg) =>
+                transformPackageData(pkg)
+            );
+            setUserPackages(transformedPackages);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            handleLoading(false);
         }
+    };
+
+    const getClassesSubByUser = async () => {
+        handleLoading(true)
+        try{
+            const res = await ClassesApi.getClassesSubByUser()
+            console.log(res.data?.data)
+        }
+        catch(err){
+            console.log(err)
+        }
+        finally{
+            handleLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getClassesSubByUser()
+    },[])
+
+    const getAllClasses = async () => {
+        handleLoading(true);
+        try {
+            const res = await ClassesApi.getAllClasses({ isSingleClass: true });
+            const apiClasses = res?.data?.data?.subscriptions;
+
+            const transformedClasses = apiClasses.map((cls) => ({
+                id: cls._id,
+                name: cls.name,
+                description: cls.description,
+                date: cls.date[0],
+                time: cls.startTime,
+                duration: `${cls.startTime} - ${cls.endTime}`,
+                location: cls.Address?.streetName || "Unknown location",
+                category: cls.categoryId?.cName || "General",
+                sessionType: cls.sessionType?.sessionName || "Regular",
+                trainer:
+                    `${cls.trainer?.first_name} ${cls.trainer?.last_name}` ||
+                    "Unknown trainer",
+                price: cls.price,
+                additionalInfo: cls.description,
+                image: cls.media,
+                features: cls.features,
+                isExpired: cls.isExpired,
+            }));
+
+            console.log(transformedClasses);
+
+            setClasses(transformedClasses);
+            setFilteredClasses(transformedClasses);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            handleLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getAllClasses();
     }, []);
 
-    // Keep selectedPackage in sync
     useEffect(() => {
-        setSelectedPackage(userPackages.find(pkg => pkg.id === selectedPackageId) || null);
-    }, [selectedPackageId, userPackages]);
+        handleGetUserPackages();
+    }, [user]);
+
+    useEffect(() => {
+        setSelectedPackage(
+            userPackages.find((pkg) => pkg?.originalData?._id === activePackageId) ||
+            null
+        );
+    }, [activePackageId, userPackages]);
 
     // When a package is activated, set as active and selected, close modal, reset class selection
     const handleActivatePackage = (pkgId) => {
-        setActivePackageId(pkgId);
+        localStorage.setItem("packageId", pkgId);
         setSelectedPackageId(pkgId);
         setShowPackageModal(false);
         setSelectedClass(null);
@@ -89,23 +169,22 @@ const Classes = () => {
 
     // Filter classes based on selected date and filters
     useEffect(() => {
-        let filtered = classes.filter(cls => {
+        let filtered = classes.filter((cls) => {
             const classDate = new Date(cls.date);
-            const isSameDate = classDate.toDateString() === selectedDate.toDateString();
-            const matchesLocation = !filters.location || cls.location === filters.location;
-            const matchesCategory = !filters.category || cls.category === filters.category;
-            const matchesSessionType = !filters.sessionType || cls.sessionType === filters.sessionType;
-            return isSameDate && matchesLocation && matchesCategory && matchesSessionType;
+            const isSameDate =
+                classDate.toDateString() === selectedDate.toDateString();
+            const matchesLocation =
+                !filters.location || cls.location === filters.location;
+            const matchesCategory =
+                !filters.category || cls.category === filters.category;
+            const matchesSessionType =
+                !filters.sessionType || cls.sessionType === filters.sessionType;
+            return (
+                isSameDate && matchesLocation && matchesCategory && matchesSessionType
+            );
         });
         setFilteredClasses(filtered);
     }, [selectedDate, filters, classes]);
-
-    // On mount, load dummy classes
-    useEffect(() => {
-        const dummyClasses = generateDummyData();
-        setClasses(dummyClasses);
-        setFilteredClasses(dummyClasses);
-    }, []);
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -122,14 +201,14 @@ const Classes = () => {
 
     const resetFilters = () => {
         setFilters({
-            location: '',
-            category: '',
-            sessionType: ''
+            location: "",
+            category: "",
+            sessionType: "",
         });
     };
 
     const getUniqueValues = (field) => {
-        return [...new Set(classes.map(cls => cls[field]))].filter(Boolean);
+        return [...new Set(classes.map((cls) => cls[field]))].filter(Boolean);
     };
 
     return (
@@ -143,24 +222,58 @@ const Classes = () => {
                     onClose={() => setShowPackageModal(false)}
                 />
             )}
-            
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Package Info and Button */}
-                <div className="mb-6">
-                    <div className="mb-4 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+                <div className="mb-8">
+                    <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
                         {selectedPackage ? (
                             <>
-                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-xs text-gray-600 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-                                    <span className="font-semibold text-gray-800">{selectedPackage.name}</span>
-                                    <span>{selectedPackage.description}</span>
-                                    <span className="font-medium text-sixth">
-                                        {selectedPackage.type === 'class'
-                                            ? `${selectedPackage.remaining} of ${selectedPackage.total} classes left`
-                                            : `${selectedPackage.remaining} of ${selectedPackage.total} days left`}
-                                    </span>
+                                <div className="relative flex-1 flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-xs bg-gray-50 rounded-lg px-4 py-3 border border-gray-200 shadow-sm">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                                        <span className="font-semibold text-gray-800">
+                                            {selectedPackage.name}
+                                        </span>
+                                        <span className="text-gray-600">
+                                            {selectedPackage.description}
+                                        </span>
+                                        <span
+                                            className={`font-medium ${selectedPackage.remaining / selectedPackage.total < 0.3
+                                                    ? "text-red-500"
+                                                    : "text-sixth"
+                                                }`}
+                                        >
+                                            {selectedPackage.type === "class"
+                                                ? `${selectedPackage.remaining} of ${selectedPackage.total} classes remaining`
+                                                : `${selectedPackage.remaining} of ${selectedPackage.total} days remaining`}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedPackage(null);
+                                            localStorage.setItem("packageId", "");
+                                        }}
+                                        className="absolute -top-2 -right-2 p-1 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
+                                        aria-label="Remove package"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4 text-gray-600"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
                                 </div>
                                 <button
-                                    className="px-4 py-2 rounded-lg bg-sixth text-white font-semibold text-sm shadow hover:bg-sixth/80 transition-colors"
+                                    className="px-4 py-2.5 rounded-lg bg-sixth text-white font-semibold text-sm shadow-md hover:bg-sixth/90 transition-colors focus:ring-2 focus:ring-sixth/50 focus:outline-none"
                                     onClick={() => setShowPackageModal(true)}
                                 >
                                     Change Package
@@ -168,13 +281,24 @@ const Classes = () => {
                             </>
                         ) : (
                             <>
-                                <div className="flex-1 text-sm text-gray-500 font-medium">No package selected</div>
-                                <button
-                                    className="px-4 py-2 rounded-lg bg-sixth text-white font-semibold text-sm shadow hover:bg-sixth/80 transition-colors"
-                                    onClick={() => setShowPackageModal(true)}
-                                >
-                                    Choose Package
-                                </button>
+                                <div className="flex-1 text-sm text-gray-500 font-medium px-2">
+                                    No active package {userPackages.length > 0 ? "selected" : ""}
+                                </div>
+                                {userPackages.length > 0 ? (
+                                    <button
+                                        className="px-4 py-2.5 rounded-lg bg-sixth text-white font-semibold text-sm shadow-md hover:bg-sixth/90 transition-colors focus:ring-2 focus:ring-sixth/50 focus:outline-none"
+                                        onClick={() => setShowPackageModal(true)}
+                                    >
+                                        Choose Package
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="px-4 py-2.5 rounded-lg bg-sixth text-white font-semibold text-sm shadow-md hover:bg-sixth/90 transition-colors focus:ring-2 focus:ring-sixth/50 focus:outline-none"
+                                        onClick={() => navigate('/explore#packages') }
+                                    >
+                                        Buy Packages
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>
@@ -184,8 +308,13 @@ const Classes = () => {
                     <div className="lg:col-span-3 flex flex-col gap-6">
                         {/* Sidebar Header and Description */}
                         <div className="mb-2">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-1">Class Schedule</h2>
-                            <p className="text-sm text-gray-500">Browse and filter available classes. Select a class to view details, buy, or join using your package.</p>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                Class Schedule
+                            </h2>
+                            <p className="text-sm text-gray-500">
+                                Browse and filter available classes. Select a class to view
+                                details, buy, or join using your package.
+                            </p>
                         </div>
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                             <div className="px-4 py-3 border-b border-gray-200">
@@ -203,9 +332,9 @@ const Classes = () => {
                             filters={filters}
                             onFilterChange={handleFilterChange}
                             onReset={resetFilters}
-                            locations={getUniqueValues('location')}
-                            categories={getUniqueValues('category')}
-                            sessionTypes={getUniqueValues('sessionType')}
+                            locations={getUniqueValues("location")}
+                            categories={getUniqueValues("category")}
+                            sessionTypes={getUniqueValues("sessionType")}
                         />
                     </div>
                     {/* Main Content - Week View */}
@@ -227,9 +356,9 @@ const Classes = () => {
                                         filters={filters}
                                         onFilterChange={handleFilterChange}
                                         onReset={resetFilters}
-                                        locations={getUniqueValues('location')}
-                                        categories={getUniqueValues('category')}
-                                        sessionTypes={getUniqueValues('sessionType')}
+                                        locations={getUniqueValues("location")}
+                                        categories={getUniqueValues("category")}
+                                        sessionTypes={getUniqueValues("sessionType")}
                                     />
                                 </div>
                             </div>
@@ -239,11 +368,12 @@ const Classes = () => {
                             <div className="px-4 py-3 border-b border-gray-200">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-lg  text-gray-900 font-bold">
-                                        Schedule for {selectedDate.toLocaleDateString('en-US', {
-                                            weekday: 'long',
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
+                                        Schedule for{" "}
+                                        {selectedDate.toLocaleDateString("en-US", {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
                                         })}
                                     </h2>
                                     <div className="text-sm text-gray-500">
@@ -272,7 +402,7 @@ const Classes = () => {
                 />
             )}
         </div>
-    )
-}
+    );
+};
 
 export default Classes;

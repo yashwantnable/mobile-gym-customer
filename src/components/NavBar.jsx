@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Calendar, MapPin, User, Menu, X } from "lucide-react";
 import logo from "../../public/Logos/main-logo-dark-01.png"
+import fitness from "../../public/Logos/fitness-logo.png"
+import wellness from "../../public/Logos/wellness-main-logo.png"
+import liveness from "../../public/Logos/liveness-logo-red.png"
 import { useSelector, useDispatch } from "react-redux";
 import ConfirmationModal from "./ConfirmationModal";
 import { AuthApi } from "../Api/Auth.api";
 import { logout } from "../store/authSlice";
 import toast from "react-hot-toast";
+import { useLoading } from "../loader/LoaderContext";
+import { FilterApi } from "../Api/Filteration.api";
 
 const NavBar = () => {
   const location = useLocation();
@@ -18,6 +23,30 @@ const NavBar = () => {
   const user = useSelector((state) => state.auth.user);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
+  const { id } = useParams();
+  const { handleLoading } = useLoading()
+  const [cat, setCat] = useState(null)
+
+  const handleFilterSortBy = async (e) => {
+    handleLoading(true);
+    try {
+      const res = await FilterApi.filterBySortBy({ categoryId: id });
+      setCat(res.data?.data?.subscriptions?.[0]?.categoryId?.cName);
+    } catch (err) {
+      console.error("Filter sort error:", err);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if(id){
+      handleFilterSortBy()
+    }else{
+      setCat(null)
+    }
+  }, [id])
+
 
   const navItems = [
     { path: "/subscriptions", label: "DEALS", icon: Calendar },
@@ -46,7 +75,6 @@ const NavBar = () => {
     setIsModalOpen(false);
   };
 
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -72,12 +100,22 @@ const NavBar = () => {
       <nav className="bg-primary text-third px-4 sm:px-6 py-3 shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2 group">
             <img
               src={logo}
               alt="Logo"
-              className="h-11 sm:h-11 object-contain transition-transform hover:scale-105"
+              className={`h-11 sm:h-11 object-contain transition-transform ${(cat === "fitness" || cat === "wellness" || cat === "liveness")
+                  ? "absolute opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                  : "block hover:scale-105"
+                }`}
             />
+            {(cat === "fitness" || cat === "wellness" || cat === "liveness") && (
+              <img
+                src={cat === "fitness" ? fitness : cat === "wellness" ? wellness : liveness}
+                alt="Category Logo"
+                className="h-11 sm:h-11 object-contain transition-transform group-hover:opacity-0"
+              />
+            )}
           </Link>
 
           {/* Desktop Navigation */}
@@ -87,8 +125,8 @@ const NavBar = () => {
                 key={path}
                 to={path}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === path
-                    ? "text-third"
-                    : "text-third/80 hover:text-third "
+                  ? "text-third"
+                  : "text-third/80 hover:text-third "
                   }`}
               >
                 {/* <Icon size={18} /> */}
@@ -196,8 +234,8 @@ const NavBar = () => {
                 to={path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-medium ${location.pathname === path
-                    ? "bg-white/20 text-third"
-                    : "text-third/90 hover:text-third hover:bg-white/10"
+                  ? "bg-white/20 text-third"
+                  : "text-third/90 hover:text-third hover:bg-white/10"
                   }`}
               >
                 <Icon size={20} />

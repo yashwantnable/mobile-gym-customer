@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaStar, FaApple } from "react-icons/fa";
 import { DiAndroid } from "react-icons/di";
@@ -34,6 +34,20 @@ const HomePage = () => {
   });
   const [showRecent, setShowRecent] = useState(false);
   const navigate = useNavigate();
+
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      setTimeout(() => {
+        const id = hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 400);
+    }
+  }, [hash]);
 
   const { handleLoading } = useLoading();
 
@@ -572,7 +586,7 @@ const HomePage = () => {
       )}
 
       {/* Pakages   */}
-      <section className=" py-10 md:py-16 px-4 sm:px-6 lg:px-8">
+      <section id="packages" className="py-10 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
             <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
@@ -583,13 +597,14 @@ const HomePage = () => {
             items={Array.isArray(packdata) ? packdata : []}
             renderItem={(pkg) => (
               <PackageCard
-                key={pkg?._id || pkg?.id || Math.random()}
-                image={pkg?.image || "/default-image.png"}
+                key={pkg?._id}
+                image={pkg?.image}
                 name={pkg?.name || "No Name"}
                 price={pkg?.price || 0}
                 numberOfClasses={pkg?.numberOfClasses || 0}
                 duration={pkg?.duration || "N/A"}
                 features={pkg?.features}
+                packageData = {pkg}
               />
             )}
             itemClass="mr-4 md:mr-6"

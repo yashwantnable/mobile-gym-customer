@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   CardElement,
@@ -10,15 +9,18 @@ import { IoMdClose } from "react-icons/io";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useLoading } from "../../loader/LoaderContext";
+
 import { loadStripe } from "@stripe/stripe-js";
+import { useLoading } from "../../loader/LoaderContext";
 import { BookingApi } from "../../Api/Booking.api";
+import { PackagesApi } from "../../Api/Package.api";
+
 
 const stripePromise = loadStripe(
   "pk_test_51RFBw1BDG3HWhnfAXp9NbZZuGFIltrnDER6H3oTwYz61DX9DWWJoP8t5LAq8PHwgNqTJRAyRGrEp369VwU9lSsqM00nt2F3c4Q"
 );
 
-const CheckoutForm = ({ setisPaymentPage, classData }) => {
+const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -27,7 +29,6 @@ const CheckoutForm = ({ setisPaymentPage, classData }) => {
   const { handleLoading } = useLoading();
   const navigate = useNavigate();
 
-  console.log("class data",classData)
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -37,7 +38,9 @@ const CheckoutForm = ({ setisPaymentPage, classData }) => {
     setLoading(true);
     setError(null);
     handleLoading(true);
+
     try {
+      // Create payment method with Stripe
       const { error: stripeError, paymentMethod } =
         await stripe.createPaymentMethod({
           type: "card",
@@ -50,19 +53,27 @@ const CheckoutForm = ({ setisPaymentPage, classData }) => {
         handleLoading(false);
         return;
       }
+
       try {
-        const payload = { subscription: classData._id };
-        const res = await BookingApi.createSubscription(payload);
-        sessionStorage.setItem("orderPlaced", "true")
+        let res;
+        if (isPackage) {
+          // Handle package booking
+          const payload = { packageId: bookingData._id };
+          res = await PackagesApi.packageBooking(payload);
+          toast.success("Package booking successful!");
+        } else {
+          // Handle class booking/subscription
+          const payload = { subscription: bookingData._id };
+          res = await BookingApi.createSubscription(payload);
+          toast.success("Payment & Subscription Successful");
+        }
+
+        sessionStorage.setItem("orderPlaced", "true");
         setresData(res?.data?.data?._id);
-        toast.success("Payment & Subscription Successful");
-        navigate(`/order-confirmation/${res?.data?.data?._id}`);
+        navigate(`/order-confirmation/${res?.data?.data?._id}?type=${isPackage ? "package" : "subscription"}`);
       } catch (apiErr) {
-        setError(apiErr.message || "Subscription failed");
-        toast.error("Subscription failed. Please try again.");
-        setLoading(false);
-        handleLoading(false);
-        return;
+        setError(apiErr.message || "Booking failed");
+        toast.error("Booking failed. Please try again.");
       }
     } catch (err) {
       setError(err.message);
@@ -109,9 +120,8 @@ const CheckoutForm = ({ setisPaymentPage, classData }) => {
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-          !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${!stripe || loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
       >
         {loading ? (
           <>
@@ -138,29 +148,33 @@ const CheckoutForm = ({ setisPaymentPage, classData }) => {
             Processing...
           </>
         ) : (
-          "Pay"
+          `Pay AED ${bookingData?.price}`
         )}
       </button>
     </form>
   );
 };
 
-const StripePayment = ({ setisPaymentPage, classData }) => {
+const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage }) => {
+  const bookingData = isPackage ? packageData : classData;
+
   return (
-    <div className="relative max-w-md mx-auto p-5 rounded-lg  ">
+    <div className="relative max-w-md mx-auto p-5 rounded-lg">
       {/* Close Button */}
       <button
-        className="absolute top-5 right-5 text-gray-600 hover:text-black  cursor-pointer"
+        className="absolute top-5 right-5 text-gray-600 hover:text-black cursor-pointer"
         onClick={() => setisPaymentPage(false)}
         disabled={false}
       >
         <IoMdClose size={20} />
       </button>
 
-      <h2 className="text-2xl font-bold text-custom-dark mb-2">Test Payment</h2>
+      <h2 className="text-2xl font-bold text-custom-dark mb-2">
+        {isPackage ? "Package Payment" : "Class Payment"}
+      </h2>
       <div className="flex justify-between pt-4 mb-2 border-t border-t-gray-300">
         <p>Payable Amount:</p>
-        <p className="text-green-600">AED {classData?.price}</p>
+        <p className="text-green-600">AED {bookingData?.price}</p>
       </div>
       <p className="text-sm text-gray-600 mb-6">
         Use test card:{" "}
@@ -173,7 +187,8 @@ const StripePayment = ({ setisPaymentPage, classData }) => {
       <Elements stripe={stripePromise}>
         <CheckoutForm
           setisPaymentPage={setisPaymentPage}
-          classData={classData}
+          bookingData={bookingData}
+          isPackage={isPackage}
         />
       </Elements>
     </div>
@@ -182,8 +197,9 @@ const StripePayment = ({ setisPaymentPage, classData }) => {
 
 StripePayment.propTypes = {
   setisPaymentPage: PropTypes.func.isRequired,
-  total: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   classData: PropTypes.object,
+  packageData: PropTypes.object,
+  isPackage: PropTypes.bool,
 };
 
 export default StripePayment;

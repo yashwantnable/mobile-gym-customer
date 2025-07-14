@@ -9,7 +9,7 @@ const Description = ({ description = "", length }) => {
     const displayedText = isExpanded ? description : description.slice(0, MAX_LENGTH);
 
     return (
-        <div className="text-sm font-medium mb-1 capitalize text-fifth">
+        <div className="text-sm font-medium mb-1 capitalize text-third">
             {displayedText}
             {shouldTruncate && !isExpanded && '...'}
             {shouldTruncate && (

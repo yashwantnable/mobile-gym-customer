@@ -4,6 +4,8 @@ import yogaImage from "../Assests/yoga.jpg";
 import { CategoryApi } from "../Api/Category.api";
 import { useLoading } from "../loader/LoaderContext";
 import { IoIosArrowForward } from "react-icons/io";
+import moment from "moment";
+import Description from "../components/Description";
 
 export default function SessionDetailPage() {
   const navigate = useNavigate();
@@ -54,9 +56,8 @@ export default function SessionDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-2 sm:p-4">
-      {/* Top section: Image + Details */}
+      {/* Top section */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 md:mb-8 mt-6 md:mt-10">
-        {/* Image */}
         <div className="md:w-1/2 w-full">
           <div className="h-48 xs:h-56 sm:h-64 md:h-[300px] rounded-lg overflow-hidden">
             <img
@@ -76,7 +77,6 @@ export default function SessionDetailPage() {
           {/* Session Type Name */}
           {classData?.sessionType?.sessionName && (
             <div className="text-sm text-gray-500 mb-2">
-              {/* Session Type:{" "} */}
               <span className="font-semibold text-custom-dark">
                 {classData.sessionType.sessionName}
               </span>
@@ -99,10 +99,10 @@ export default function SessionDetailPage() {
             </span>
           </div>
           <div className="space-y-2 sm:space-y-3">
-            <div className="flex items-start gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 sm:h-5 sm:w-5 mt-1 flex-shrink-0 text-gray-500"
+                className="h-4 w-4 sm:h-6 sm:w-6 mt-1 flex-shrink-0 text-blue-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -120,67 +120,52 @@ export default function SessionDetailPage() {
                 />
               </svg>
               <p className="text-gray-700 text-xs sm:text-sm">
-                {classData?.streetName}
+                {classData?.Address?.streetName},{classData?.Address?.landmark},{classData?.Address?.city.name},{classData?.Address?.country?.name}
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <p className="text-gray-700 text-xs sm:text-sm">
-                {/* Start Date - End Date */}
+              
+              <p className="text-gray-700">
+                {/* Date Range */}
                 {classData?.date?.length > 0 && (
-                  <>
-                    <span>
-                      {new Date(classData.date[0]).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                  <span className="inline-flex items-center text-sm font-medium bg-gray-100 rounded-full px-3 py-1 mb-1">
+                    <svg className="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-semibold text-gray-700">
+                      {moment(classData.date[0]).format("DD MMM YYYY")}
                     </span>
                     {classData?.date?.length > 1 && (
                       <>
-                        {" "}
-                        -{" "}
-                        <span>
-                          {new Date(classData.date[1]).toLocaleDateString(
-                            "en-US",
-                            {
-                              weekday: "long",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
+                        <span className="mx-1 text-gray-500">to</span>
+                        <span className="font-semibold text-gray-700">
+                          {moment(classData.date[1]).format("DD MMM YYYY")}
                         </span>
                       </>
                     )}
-                  </>
+                  </span>
                 )}
-                {/* Start Time - End Time */}
-                {classData?.startTime && (
-                  <>
-                    {", "}
-                    <span>{formatTimeTo12Hour(classData.startTime)}</span>
-                  </>
-                )}
-                {classData?.endTime && (
-                  <>
-                    {" - "}
-                    <span>{formatTimeTo12Hour(classData.endTime)}</span>
-                  </>
+
+                {/* Time Range */}
+                {(classData?.startTime || classData?.endTime) && (
+                  <span className="inline-flex items-center text-sm font-medium bg-blue-50 rounded-full px-3 py-1 ml-1">
+                    <svg className="w-3 h-3 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {classData?.startTime && (
+                      <span className="font-semibold text-blue-600">
+                        {formatTimeTo12Hour(classData.startTime)}
+                      </span>
+                    )}
+                    {classData?.endTime && (
+                      <>
+                        <span className="mx-1 text-blue-400">to</span>
+                        <span className="font-semibold text-blue-600">
+                          {formatTimeTo12Hour(classData.endTime)}
+                        </span>
+                      </>
+                    )}
+                  </span>
                 )}
               </p>
             </div>
@@ -203,7 +188,6 @@ export default function SessionDetailPage() {
               style={{ letterSpacing: "0.1em" }}
             >
               SUBSCRIBE
-              {/* <IoIosArrowForward className="text-white h-6 w-6" /> */}
               <IoIosArrowForward className="text-white w-6 h-6 flex-shrink-0" />
             </button>
           </div>
@@ -219,7 +203,7 @@ export default function SessionDetailPage() {
           <div className="text-xs font-semibold tracking-widest text-gray-700 mb-2">
             DESCRIPTION
           </div>
-          <DescriptionWithShowMore text={classData?.description || ""} />
+          <Description description={classData?.description || ""} length={500} />
         </div>
       </div>
       <hr className="mt-8 md:mt-10"></hr>
@@ -331,99 +315,6 @@ export default function SessionDetailPage() {
   );
 }
 
-function DescriptionWithShowMore({ text, maxChars = 250 }) {
-  const [showMore, setShowMore] = React.useState(false);
-  if (!text || text.length <= maxChars) {
-    return <p className="text-gray-700 text-base max-w-2xl">{text}</p>;
-  }
-  return (
-    <div>
-      <p className="text-gray-700 text-base max-w-2xl">
-        {showMore ? text : `${text.slice(0, maxChars)}...`}
-      </p>
-      <button
-        className="text-gray-500 underline text-sm hover:text-black focus:outline-none mt-1"
-        onClick={() => setShowMore(!showMore)}
-      >
-        {showMore ? "Show less" : "Show more"}
-      </button>
-    </div>
-  );
-}
-
-function Highlights({ iconType, label }) {
-  let icon = null;
-  const iconClass = "h-8 w-8 text-teal-500";
-  if (iconType === "store") {
-    icon = (
-      <svg
-        className={iconClass}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 7V6a2 2 0 012-2h14a2 2 0 012 2v1M3 7l1.34 8.03A2 2 0 006.32 17h11.36a2 2 0 001.98-1.97L21 7M3 7h18"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16 11V17M8 11V17M12 11V17"
-        />
-      </svg>
-    );
-  } else if (iconType === "badge") {
-    icon = (
-      <svg
-        className={iconClass}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M17 17.657V21l-5-2-5 2v-3.343A8 8 0 1117 17.657z"
-        />
-        <circle cx="12" cy="11" r="3" stroke="currentColor" strokeWidth="2" />
-      </svg>
-    );
-  } else if (iconType === "female") {
-    icon = (
-      <svg
-        className={iconClass}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="12" cy="8" r="5" stroke="currentColor" strokeWidth="2" />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 13v7M9 20h6"
-        />
-      </svg>
-    );
-  }
-  return (
-    <div className="flex flex-col items-center min-w-[120px]">
-      {icon}
-      <span className="text-gray-500 text-base font-normal mt-2 tracking-wide">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-// Dummy reviews data
 const dummyReviews = [
   {
     name: "Cathy R",
