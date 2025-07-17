@@ -10,4 +10,5 @@ export const BookingApi = {
 
   getBookingByid: (id) => Api.get(`booking/get-booking-by-id/${id}`),
   getExpiredSubscription: () => Api.get("/booking/get-expired-subscriptions"),
+  applyPromoCodeToSubscription: (payload) => Api.post("/booking/subscription-apply-promo",payload),
 };

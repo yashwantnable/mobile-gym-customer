@@ -3,6 +3,8 @@ import trainer from "../Assests/trainer.jpg";
 import { useLocation } from "react-router-dom";
 import StripePayment from "./Payment/StripePayment";
 import Description from "../components/Description";
+import { useLoading } from "../loader/LoaderContext";
+import { BookingApi } from "../Api/Booking.api";
 
 function formatTimeTo12Hour(time24) {
   if (!time24) return "";
@@ -14,13 +16,45 @@ function formatTimeTo12Hour(time24) {
   return `${hour}:${minute} ${ampm}`;
 }
 
+
 export default function CheckoutPage() {
+  const {handleLoading} = useLoading()
   const location = useLocation();
   const [isPaymentPage, setisPaymentPage] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [discountDetails, setDiscountDetails] = useState("");
   const classData = location.state?.classData || {};
   const packageData = location.state?.packageData || {};
   const isPackage = Object.keys(packageData).length > 0;
+  const [error, setError] = useState("");
+
+ console.log("classData:",classData)
+
+  const handleApplyPromo = async () => {
+  if (!promoCode.trim()) return;
+
+  handleLoading(true);
+  setLoading(true);
+  setError("");
+  try {
+    const payload = {
+      subscriptionId: classData._id,
+      promoCode: promoCode.trim(),
+    };
+    console.log("payload:",payload)
+    const response = await BookingApi.applyPromoCodeToSubscription(payload);
+    setDiscountDetails(response.data?.data);
+    console.log(response.data?.data?.breakdown?.finalPrice);
+  } catch (err) {
+    setError(err?.response?.data?.message || "Failed to apply promo code");
+    setDiscountDetails(null);
+  } finally {
+    handleLoading(false);
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center py-8">
@@ -70,7 +104,8 @@ export default function CheckoutPage() {
                 className="w-full h-72 object-cover object-center rounded mb-4"
               />
               <div className="text-lg tracking-widest text-gray-400 mb-1">
-                {classData?.sessionType?.sessionName?.toUpperCase() || "SESSION"}
+                {classData?.sessionType?.sessionName?.toUpperCase() ||
+                  "SESSION"}
               </div>
               <div className="text-xl font-medium mb-1 capitalize">
                 {classData?.name || "Session Title"}
@@ -141,7 +176,10 @@ export default function CheckoutPage() {
           <div className="bg-[#fafbfc] rounded-lg shadow-sm p-4 border border-gray-100">
             <div className="flex justify-between text-sm mb-2">
               <span>Subtotal</span>
-              <span>AED {isPackage ? packageData?.price : classData?.price}</span>
+             
+              <span>
+                AED {isPackage ? packageData?.price : classData?.price}
+              </span>
             </div>
             <div className="flex justify-between text-sm mb-2">
               <span>Tax</span>
@@ -149,10 +187,22 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-gray-200 my-2"></div>
 
-            <div className="flex justify-between font-medium text-lg">
+            <div className={`flex justify-between font-medium ${discountDetails?"text-sm":"text-lg"}`}>
               <span>Total:</span>
-              <span>AED {isPackage ? packageData?.price : classData?.price}</span>
+              <span>
+                AED {isPackage ? packageData?.price : classData?.price}
+              </span>
             </div>
+             {discountDetails && (
+        <div className="flex justify-between font-medium text-sm">
+          <span>Discount:</span> <span>AED {discountDetails?.breakdown?.discountAmount}</span>
+        </div>
+      )}
+             {discountDetails && (
+        <div className="text-green-500 flex justify-between font-medium text-lg border-t">
+          <span>Final Total:</span> <span>AED {discountDetails?.breakdown?.finalPrice}</span>
+        </div>
+      )}
             <hr className="mt-3" />
           </div>
 
@@ -163,15 +213,24 @@ export default function CheckoutPage() {
               </span>
               Have a promo code?
             </div>
-            <div className="flex gap-2">
+            <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Enter promo code"
-                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm"
+                className="border px-4 py-2 rounded w-full"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
               />
-              <button className="bg-custom-dark text-white px-5 py-2 rounded font-medium text-sm">
-                Apply
+
+              <button
+                className={`${discountDetails ?"bg-green-600":"bg-custom-dark"}  text-white px-5 py-2 rounded font-medium text-sm`}
+                onClick={handleApplyPromo}
+                disabled={loading}
+              >
+                {discountDetails ? "Applied" : "Apply"}
               </button>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
             <button
               className="w-full bg-custom-dark text-white py-3 rounded font-semibold text-lg mt-4"
@@ -186,9 +245,10 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 relative">
                 <StripePayment
                   setisPaymentPage={setisPaymentPage}
-                  classData={classData}  
-                  packageData={packageData}  
-                  isPackage={isPackage} 
+                  discountAmount={discountDetails?.breakdown?.finalPrice}
+                  classData={classData}
+                  packageData={packageData}
+                  isPackage={isPackage}
                 />
               </div>
             </div>

@@ -20,7 +20,7 @@ const stripePromise = loadStripe(
   "pk_test_51RFBw1BDG3HWhnfAXp9NbZZuGFIltrnDER6H3oTwYz61DX9DWWJoP8t5LAq8PHwgNqTJRAyRGrEp369VwU9lSsqM00nt2F3c4Q"
 );
 
-const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage }) => {
+const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -58,12 +58,12 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage }) => {
         let res;
         if (isPackage) {
           // Handle package booking
-          const payload = { packageId: bookingData._id };
+          const payload = { packageId: bookingData._id};
           res = await PackagesApi.packageBooking(payload);
           toast.success("Package booking successful!");
         } else {
           // Handle class booking/subscription
-          const payload = { subscription: bookingData._id };
+          const payload = { subscription: bookingData._id ,discountedAmount:discountAmount};
           res = await BookingApi.createSubscription(payload);
           toast.success("Payment & Subscription Successful");
         }
@@ -155,7 +155,7 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage }) => {
   );
 };
 
-const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage }) => {
+const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage, discountAmount }) => {
   const bookingData = isPackage ? packageData : classData;
 
   return (
@@ -174,7 +174,7 @@ const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage }) 
       </h2>
       <div className="flex justify-between pt-4 mb-2 border-t border-t-gray-300">
         <p>Payable Amount:</p>
-        <p className="text-green-600">AED {bookingData?.price}</p>
+        <p className="text-green-600">AED {discountAmount?discountAmount:bookingData?.price}</p>
       </div>
       <p className="text-sm text-gray-600 mb-6">
         Use test card:{" "}
@@ -187,6 +187,7 @@ const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage }) 
       <Elements stripe={stripePromise}>
         <CheckoutForm
           setisPaymentPage={setisPaymentPage}
+          discountAmount={discountAmount}
           bookingData={bookingData}
           isPackage={isPackage}
         />
