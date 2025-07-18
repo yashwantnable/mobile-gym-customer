@@ -230,7 +230,7 @@ const HistoryDetails = () => {
               <div>
                 <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">
-                    {details.name}
+                    {details.name.toUpperCase()}
                   </h2>
 
                   <div className="space-y-5">

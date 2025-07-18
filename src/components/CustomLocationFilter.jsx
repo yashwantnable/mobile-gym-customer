@@ -32,7 +32,7 @@ const CustomLocationFilter = ({ value, onChange, options }) => {
             LOCATION
           </span>
           <span
-            className={`block text-base font-semibold ${
+            className={`block text-base  ${
               selected ? "text-green-600" : "text-green-600"
             }`}
           >

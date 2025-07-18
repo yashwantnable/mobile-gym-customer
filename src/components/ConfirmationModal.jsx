@@ -110,7 +110,7 @@ const ConfirmationModal = ({
 
               {/* Title and close button */}
               <div className="ml-4 flex-1">
-                <h3 className="text-lg text-primary font-semibold ">{title}</h3>
+                <h3 className="text-lg text-third font-semibold ">{title}</h3>
                 {showCloseButton && (
                   <button
                     onClick={handleClose}
@@ -125,7 +125,7 @@ const ConfirmationModal = ({
 
           {/* Message content */}
           <div className="px-6 py-5 text-center">
-            <p className="text-gray-600">{message}</p>
+            <p className="text-third">{message}</p>
           </div>
 
           {/* Modern buttons */}
@@ -134,13 +134,13 @@ const ConfirmationModal = ({
               text={confirmText}
               variant="primary"
               onClick={handleConfirm}
-              className="w-full py-1.5"
+              className="w-full py-1.5 text-third"
             />
             <CommonButton
               text={cancelText}
               variant="outline"
               onClick={handleClose}
-              className="w-full py-1.5"
+              className="w-full py-1.5 text-third"
             />
           </div>
         </div>

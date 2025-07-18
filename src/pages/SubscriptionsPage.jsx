@@ -408,11 +408,11 @@ const SubscriptionsPage = () => {
                 value={selectedDistance}
                 onChange={(dis) => handleDistanceFilter(dis)}
                 options={[
-                  "25 miles",
                   "1 mile",
                   "5 miles",
                   "10 miles",
                   "15 miles",
+                  "25 miles",
                   "50 miles",
                   "50+ miles",
                 ]}
@@ -531,7 +531,7 @@ const SubscriptionsPage = () => {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 lg:gap-20">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
                   {paginatedClasses.map((classItem, index) => (
                     <SubscriptionCard
                       _id={classItem._id}

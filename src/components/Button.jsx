@@ -55,10 +55,10 @@ export const CommonButton = ({
   const baseStyles =
     "  font-semibold rounded-full cursor-pointer transition-all duration-300";
   const variants = {
-    primary: "bg-primary text-white hover:bg-primary-dark",
+    primary: "bg-primary text-third hover:bg-primary-dark",
     secondary: "bg-secondary text-primary hover:bg-secondary-dark",
     outline:
-      "border border-primary text-primary hover:bg-primary hover:text-white",
+      "border border-primary text-primary hover:bg-primary hover:text-third",
   };
 
   const disabledStyles = "bg-gray-400 text-black cursor-not-allowed";

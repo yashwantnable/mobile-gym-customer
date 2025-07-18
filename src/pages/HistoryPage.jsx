@@ -241,8 +241,8 @@ const HistoryPage = () => {
                         <div className="flex-1 p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div>
-                              <h3 className="text-xl font-bold text-gray-900 mb-1">
-                                {sessionName}
+                              <h3 className="text-xl font-bold text-gray-900 mb-2  ">
+                                {sessionName.toUpperCase()}
                               </h3>
                               <div className="flex flex-wrap gap-2 mb-1">
                                 {categoryName && (
@@ -384,7 +384,7 @@ const HistoryPage = () => {
                           <div className="flex items-start justify-between mb-4">
                             <div>
                               <h3 className="text-xl font-bold text-gray-900 mb-1">
-                                {sessionName}
+                                {sessionName.toUpperCase()}
                               </h3>
                               <div className="flex flex-wrap gap-2 mb-1">
                                 {categoryName && (

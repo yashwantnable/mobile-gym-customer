@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BookingApi } from "../Api/Booking.api";
 import Pagination from "../components/Pagination";
 import { useLoading } from "../loader/LoaderContext";
+// import { MdFitnessCenter } from "react-icons/md";
+import mygym from "../Assests/mygym.png";
 
 const MySessionPage = () => {
   const [sessions, setSessions] = useState([]);
@@ -14,6 +16,7 @@ const MySessionPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 6;
   const { handleLoading } = useLoading();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSessions();
@@ -28,8 +31,10 @@ const MySessionPage = () => {
       if (response.data && response.data.success) {
         const allSessions = response.data.data || [];
         setSessions(allSessions);
+        // setSessions([]);
         console.log(allSessions);
         setTotalPages(Math.ceil(allSessions.length / itemsPerPage));
+        // setTotalPages(1);
       } else {
         setError("Failed to fetch sessions");
       }
@@ -92,11 +97,35 @@ const MySessionPage = () => {
         <h2 className="text-2xl font-bold mb-6 text-center">My Sessions</h2>
 
         {sessions.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No sessions found</p>
-            <p className="text-gray-500">
-              You haven't booked any sessions yet.
+          // <div className="text-center py-12">
+          //   <p className="text-gray-600 mb-4">No sessions found</p>
+          //   <p className="text-gray-500">
+          //     You haven't booked any sessions yet.
+          //   </p>
+          // </div>
+
+          <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center">
+            <div className="mb-6 flex justify-center">
+              <div className="bg-gray-100 p-5 rounded-full">
+                {/* <MdFitnessCenter className="h-12 w-12 text-gray-400" /> */}
+                <img src={mygym} alt="gym" className="h-32 w-32" />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-medium text-gray-700 mb-2">
+              No sessions found
+            </h3>
+            <p className="text-gray-500 max-w-md mb-6">
+              You haven't booked any sessions yet. Start booking to see your
+              sessions here.
             </p>
+
+            <button
+              className="px-5 py-2.5 bg-primary hover:bg-custom-dark text-third  hover:text-white font-medium rounded-lg transition-colors duration-200"
+              onClick={() => navigate("/subscriptions")}
+            >
+              Book a Session
+            </button>
           </div>
         ) : (
           <>
