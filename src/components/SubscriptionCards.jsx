@@ -42,6 +42,7 @@ const SubscriptionCards = ({
   trainer,
   averageRating,
   totalReviews,
+  fromSection,
 }) => {
   const hasImage = Boolean(media);
   const initials = getInitials(name);
@@ -49,7 +50,7 @@ const SubscriptionCards = ({
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate(`/sessions/${_id}`);
+    navigate(`/sessions/${_id}`, { state: { fromSection } });
   };
 
   return (

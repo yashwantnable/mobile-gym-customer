@@ -51,6 +51,10 @@ const HomePage = () => {
 
   const { handleLoading } = useLoading();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const getAllCategory = async () => {
     handleLoading(true);
     try {
@@ -90,7 +94,6 @@ const HomePage = () => {
       handleLoading(false);
     }
   };
-
 
   const getNearByLocation = async () => {
     const lat = localStorage.getItem("latitude");
@@ -134,6 +137,26 @@ const HomePage = () => {
     }
   };
 
+  const { pathname } = useLocation();
+
+  // Force scroll to top when component mounts or pathname changes
+  useEffect(() => {
+    // Prevent browser from restoring scroll position
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    // Force scroll to top immediately
+    window.scrollTo(0, 0);
+
+    // Also try scrolling after a small delay to ensure it works
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
   useEffect(() => {
     getAllCategory();
     getAllSessions();
@@ -141,7 +164,16 @@ const HomePage = () => {
     getNearByLocation();
     getAllTraining();
     getAllPakages();
-  }, []);
+  }, [pathname]);
+
+  // useEffect(() => {
+  //   getAllCategory();
+  //   getAllSessions();
+  //   getAllSubscription();
+  //   getNearByLocation();
+  //   getAllTraining();
+  //   getAllPakages();
+  // }, []);
 
   const handleSearchSubmit = (term) => {
     if (!term.trim()) return;
@@ -391,7 +423,6 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
 
       {/* My Sessions */}
       {/* {user && traing?.length > 0 && (

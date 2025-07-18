@@ -15,12 +15,16 @@ import { useLoading } from "../../loader/LoaderContext";
 import { BookingApi } from "../../Api/Booking.api";
 import { PackagesApi } from "../../Api/Package.api";
 
-
 const stripePromise = loadStripe(
   "pk_test_51RFBw1BDG3HWhnfAXp9NbZZuGFIltrnDER6H3oTwYz61DX9DWWJoP8t5LAq8PHwgNqTJRAyRGrEp369VwU9lSsqM00nt2F3c4Q"
 );
 
-const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount }) => {
+const CheckoutForm = ({
+  setisPaymentPage,
+  bookingData,
+  isPackage,
+  discountAmount,
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -28,7 +32,6 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount 
   const [resdata, setresData] = useState({});
   const { handleLoading } = useLoading();
   const navigate = useNavigate();
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -58,22 +61,30 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount 
         let res;
         if (isPackage) {
           // Handle package booking
-          const payload = { packageId: bookingData._id};
+          const payload = { packageId: bookingData._id };
           res = await PackagesApi.packageBooking(payload);
           toast.success("Package booking successful!");
         } else {
           // Handle class booking/subscription
-          const payload = { subscription: bookingData._id ,discountedAmount:discountAmount};
+          const payload = {
+            subscription: bookingData._id,
+            discountedAmount: discountAmount,
+          };
           res = await BookingApi.createSubscription(payload);
           toast.success("Payment & Subscription Successful");
         }
 
         sessionStorage.setItem("orderPlaced", "true");
         setresData(res?.data?.data?._id);
-        navigate(`/order-confirmation/${res?.data?.data?._id}?type=${isPackage ? "package" : "subscription"}`);
+        navigate(
+          `/order-confirmation/${res?.data?.data?._id}?type=${
+            isPackage ? "package" : "subscription"
+          }`
+        );
       } catch (apiErr) {
         setError(apiErr.message || "Booking failed");
-        toast.error("Booking failed. Please try again.");
+        // toast.error("Booking failed. Please try again.");
+        toast.error("You have already booked this subscription");
       }
     } catch (err) {
       setError(err.message);
@@ -120,8 +131,9 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount 
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${!stripe || loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+          !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
         {loading ? (
           <>
@@ -155,7 +167,13 @@ const CheckoutForm = ({ setisPaymentPage, bookingData, isPackage,discountAmount 
   );
 };
 
-const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage, discountAmount }) => {
+const StripePayment = ({
+  setisPaymentPage,
+  classData,
+  packageData,
+  isPackage,
+  discountAmount,
+}) => {
   const bookingData = isPackage ? packageData : classData;
 
   return (
@@ -174,7 +192,9 @@ const StripePayment = ({ setisPaymentPage, classData, packageData, isPackage, di
       </h2>
       <div className="flex justify-between pt-4 mb-2 border-t border-t-gray-300">
         <p>Payable Amount:</p>
-        <p className="text-green-600">AED {discountAmount?discountAmount:bookingData?.price}</p>
+        <p className="text-green-600">
+          AED {discountAmount ? discountAmount : bookingData?.price}
+        </p>
       </div>
       <p className="text-sm text-gray-600 mb-6">
         Use test card:{" "}

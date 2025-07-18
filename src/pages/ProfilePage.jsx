@@ -1,29 +1,34 @@
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
-import { Edit2,  Save, Mail, Phone, User, Camera } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { Edit2, Save, Mail, Phone, User, Camera } from "lucide-react";
 import { AuthApi } from "../Api/Auth.api";
+import { useLoading } from "../loader/LoaderContext";
 
 const ProfilePage = () => {
   const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+  // console.log("user:", user);
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
-  const [profileImage, setProfileImage] = useState(user?.profileImage || null);
+  const [profileImage, setProfileImage] = useState(user?.profile_image || null);
   const [countryData, setCountryData] = useState([]);
-  const [imagePreview, setImagePreview] = useState(user?.profileImage || null);
+  const [imagePreview, setImagePreview] = useState(user?.profile_image || null);
+  const [userdata, setUserdata] = useState({});
+  const [logdata, setLogdata] = useState({});
   const fileInputRef = useRef(null);
+  const { handleLoading } = useLoading();
   const [formData, setFormData] = useState({
-    name: user?.name || "",
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
     email: user?.email || "",
-    phone: user?.phone || "",
+    phone_number: logdata.phone_number || "",
     address: user?.address || "",
-    country: user?.country || "",
-    birthday: {
-      month: user?.birthday?.month || "",
-      day: user?.birthday?.day || "",
-      year: user?.birthday?.year || "",
-    },
+    country: user?.country?._id || user?.country || "",
+    birthday: user?.birthday || "", // now a string
     gender: user?.gender || "",
+    profile_image: user?.profile_image || null,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -36,6 +41,84 @@ const ProfilePage = () => {
     };
     fetchCountries();
   }, []);
+
+  const getProfile = async () => {
+    handleLoading(true);
+    try {
+      const userId = user?._id || user?.id; // Get user id from redux
+      const res = await AuthApi.getuserProfile(userId); // Pass id to API
+      setLogdata(res?.data?.data);
+      console.log(res?.data?.data);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  // Update formData and imagePreview when user changes (e.g., after API fetch)
+  useEffect(() => {
+    setFormData({
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+      email: user?.email || "",
+      phone_number: user?.phone || "",
+      address: user?.address || "",
+      country: user?.country?._id || user?.country || "",
+      birthday: user?.birthday || "",
+      gender: user?.gender || "",
+      profile_image: user?.profile_image || null,
+    });
+    setImagePreview(user?.profile_image || null);
+    setProfileImage(user?.profile_image || null);
+  }, [user]);
+
+  // Mapping function: maps profile data to update payload
+  const mapProfileToUpdatePayload = (profile) => ({
+    first_name: profile.first_name,
+    last_name: profile.last_name,
+    email: profile.email,
+    phone_number: profile.phone,
+    address: profile.address,
+    country: profile.country?._id || profile.country,
+    birthday: profile.birthday,
+    gender: profile.gender,
+    profile_image: profile.profile_image,
+  });
+
+  const getupdateuser = async (value) => {
+    handleLoading(true);
+    try {
+      console.log("Calling updateProfile with:", value); // Debug log
+      const res = await AuthApi.updateProfile(value);
+      console.log("API response:", res); // Debug log
+      setUserdata(res?.data?.data);
+      getProfile();
+      return res?.data; // Return the updated user data
+    } catch (error) {
+      console.log("Error", error);
+      return null;
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  // const getupdateuser = async () => {
+  //   handleLoading(true);
+  //   try {
+  //     const userId = user?._id || user?.id; // Get user id from redux
+  //     const res = await AuthApi.updateProfile(userId); // Pass id to API
+  //     setLogdata(res?.data?.data);
+  //   } catch (error) {
+  //     console.log("Error", error);
+  //   } finally {
+  //     handleLoading(false);
+  //   }
+  // };
 
   const countryOptions = countryData.map((item) => ({
     value: item?._id,
@@ -63,6 +146,7 @@ const ProfilePage = () => {
   const [availableStates, setAvailableStates] = useState([]);
 
   useEffect(() => {
+    console.log(user);
     if (formData.country) {
       setAvailableStates(states[formData.country] || []);
     } else {
@@ -77,13 +161,26 @@ const ProfilePage = () => {
 
   const handleBirthdayChange = (e) => {
     const { name, value } = e.target;
+    let [year, month, day] = formData.birthday
+      ? formData.birthday.split("-")
+      : ["", "", ""];
+    if (name === "year") year = value;
+    if (name === "month") month = value;
+    if (name === "day") day = value;
+    // Only set if all are present, else keep partial
+    let birthday = "";
+    if (year && month && day) {
+      birthday = `${year}-${month}-${day}`;
+    } else {
+      birthday = `${year}-${month}-${day}`.replace(/(^-+|-+$)/g, "");
+    }
     setFormData((prev) => ({
       ...prev,
-      birthday: { ...prev.birthday, [name]: value },
+      birthday,
     }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(file);
@@ -92,6 +189,36 @@ const ProfilePage = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
+
+      setIsLoading(true);
+      try {
+        const form = new FormData();
+        form.append("profile_image", file); // Use only 'profile_image' as key
+        const updated = await AuthApi.updateProfile(form);
+        if (updated && updated.data) {
+          // Use the correct field name from backend
+          const newImage =
+            updated.data.profile_image ||
+            updated.data.profileImage ||
+            reader.result;
+          setImagePreview(newImage);
+          setProfileImage(newImage);
+          setFormData((prev) => ({
+            ...prev,
+            profile_image: newImage,
+          }));
+          if (dispatch && updated.data) {
+            dispatch({
+              type: "auth/updateUser",
+              payload: { ...user, ...updated.data, profile_image: newImage },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Image upload error:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -99,36 +226,85 @@ const ProfilePage = () => {
     fileInputRef.current.click();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Refactored handleSubmit to accept section argument
+  const handleSubmit = async (e, section) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      // TODO: Add API call to update user profile and image
-      setIsEditing(false);
-      setActiveSection(null);
+      let payload = {};
+      if (section === "personal") {
+        payload = {
+          birthday: formData.birthday,
+          gender: formData.gender,
+          profile_image: formData.profile_image, // Always include profile_image
+        };
+        // If profileImage is updated and is a file, handle multipart upload
+        if (profileImage && typeof profileImage !== "string") {
+          const form = new FormData();
+          for (const key in payload) {
+            if (key !== "profile_image") {
+              form.append(key, payload[key]);
+            }
+          }
+          form.append("profile_image", profileImage); // Only use 'profile_image' as key for file
+          const updated = await AuthApi.updateProfile(form);
+          if (updated && updated.data) {
+            setUserdata(updated.data);
+            setImagePreview(updated.data.profileImage || imagePreview);
+            setFormData((prev) => ({ ...prev, ...updated.data }));
+            if (dispatch && updated.data) {
+              dispatch({ type: "auth/updateUser", payload: updated.data });
+            }
+            setIsEditing(false);
+            setActiveSection(null);
+          }
+          setIsLoading(false);
+          return;
+        }
+      } else if (section === "contact") {
+        payload = {
+          address: formData.address,
+          country: formData.country,
+          phone_number: formData.phone,
+        };
+      }
+      // Always use formData for update
+      const updated = await getupdateuser({ ...payload });
+      if (updated && updated.data) {
+        setUserdata(updated.data);
+        setImagePreview(updated.data.profileImage || imagePreview);
+        setFormData((prev) => ({ ...prev, ...updated.data }));
+        if (dispatch && updated.data) {
+          dispatch({ type: "auth/updateUser", payload: updated.data });
+        }
+        setIsEditing(false);
+        setActiveSection(null);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Update error:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      country: user?.country || "",
-      birthday: {
-        month: user?.birthday?.month || "",
-        day: user?.birthday?.day || "",
-        year: user?.birthday?.year || "",
-      },
-      gender: user?.gender || "",
-    });
-    setImagePreview(user?.profileImage || null);
-    setProfileImage(user?.profileImage || null);
+  // Refactored handleCancel to accept section argument
+  const handleCancel = (section) => {
+    if (section === "personal") {
+      setFormData((prev) => ({
+        ...prev,
+        birthday: user?.birthday || "",
+        gender: user?.gender || "",
+      }));
+      setImagePreview(user?.profile_image || null);
+      setProfileImage(user?.profile_image || null);
+    } else if (section === "contact") {
+      setFormData((prev) => ({
+        ...prev,
+        address: user?.address || "",
+        country: user?.country || "",
+        phone: user?.phone || "",
+      }));
+    }
     setIsEditing(false);
     setActiveSection(null);
   };
@@ -139,8 +315,12 @@ const ProfilePage = () => {
   };
 
   const formatDate = (birthday) => {
-    if (!birthday?.month || !birthday?.day || !birthday?.year) return "Not specified";
-    return `${birthday.month}/${birthday.day}/${birthday.year}`;
+    if (!birthday) return "Not specified";
+    // Handle both ISO and YYYY-MM-DD
+    const datePart = birthday.split("T")[0]; // "1968-02-11"
+    const [year, month, day] = datePart.split("-");
+    if (!year || !month || !day) return "Not specified";
+    return `${year} - ${month} - ${day}`;
   };
 
   if (!user) {
@@ -165,24 +345,32 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="mx-auto px-4 py-10 flex flex-col items-center">
+    <div className="mx-auto px-4 py-10 flex flex-col items-center bg-primary">
       {/* Profile Image & Name */}
       <div className="flex flex-col items-center mb-8 w-full">
         <div className="relative group mb-4">
           <div className="h-28 w-28 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-            {imagePreview ? (
+            {imagePreview ||
+            formData.profile_image ||
+            user.profile_image ||
+            user.profile_image ? (
               <img
-                src={imagePreview}
+                src={
+                  imagePreview ||
+                  formData.profile_image ||
+                  user.profile_image ||
+                  user.profile_image
+                }
                 alt="Profile Preview"
                 className="object-cover h-full w-full rounded-full"
               />
             ) : (
-              <User className="h-12 w-12 text-white" />
+              <User className="h-12 w-12 text-third" />
             )}
             <button
               type="button"
               onClick={handleImageEdit}
-              className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-100 transition-all border border-gray-200"
+              className="absolute bottom-2 right-2  bg-white p-1 rounded-full shadow hover:bg-gray-100 transition-all border border-gray-200"
               title="Edit profile image"
             >
               <Camera className="h-5 w-5 text-gray-700" />
@@ -196,7 +384,9 @@ const ProfilePage = () => {
             />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          {user.first_name} {user.last_name}
+        </h1>
         <p className="text-gray-500 flex items-center gap-1 mb-2">
           <Mail className="h-4 w-4" />
           {user.email}
@@ -206,11 +396,17 @@ const ProfilePage = () => {
       <div className="w-full flex gap-10">
         {/* Account Information */}
         <div className="bg-white w-1/2 rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Account Information</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Account Information
+          </h2>
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Name</p>
-              <p className="font-medium">{user.name}</p>
+              <p className="text-sm text-gray-500">First Name</p>
+              <p className="font-medium">{user.first_name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Last Name</p>
+              <p className="font-medium">{user.last_name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Email</p>
@@ -222,18 +418,20 @@ const ProfilePage = () => {
         {/* Personal Information */}
         <div className="bg-white w-full rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Personal Information</h2>
-            {isEditing && activeSection === 'personal' ? (
+            <h2 className="text-lg font-semibold text-gray-800">
+              Personal Information
+            </h2>
+            {isEditing && activeSection === "personal" ? (
               <div className="flex gap-2">
                 <button
-                  onClick={handleCancel}
+                  onClick={() => handleCancel("personal")}
                   className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center gap-2"
+                  onClick={(e) => handleSubmit(e, "personal")}
+                  className="px-4 py-2 bg-primary hover:bg-primary-dark text-third rounded-lg flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   Save Changes
@@ -241,52 +439,73 @@ const ProfilePage = () => {
               </div>
             ) : (
               <button
-                onClick={() => openEditSection('personal')}
-                disabled={isEditing && activeSection !== 'personal'}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${isEditing && activeSection !== 'personal'
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary-dark text-white'
-                  }`}
+                onClick={() => openEditSection("personal")}
+                disabled={isEditing && activeSection !== "personal"}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  isEditing && activeSection !== "personal"
+                    ? "bg-gray-100 text-third cursor-not-allowed"
+                    : "bg-primary hover:bg-primary-dark text-third"
+                }`}
               >
                 <Edit2 className="h-4 w-4" />
                 Edit
               </button>
             )}
           </div>
-          {isEditing && activeSection === 'personal' ? (
+          {isEditing && activeSection === "personal" ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Birthday</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Birthday
+                </label>
                 <div className="grid grid-cols-3 gap-4">
                   <select
                     name="month"
-                    value={formData.birthday.month}
+                    value={
+                      formData.birthday
+                        ? formData.birthday.split("-")[1] || ""
+                        : ""
+                    }
                     onChange={handleBirthdayChange}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   >
                     <option value="">MM</option>
                     {Array.from({ length: 12 }, (_, i) => (
-                      <option key={i + 1} value={(i + 1).toString().padStart(2, '0')}>
-                        {(i + 1).toString().padStart(2, '0')}
+                      <option
+                        key={i + 1}
+                        value={(i + 1).toString().padStart(2, "0")}
+                      >
+                        {(i + 1).toString().padStart(2, "0")}
                       </option>
                     ))}
                   </select>
                   <select
                     name="day"
-                    value={formData.birthday.day}
+                    value={
+                      formData.birthday
+                        ? formData.birthday.split("-")[2] || ""
+                        : ""
+                    }
                     onChange={handleBirthdayChange}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   >
                     <option value="">DD</option>
                     {Array.from({ length: 31 }, (_, i) => (
-                      <option key={i + 1} value={(i + 1).toString().padStart(2, '0')}>
-                        {(i + 1).toString().padStart(2, '0')}
+                      <option
+                        key={i + 1}
+                        value={(i + 1).toString().padStart(2, "0")}
+                      >
+                        {(i + 1).toString().padStart(2, "0")}
                       </option>
                     ))}
                   </select>
                   <select
                     name="year"
-                    value={formData.birthday.year}
+                    value={
+                      formData.birthday
+                        ? formData.birthday.split("-")[0] || ""
+                        : ""
+                    }
                     onChange={handleBirthdayChange}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   >
@@ -300,7 +519,9 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender
+                </label>
                 <select
                   name="gender"
                   value={formData.gender}
@@ -322,7 +543,7 @@ const ProfilePage = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Gender</p>
-                <p className="font-medium">{user.gender || "Not selected"}</p>
+                <p className="font-medium">{user.gender || "Not specified"}</p>
               </div>
             </div>
           )}
@@ -331,18 +552,22 @@ const ProfilePage = () => {
         {/* Contact Information */}
         <div className="bg-white w-full rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Contact Information</h2>
-            {isEditing && activeSection === 'contact' ? (
+            <h2 className="text-lg font-semibold text-gray-800">
+              Contact Information
+            </h2>
+            {isEditing && activeSection === "contact" ? (
               <div className="flex gap-2">
                 <button
-                  onClick={handleCancel}
+                  type="submit"
+                  onClick={() => handleCancel("contact")}
                   className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center gap-2"
+                  type="submit"
+                  onClick={(e) => handleSubmit(e, "contact")}
+                  className="px-4 py-2 bg-primary hover:bg-primary-dark text-third rounded-lg flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   Save Changes
@@ -350,22 +575,25 @@ const ProfilePage = () => {
               </div>
             ) : (
               <button
-                onClick={() => openEditSection('contact')}
-                disabled={isEditing && activeSection !== 'contact'}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${isEditing && activeSection !== 'contact'
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary-dark text-white'
-                  }`}
+                onClick={() => openEditSection("contact")}
+                disabled={isEditing && activeSection !== "contact"}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  isEditing && activeSection !== "contact"
+                    ? "bg-gray-100 text-third cursor-not-allowed"
+                    : "bg-primary hover:bg-primary-dark text-third"
+                }`}
               >
                 <Edit2 className="h-4 w-4" />
                 Edit
               </button>
             )}
           </div>
-          {isEditing && activeSection === 'contact' ? (
+          {isEditing && activeSection === "contact" ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
                 <input
                   type="text"
                   name="address"
@@ -373,10 +601,13 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 />
+                {/* {JSON.stringify(formData.address)} */}
               </div>
               <div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country
+                  </label>
                   <select
                     name="country"
                     value={formData.country}
@@ -393,11 +624,13 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
                 <input
                   type="tel"
                   name="phone"
-                  value={formData.phone}
+                  value={formData.phone_number}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 />
@@ -412,16 +645,31 @@ const ProfilePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Country</p>
-                  {/* <p className="font-medium">
-                    {countries.find(c => c.code === user.country)?.name || "Not specified"}
-                  </p> */}
+                  <p className="font-medium">
+                    {logdata?.country?.name ||
+                      (typeof user.country === "object" &&
+                        user.country?.name) ||
+                      (typeof user.country === "string" && user.country) ||
+                      "Not specified"}
+                  </p>
                 </div>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Phone</p>
                 <p className="font-medium flex items-center gap-1">
                   <Phone className="h-4 w-4" />
-                  {user.phone || "Not specified"}
+                  {(() => {
+                    // Try all possible locations and types for phone number
+                    const phone =
+                      user.phone ??
+                      user.phone_number ??
+                      (user.contact &&
+                        (user.contact.phone || user.contact.phone_number));
+                    if (phone && String(phone).trim() !== "") {
+                      return phone;
+                    }
+                    return "Not specified";
+                  })()}
                 </p>
               </div>
             </div>

@@ -13,5 +13,6 @@ export const ReviewgApi = {
 
   updateTrainerReview: (id, payload) =>
     Api.put(`user/update-trainer-review/${id}`, payload),
-  getAllRatingReviews: () => Api.get("user/get-all-subscription-rating-review"),
+  getAllRatingReviews: (id) =>
+    Api.get(`user/get-all-subscription-rating-review/${id}`),
 };

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Calendar, MapPin, User, Menu, X } from "lucide-react";
-import logo from "../../public/Logos/main-logo-dark-01.png"
-import fitness from "../../public/Logos/fitness-logo.png"
-import wellness from "../../public/Logos/wellness-main-logo.png"
-import liveness from "../../public/Logos/liveness-logo-red.png"
+import logo from "../../public/Logos/main-logo-dark-01.png";
+import fitness from "../../public/Logos/fitness-logo.png";
+import wellness from "../../public/Logos/wellness-main-logo.png";
+import liveness from "../../public/Logos/liveness-logo-red.png";
 import { useSelector, useDispatch } from "react-redux";
 import ConfirmationModal from "./ConfirmationModal";
 import { AuthApi } from "../Api/Auth.api";
@@ -12,6 +12,8 @@ import { logout } from "../store/authSlice";
 import toast from "react-hot-toast";
 import { useLoading } from "../loader/LoaderContext";
 import { FilterApi } from "../Api/Filteration.api";
+import { GoBell } from "react-icons/go";
+import NotificationProvider from "./NotificationSocket";
 
 const NavBar = () => {
   const location = useLocation();
@@ -24,8 +26,8 @@ const NavBar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { id } = useParams();
-  const { handleLoading } = useLoading()
-  const [cat, setCat] = useState(null)
+  const { handleLoading } = useLoading();
+  const [cat, setCat] = useState(null);
 
   const handleFilterSortBy = async (e) => {
     handleLoading(true);
@@ -40,18 +42,19 @@ const NavBar = () => {
   };
 
   useEffect(() => {
-    if(id){
-      handleFilterSortBy()
-    }else{
-      setCat(null)
+    if (id) {
+      handleFilterSortBy();
+    } else {
+      setCat(null);
     }
-  }, [id])
-
+  }, [id]);
 
   const navItems = [
     { path: "/subscriptions", label: "DEALS", icon: Calendar },
     { path: "/explore", label: "EXPLORE", icon: MapPin },
     { path: "/classes", label: "CLASSES", icon: MapPin },
+    // { path: "/notification", label: "NOTIFICATIONS", icon: GoBell },
+    // { path: "/notification", name: "Notifications", icon: <GoBell /> },
   ];
 
   const userMenuItems = [
@@ -104,14 +107,23 @@ const NavBar = () => {
             <img
               src={logo}
               alt="Logo"
-              className={`h-11 sm:h-11 object-contain transition-transform ${(cat === "fitness" || cat === "wellness" || cat === "liveness")
+              className={`h-11 sm:h-11 object-contain transition-transform ${
+                cat === "fitness" || cat === "wellness" || cat === "liveness"
                   ? "absolute opacity-0 group-hover:opacity-100 group-hover:scale-105"
                   : "block hover:scale-105"
-                }`}
+              }`}
             />
-            {(cat === "fitness" || cat === "wellness" || cat === "liveness") && (
+            {(cat === "fitness" ||
+              cat === "wellness" ||
+              cat === "liveness") && (
               <img
-                src={cat === "fitness" ? fitness : cat === "wellness" ? wellness : liveness}
+                src={
+                  cat === "fitness"
+                    ? fitness
+                    : cat === "wellness"
+                    ? wellness
+                    : liveness
+                }
                 alt="Category Logo"
                 className="h-11 sm:h-11 object-contain transition-transform group-hover:opacity-0"
               />
@@ -124,21 +136,27 @@ const NavBar = () => {
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === path
-                  ? "text-third"
-                  : "text-third/80 hover:text-third "
-                  }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  location.pathname === path
+                    ? "text-third"
+                    : "text-third/80 hover:text-third "
+                }`}
               >
                 {/* <Icon size={18} /> */}
                 <span>{label}</span>
                 {/* <span>{path}</span> */}
               </Link>
             ))}
-            {/* {JSON.stringify(navItems)} */}
+            {/* Notification bell moved here, after nav items and before user icon */}
+            <div className="mt-2">
+              {user && <NotificationProvider userId={user?._id} />}
+            </div>
             {/* User actions - Desktop */}
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <div className="relative" ref={dropdownRef}>
+                  {/* Notifications dropdown removed from here */}
+
                   <button
                     onClick={() => setDropdownOpen((prev) => !prev)}
                     className="flex items-center space-x-1 focus:outline-none"
@@ -163,7 +181,9 @@ const NavBar = () => {
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 border border-third-100">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium">Hello, {user.name}</p>
+                        <p className="text-sm font-medium">
+                          Hello, {user.name}
+                        </p>
                         <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
                       {userMenuItems.map((item) => (
@@ -204,7 +224,6 @@ const NavBar = () => {
             </div>
           </div>
 
-
           {/* Mobile menu button */}
           <button
             className="md:hidden p-2 rounded-lg focus:outline-none hover:bg-white/10 mobile-menu-button"
@@ -222,8 +241,9 @@ const NavBar = () => {
       {/* Mobile Menu */}
       <div
         ref={mobileMenuRef}
-        className={`md:hidden fixed inset-0 bg-primary z-40 transform transition-all duration-300 ease-in-out ${mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-          }`}
+        className={`md:hidden fixed inset-0 bg-primary z-40 transform transition-all duration-300 ease-in-out ${
+          mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
+        }`}
         style={{ top: "64px" }}
       >
         <div className="px-6 py-4">
@@ -233,10 +253,11 @@ const NavBar = () => {
                 key={path}
                 to={path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-medium ${location.pathname === path
-                  ? "bg-white/20 text-third"
-                  : "text-third/90 hover:text-third hover:bg-white/10"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-medium ${
+                  location.pathname === path
+                    ? "bg-white/20 text-third"
+                    : "text-third/90 hover:text-third hover:bg-white/10"
+                }`}
               >
                 <Icon size={20} />
                 <span>{label}</span>

@@ -8,7 +8,14 @@ import {
 import { ReviewgApi } from "../Api/Review.api";
 import { useLoading } from "../loader/LoaderContext";
 
-const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
+const ReviewModal = ({
+  isOpen,
+  onClose,
+  type,
+  bookingData,
+  onSuccess,
+  onBackToOptions,
+}) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const { handleLoading } = useLoading();
@@ -53,6 +60,8 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
       // Set the first review as existingReview (or filter by user if needed)
       if (res?.data?.data?.length > 0) {
         setExistingReview(res.data.data[0]);
+        console.log("this is trainer review", res.data.data[0]);
+        console.log("Existing review set:", res.data.data);
       } else {
         setExistingReview(null);
       }
@@ -65,8 +74,10 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
 
   useEffect(() => {
     if (isOpen && type === "trainer") {
+      console.log("this is booking data", bookingData);
       // Try to get trainerId from bookingData
-      const trainerId = bookingData?.trainer?._id || bookingData?.trainerId;
+      const trainerId =
+        bookingData?.subscription?.trainer._id || bookingData?.trainerId;
       if (trainerId) {
         getTrainerReview(trainerId);
       }
@@ -156,7 +167,8 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
 
       // Try different possible trainer ID locations
       console.log("Booking data", bookingData);
-      const trainerId = bookingData?.trainer?._id || bookingData?.trainerId;
+      const trainerId =
+        bookingData?.subscription?.trainer?._id || bookingData?.trainerId;
 
       const payloadTrainer = {
         trainer: trainerId,
@@ -171,7 +183,7 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
         throw new Error("Subscription ID is required");
       }
 
-      if (!isSubscription && !trainerId) {
+      if (!isSubscription && !payloadTrainer.trainer) {
         console.error("Trainer ID not found in booking data:", {
           trainer: bookingData?.trainer,
           trainerId: bookingData?.trainerId,
@@ -191,13 +203,10 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
           console.log("exting data", existingReview);
           // Update existing review (remove subscriptionId from payload)
           const { rating, review } = payload;
-          response = await updateSubscriptionReview(
-            existingReview.subscriptionId._id,
-            {
-              rating,
-              review,
-            }
-          );
+          response = await updateSubscriptionReview(payload.subscriptionId, {
+            rating,
+            review,
+          });
         } else {
           // Create new review (keep subscriptionId in payload)
           response = await ReviewgApi.createSubscriptionReview(payload);
@@ -207,7 +216,7 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
           console.log(" Trainer exting data", existingReview);
           // Update existing trainer review
           const { rating, review } = payloadTrainer;
-          response = await updatesingleTrainer(trainerId, {
+          response = await updatesingleTrainer(payloadTrainer.trainer, {
             rating,
             review,
           });
@@ -235,6 +244,15 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
   const handleClose = () => {
     setErrorMessage(""); // Clear error message when closing
     onClose();
+  };
+
+  const handleCancel = () => {
+    setErrorMessage(""); // Clear error message when canceling
+    if (onBackToOptions) {
+      onBackToOptions(); // Go back to options modal
+    } else {
+      onClose(); // Fallback to close if no back function
+    }
   };
 
   const renderStars = (field, form) => {
@@ -353,7 +371,7 @@ const ReviewModal = ({ isOpen, onClose, type, bookingData, onSuccess }) => {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={handleClose}
+                  onClick={handleCancel}
                   className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   Cancel

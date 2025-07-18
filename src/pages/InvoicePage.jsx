@@ -14,6 +14,7 @@ const InvoicePage = () => {
     handleLoading(true);
     try {
       const res = await BookingApi.getBookingByid(term);
+      // The new API response has data at res.data.data
       setBooking(res?.data?.data || {});
     } catch (error) {
       console.error("Error fetching invoice", error);
@@ -51,21 +52,15 @@ const InvoicePage = () => {
         <div className="bg-gradient-to-r bg-primary text-white p-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
             <div>
-              <h1 className="text-3xl font-bold">OutBox</h1>
-              <p className="text-blue-100 mt-1">
-                Professional Training Services
-              </p>
+              <h1 className="text-3xl font-bold text-third">OutBox</h1>
+              <p className="text-third mt-1">Professional Training Services</p>
             </div>
             <div className="mt-4 md:mt-0 text-right">
-              <h2 className="text-2xl font-bold">INVOICE</h2>
-              <p className="text-blue-100 mt-1">
-                #{booking.invoiceNumber || id}
-              </p>
+              <h2 className="text-2xl font-bold text-third">INVOICE</h2>
+              <p className="text-third mt-1">#{booking.invoiceNumber || id}</p>
               <p className="mt-2">
-                {booking.date
-                  ? new Date(
-                      booking.date[0] || booking.date
-                    ).toLocaleDateString("en-US", {
+                {booking.createdAt
+                  ? new Date(booking.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -83,31 +78,31 @@ const InvoicePage = () => {
             <p className="font-bold text-gray-900">OutBox</p>
             <p className="text-gray-600">Govind Nagar, Green Park</p>
             <p className="text-gray-600">Bilaspur, India 495001</p>
-            {/* <p className="text-gray-600 mt-2">contact@fitnesspro.com</p> */}
-            {/* <p className="text-gray-600">+91 987 654 3210</p> */}
           </div>
 
           <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
               Bill To:
             </h3>
-            {booking.user && (
-              <p className="font-bold text-gray-900">
-                {booking.user.first_name} {booking.user.last_name}
-              </p>
-            )}
-            {booking.Address ? (
+            {/* No user object in new response, so skip user name */}
+            {/* Address from subscription.Address */}
+            {booking.subscription && booking.subscription.Address ? (
               <>
-                <p className="text-gray-600">
-                  {booking.Address.streetName || "N/A"}
+                <p className="font-bold text-gray-900">
+                  {/* No customer name in response, so leave blank or N/A */}
+                  N/A
                 </p>
                 <p className="text-gray-600">
-                  {booking.Address.landmark && `${booking.Address.landmark}, `}
-                  {booking.Address.city?.name || "N/A"}
+                  {booking.subscription.Address.streetName || "N/A"}
                 </p>
                 <p className="text-gray-600">
-                  {booking.Address.country?.name || "N/A"}{" "}
-                  {booking.Address.zipCode || ""}
+                  {booking.subscription.Address.landmark &&
+                    `${booking.subscription.Address.landmark}, `}
+                  {booking.subscription.Address.city?.name || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  {booking.subscription.Address.country?.name || "N/A"}{" "}
+                  {booking.subscription.Address.zipCode || ""}
                 </p>
               </>
             ) : (
@@ -117,22 +112,18 @@ const InvoicePage = () => {
               <div>
                 <p className="text-sm text-gray-500">Payment Method</p>
                 <p className="font-medium capitalize">
-                  {booking.paymentMethod || "N/A"}
+                  {/* No paymentMethod in new response, so N/A */}
+                  N/A
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Status</p>
                 <p className="font-medium">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      booking.status === "completed"
-                        ? "bg-green-100 text-green-800"
-                        : booking.status === "pending"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800`}
                   >
-                    {booking.status || "N/A"}
+                    {/* No status in new response, so N/A */}
+                    N/A
                   </span>
                 </p>
               </div>
@@ -164,21 +155,25 @@ const InvoicePage = () => {
                 <tr>
                   <td className="py-4 px-4 border-b">
                     <p className="font-medium text-gray-800">
-                      {booking.name || "N/A"}
+                      {booking.subscription && booking.subscription.sessionType
+                        ? booking.subscription.sessionType.sessionName
+                        : "N/A"}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      Personal Training Session
+                      {booking.subscription && booking.subscription.categoryId
+                        ? booking.subscription.categoryId.cName
+                        : "Personal Training Session"}
                     </p>
                   </td>
                   <td className="py-4 px-4 border-b">
-                    {booking.trainer ? (
+                    {booking.subscription && booking.subscription.trainer ? (
                       <>
                         <p className="font-medium">
-                          {booking.trainer.first_name}{" "}
-                          {booking.trainer.last_name}
+                          {booking.subscription.trainer.first_name}{" "}
+                          {booking.subscription.trainer.last_name}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {booking.trainer.email}
+                          {booking.subscription.trainer.email}
                         </p>
                       </>
                     ) : (
@@ -186,10 +181,10 @@ const InvoicePage = () => {
                     )}
                   </td>
                   <td className="py-4 px-4 border-b">
-                    {booking.date && booking.startTime ? (
+                    {booking.createdAt ? (
                       <>
                         <p>
-                          {new Date(booking.date[0]).toLocaleDateString(
+                          {new Date(booking.createdAt).toLocaleDateString(
                             "en-US",
                             {
                               weekday: "short",
@@ -199,16 +194,16 @@ const InvoicePage = () => {
                             }
                           )}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          {booking.startTime} - {booking.endTime}
-                        </p>
+                        <p className="text-sm text-gray-500">-</p>
                       </>
                     ) : (
                       "N/A"
                     )}
                   </td>
                   <td className="py-4 px-4 border-b font-medium text-gray-800">
-                    {booking.price ? `AED ${booking.price}` : "N/A"}
+                    {booking.subscription && booking.subscription.price != null
+                      ? `AED ${booking.subscription.price.toFixed(2)}`
+                      : "AED 0.00"}
                   </td>
                 </tr>
               </tbody>
@@ -221,8 +216,10 @@ const InvoicePage = () => {
               <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-5">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-primary">
-                    {booking.price ? `AED ${booking.price}` : "N/A"}
+                  <span className="text-2xl font-sm text-third">
+                    {booking.subscription && booking.subscription.price != null
+                      ? `AED ${booking.subscription.price.toFixed(2)}`
+                      : "AED 0.00"}
                   </span>
                 </div>
                 <div className="mt-2 flex justify-between text-sm text-gray-500">
@@ -263,7 +260,7 @@ const InvoicePage = () => {
       <div className="flex justify-center mt-8">
         <button
           onClick={handleDownloadPDF}
-          className="flex items-center gap-2 bg-gradient-to-r bg-primary hover:bg-custom-dark text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          className="flex items-center gap-2 bg-gradient-to-r bg-primary  text-third font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

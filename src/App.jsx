@@ -26,6 +26,7 @@ import InvoicePage from "./pages/InvoicePage.jsx";
 import HistoryDetails from "./pages/HistoryDetails.jsx";
 import Classes from "./pages/Classes.jsx";
 import PromoCode from "./pages/PromoCode.jsx";
+import Notification from "./pages/Notification.jsx";
 
 const router = createBrowserRouter([
   {
@@ -49,7 +50,10 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/explore", element: <HomePage /> },
-      { path: "/", element: <MainPage/> },
+      { path: "/subscriptions", element: <SubscriptionsPage /> },
+      { path: "/classes", element: <Classes /> },
+      { path: "/sessions/:id", element: <SessionDetailPage /> },
+      { path: "/", element: <MainPage /> },
       {
         path: "profile",
         element: (
@@ -98,14 +102,16 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "subscriptions",
-        element: (
-          <ProtectedRoute>
-            <SubscriptionsPage />
-          </ProtectedRoute>
-        ),
-      },
+
+      // {
+      //   path: "subscriptions",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <SubscriptionsPage />
+      //     </ProtectedRoute>
+      //   ),
+      // },
+
       {
         path: "payments",
         element: (
@@ -130,14 +136,16 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "sessions/:id",
-        element: (
-          <ProtectedRoute>
-            <SessionDetailPage />
-          </ProtectedRoute>
-        ),
-      },
+
+      // {
+      //   path: "sessions/:id",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <SessionDetailPage />
+      //     </ProtectedRoute>
+      //   ),
+      // },
+
       {
         path: "checkout",
         element: (
@@ -154,6 +162,16 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+      {
+        path: "notifications",
+        element: (
+          <ProtectedRoute>
+            <Notification />
+          </ProtectedRoute>
+        ),
+      },
+
       {
         path: "invoice/:id",
         element: (
@@ -172,14 +190,14 @@ const router = createBrowserRouter([
         ),
       },
 
-      {
-        path: "classes",
-        element: (
-          <ProtectedRoute>
-            <Classes />
-          </ProtectedRoute>
-        ),
-      },
+      // {
+      //   path: "classes",
+      //   element: (
+      //     <ProtectedRoute>
+      //       <Classes />
+      //     </ProtectedRoute>
+      //   ),
+      // },
       {
         path: "promocode",
         element: (
@@ -205,7 +223,7 @@ function App() {
       <LoaderProvider>
         <Loader />
         <ParallaxProvider>
-        <RouterProvider router={router} />
+          <RouterProvider router={router} />
         </ParallaxProvider>
       </LoaderProvider>
     </>

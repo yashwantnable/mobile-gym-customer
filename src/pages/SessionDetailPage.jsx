@@ -6,13 +6,17 @@ import { useLoading } from "../loader/LoaderContext";
 import { IoIosArrowForward } from "react-icons/io";
 import moment from "moment";
 import Description from "../components/Description";
+import { ReviewgApi } from "../Api/Review.api";
 
 export default function SessionDetailPage() {
   const navigate = useNavigate();
   const [visibleReviews, setVisibleReviews] = useState(3);
+
   const { handleLoading } = useLoading();
 
   const [classData, setclassData] = useState({});
+  const [reviewsdata, setReviewsdata] = useState([]); // Initialize as empty array
+
   const reviewsPerPage = 3;
   const { id } = useParams();
 
@@ -20,6 +24,7 @@ export default function SessionDetailPage() {
     handleLoading(true);
     try {
       const res = await CategoryApi.getAllDetails(id);
+
       setclassData(res?.data?.data || {});
     } catch (error) {
       console.log("Error", error);
@@ -27,6 +32,30 @@ export default function SessionDetailPage() {
       handleLoading(false);
     }
   };
+
+  const sessionAllRating = async () => {
+    handleLoading(true);
+    try {
+      console.log("Calling reviews API for id:", id); // Add this
+      const res = await ReviewgApi.getAllRatingReviews(id);
+      console.log("Review Response:", res.data); // Log response
+      setReviewsdata(
+        Array.isArray(res?.data?.data?.reviews) ? res.data.data.reviews : []
+      );
+    } catch (error) {
+      console.log("Error", error);
+      setReviewsdata([]);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("id from params:", id);
+    if (id) {
+      sessionAllRating();
+    }
+  }, [id]);
 
   useEffect(() => {
     if (id) {
@@ -38,7 +67,7 @@ export default function SessionDetailPage() {
     setVisibleReviews((prev) => prev + reviewsPerPage);
   };
 
-  const hasMoreReviews = visibleReviews < dummyReviews.length;
+  const hasMoreReviews = reviewsdata && visibleReviews < reviewsdata.length;
 
   const handlePurchase = () => {
     navigate("/checkout", { state: { classData } });
@@ -52,6 +81,22 @@ export default function SessionDetailPage() {
     hour = hour % 12;
     if (hour === 0) hour = 12;
     return `${hour}:${minute} ${ampm}`;
+  }
+
+  // Helper to build address string for Google Maps
+  function getAddressString() {
+    const address = classData?.Address;
+    if (address) {
+      const parts = [
+        address.streetName,
+        address.landmark,
+        address.city?.name,
+        address.country?.name,
+      ].filter(Boolean);
+      return parts.join(", ");
+    }
+    // fallback
+    return "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223";
   }
 
   return (
@@ -94,8 +139,8 @@ export default function SessionDetailPage() {
             />
 
             <span className="text-gray-700 text-xs sm:text-sm">
-              {classData?.trainer?.first_name?.toUpperCase()}{" "}
-              {classData?.trainer?.last_name?.toUpperCase()}
+              {(classData?.trainer?.first_name || "").toUpperCase()}{" "}
+              {(classData?.trainer?.last_name || "").toUpperCase()}
             </span>
           </div>
           <div className="space-y-2 sm:space-y-3">
@@ -120,17 +165,36 @@ export default function SessionDetailPage() {
                 />
               </svg>
               <p className="text-gray-700 text-xs sm:text-sm">
-                {classData?.Address?.streetName},{classData?.Address?.landmark},{classData?.Address?.city.name},{classData?.Address?.country?.name}
+                {classData?.Address?.streetName || ""}
+                {classData?.Address?.landmark
+                  ? `, ${classData.Address.landmark}`
+                  : ""}
+                {classData?.Address?.city?.name
+                  ? `, ${classData.Address.city.name}`
+                  : ""}
+                {classData?.Address?.country?.name
+                  ? `, ${classData.Address.country.name}`
+                  : ""}
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              
               <p className="text-gray-700">
                 {/* Date Range */}
                 {classData?.date?.length > 0 && (
                   <span className="inline-flex items-center text-sm font-medium bg-gray-100 rounded-full px-3 py-1 mb-1">
-                    <svg className="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg
+                      className="w-3 h-3 mr-1 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
                     </svg>
                     <span className="font-semibold text-gray-700">
                       {moment(classData.date[0]).format("DD MMM YYYY")}
@@ -149,8 +213,19 @@ export default function SessionDetailPage() {
                 {/* Time Range */}
                 {(classData?.startTime || classData?.endTime) && (
                   <span className="inline-flex items-center text-sm font-medium bg-blue-50 rounded-full px-3 py-1 ml-1">
-                    <svg className="w-3 h-3 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-3 h-3 mr-1 text-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     {classData?.startTime && (
                       <span className="font-semibold text-blue-600">
@@ -203,7 +278,10 @@ export default function SessionDetailPage() {
           <div className="text-xs font-semibold tracking-widest text-gray-700 mb-2">
             DESCRIPTION
           </div>
-          <Description description={classData?.description || ""} length={500} />
+          <Description
+            description={classData?.description || ""}
+            length={500}
+          />
         </div>
       </div>
       <hr className="mt-8 md:mt-10"></hr>
@@ -233,17 +311,19 @@ export default function SessionDetailPage() {
             {classData?.trainer?.phone_number || "(503) 729-0349"}
           </div>
           <div className="text-gray-800 text-sm sm:text-base">
-            {classData?.streetName ||
+            {classData?.Address?.streetName ||
               "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223"}
           </div>
           <div className="text-gray-600 text-sm sm:text-base">
-            {classData?.city?.name || "Metzger"}
+            {classData?.Address?.city?.name || "Metzger"}
           </div>
         </div>
         <div className="w-full h-40 xs:h-52 sm:h-64 md:h-72 rounded-lg overflow-hidden border mt-6 sm:mt-10">
           <iframe
             title="Google Map"
-            src="https://www.google.com/maps?q=10121+Southwest+Nimbus+Avenue+Suite+C2,+Tigard,+OR+97223&output=embed"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(
+              getAddressString()
+            )}&output=embed`}
             width="100%"
             height="100%"
             style={{ border: 0 }}
@@ -258,43 +338,39 @@ export default function SessionDetailPage() {
       {/* Reviews Section */}
       <div className="mt-10 md:mt-16">
         <div className="flex flex-col gap-6 md:gap-12">
-          {dummyReviews.slice(0, visibleReviews).map((review, idx) => (
-            <div
-              key={idx}
-              className="flex flex-col gap-1 sm:gap-2 border-b pb-6 md:pb-8"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <span className="font-semibold text-base sm:text-lg text-gray-800">
-                  {review.name}
-                </span>
-                <span className="flex items-center ml-0 sm:ml-2">
-                  {[...Array(5)].map((_, i) => (
-                    <span
-                      key={i}
-                      className={
-                        i < review.rating
-                          ? "text-yellow-400 text-sm sm:text-base"
-                          : "text-gray-300 text-sm sm:text-base"
-                      }
-                    >
-                      ★
-                    </span>
-                  ))}
-                </span>
-              </div>
-              <div className="text-gray-500 text-xs sm:text-sm mb-0 sm:mb-1">
-                {review.date}
-              </div>
-              <div className="text-gray-700 text-sm sm:text-base mb-0 sm:mb-1">
-                {review.classTitle} with {review.instructor}
-              </div>
-              {review.text && (
-                <div className="text-gray-700 text-sm sm:text-base mt-1">
-                  {review.text}
+          {Array.isArray(reviewsdata) && reviewsdata.length > 0 ? (
+            reviewsdata.slice(0, visibleReviews).map((review, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col gap-1 sm:gap-2 border-b pb-6 md:pb-8"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <span className="font-semibold text-base sm:text-lg text-gray-800">
+                    {review.created_by?.first_name || "Anonymous"}
+                  </span>
+                  <span className="flex items-center ml-0 sm:ml-2">
+                    {[...Array(5)].map((_, i) => (
+                      <span
+                        key={i}
+                        className={
+                          i < review.rating
+                            ? "text-yellow-400 text-sm sm:text-base"
+                            : "text-gray-300 text-sm sm:text-base"
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="text-gray-700 text-sm sm:text-base mt-1">
+                  {review?.review}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-xs sm:text-sm">No reviews yet.</p>
+          )}
         </div>
 
         {/* Load More Button */}
@@ -314,78 +390,3 @@ export default function SessionDetailPage() {
     </div>
   );
 }
-
-const dummyReviews = [
-  {
-    name: "Cathy R",
-    date: "September 5, 2024",
-    rating: 5,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jessica Lamberger",
-    text: "Coach Jess is fabulous!",
-  },
-  {
-    name: "kirksey n",
-    date: "July 3, 2024",
-    rating: 5,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Shawn Thurston",
-    text: "",
-  },
-  {
-    name: "Lorenzo C",
-    date: "February 17, 2024",
-    rating: 3,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jeff Walsh",
-    text: "",
-  },
-  {
-    name: "Sarah M",
-    date: "January 15, 2024",
-    rating: 5,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jessica Lamberger",
-    text: "Amazing workout! Really pushed my limits and felt great afterwards.",
-  },
-  {
-    name: "Mike T",
-    date: "December 28, 2023",
-    rating: 4,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Shawn Thurston",
-    text: "Great class, instructor was very motivating and helpful.",
-  },
-  {
-    name: "Jennifer L",
-    date: "December 10, 2023",
-    rating: 5,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jeff Walsh",
-    text: "Perfect balance of strength and cardio. Will definitely come back!",
-  },
-  {
-    name: "David K",
-    date: "November 22, 2023",
-    rating: 4,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jessica Lamberger",
-    text: "Challenging but rewarding workout. Instructor knows how to motivate.",
-  },
-  {
-    name: "Lisa P",
-    date: "November 8, 2023",
-    rating: 5,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Shawn Thurston",
-    text: "Best fitness class I've ever taken! Highly recommend.",
-  },
-  {
-    name: "Robert W",
-    date: "October 30, 2023",
-    rating: 3,
-    classTitle: "Strength / Cardio Split",
-    instructor: "Jeff Walsh",
-    text: "Good workout, but a bit too intense for beginners.",
-  },
-];
