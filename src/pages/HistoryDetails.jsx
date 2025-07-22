@@ -20,10 +20,64 @@ const HistoryDetails = () => {
   const [booking, setBooking] = useState(null);
   const cardData = location.state?.details;
   const { loading, handleLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showReviewOptions, setShowReviewOptions] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedReviewType, setSelectedReviewType] = useState(null);
+  const [attendanceStatus, setAttendanceStatus] = useState({});
+
+  const handleAttend = async (subscriptionId, bookingId) => {
+    setIsLoading(true);
+    // const loadingToast = toast.loading("Marking attendance...");
+
+    try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      const payload = {
+        bookingId,
+        subscriptionId,
+        coordinates: [longitude, latitude],
+      };
+
+      const response = await BookingApi.attendSubscription(payload);
+
+      // If success is false or status not 200, show server message
+      if (
+        !response ||
+        response.status !== 200 ||
+        response.data?.success === false
+      ) {
+        const errorMessage =
+          response?.data?.message ||
+          response?.data?.error?.message ||
+          "Failed to mark attendance";
+
+        throw new Error(errorMessage);
+      }
+
+      setAttendanceStatus((prev) => ({
+        ...prev,
+        [subscriptionId]: "attended",
+      }));
+
+      toast.success("✅ Attendance marked successfully!", { id: loadingToast });
+    } catch (error) {
+      console.error("Attendance error:", error);
+      toast.error(` ${error.message || "Something went wrong"}`, {
+        id: loadingToast,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -41,6 +95,8 @@ const HistoryDetails = () => {
     if (id) fetchBooking();
   }, [id, cardData]);
 
+  console.log("booking:", booking);
+  // Review handlers
   const handleReviewClick = () => {
     setShowReviewOptions(true);
   };
@@ -203,6 +259,24 @@ const HistoryDetails = () => {
                     <p className="text-gray-700">
                       {details.description || "No description available."}
                     </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                    <button className="px-6 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                      Can't Attend
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleAttend(booking.subscription._id, booking._id)
+                      }
+                      disabled={isLoading}
+                      className={`px-6 py-2 rounded-md font-medium ${
+                        isLoading
+                          ? "bg-indigo-400 cursor-not-allowed"
+                          : "bg-indigo-600 hover:bg-indigo-700"
+                      } text-white transition-colors`}
+                    >
+                      {isLoading ? "Processing..." : "Present"}
+                    </button>
                   </div>
                 </div>
               </div>
