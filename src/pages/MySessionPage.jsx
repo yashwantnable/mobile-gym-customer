@@ -1,6 +1,5 @@
 // SessionCards.jsx
 import React, { useState, useEffect } from "react";
-import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
@@ -94,7 +93,6 @@ const MySessionPage = () => {
 
   return (
     <>
-      <div className="rounded-xl p-6 w-full mx-auto max-w-7xl min-h-screen">
       <div className="rounded-xl p-6 w-full mx-auto max-w-7xl min-h-screen">
         <h2 className="text-2xl font-bold mb-6 text-center">My Sessions</h2>
 

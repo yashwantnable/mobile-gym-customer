@@ -144,9 +144,6 @@ const CheckoutForm = ({
         className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
           !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
-        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-          !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
       >
         {loading ? (
           <>
@@ -180,12 +177,12 @@ const CheckoutForm = ({
   );
 };
 
-const StripePayment = ({
-  setisPaymentPage,
-  classData,
-  packageData,
-  isPackage,
-}) => {
+// const StripePayment = ({
+//   setisPaymentPage,
+//   classData,
+//   packageData,
+//   isPackage,
+// }) => {
 const StripePayment = ({
   setisPaymentPage,
   classData,
@@ -243,4 +240,3 @@ StripePayment.propTypes = {
 };
 
 export default StripePayment;
-

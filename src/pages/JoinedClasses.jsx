@@ -21,7 +21,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
   const [expandedCards, setExpandedCards] = useState({});
   const [attendanceStatus, setAttendanceStatus] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-
+  console.log("myJoinedClasses:", myJoinedClasses);
   const handleAttend = async (classId, bookingId) => {
     setIsLoading(true);
     const loadingToast = toast.loading("Marking attendance...");
@@ -129,7 +129,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                   </div>
                   <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                   {classItem?.attended? "Attended":"Confirmed"} 
+                    {classItem?.attended ? "Attended" : "Confirmed"}
                   </span>
                 </div>
 
@@ -146,8 +146,8 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                   <div className="flex items-center text-gray-700">
                     <FaMapMarkerAlt className="text-red-500 mr-2 flex-shrink-0" />
                     <span className="truncate">
-                      {classItem.details.location.streetName},{" "}
-                      {classItem.details.location.landmark}
+                      {classItem?.details?.location?.streetName},{" "}
+                      {classItem?.details?.location?.landmark}
                     </span>
                   </div>
 
@@ -261,8 +261,8 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                         <div>
                           <p className="font-medium">Location</p>
                           <p>
-                            {selectedClass.details.location.streetName},{" "}
-                            {selectedClass.details.location.landmark}
+                            {selectedClass.details?.location?.streetName},{" "}
+                            {selectedClass.details?.location?.landmark}
                           </p>
                         </div>
                       </div>
@@ -292,8 +292,8 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                       position={selectedClass.details.location.coordinates.reverse()}
                     >
                       <Popup>
-                        {selectedClass.details.location.streetName},{" "}
-                        {selectedClass.details.location.landmark}
+                        {selectedClass?.details?.location?.streetName},{" "}
+                        {selectedClass?.details?.location?.landmark}
                       </Popup>
                     </Marker>
                   </MapContainer>
@@ -318,11 +318,10 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row gap-4">
-                         
                           <button className="px-6 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             Can't Attend
                           </button>
-                           <button
+                          <button
                             onClick={() =>
                               handleAttend(
                                 selectedClass.classId,
