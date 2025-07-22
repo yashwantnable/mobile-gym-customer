@@ -199,6 +199,7 @@ const NavBar = () => {
                       <button
                         onClick={() => setIsModalOpen(true)}
                         className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                        // className="w-full text-left px-4 py-3 text-lg font-medium text-third hover:text-red-100 hover:bg-white/10 rounded-xl"
                       >
                         Logout
                       </button>
@@ -284,7 +285,8 @@ const NavBar = () => {
                   ))}
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full text-left px-4 py-3 text-lg font-medium text-third hover:text-red-100 hover:bg-white/10 rounded-xl"
+                    // className="w-full text-left px-4 py-3 text-lg font-bold text-white bg-red-600"
+                    className="hidden md:block text-white bg-red-600 px-4 py-2 rounded"
                   >
                     Logout
                   </button>

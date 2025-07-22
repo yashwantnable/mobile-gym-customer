@@ -33,6 +33,8 @@ const CheckoutForm = ({
   const { handleLoading } = useLoading();
   const navigate = useNavigate();
 
+  console.log("booking  data is come", bookingData.id);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!stripe || !elements) {
@@ -67,9 +69,10 @@ const CheckoutForm = ({
         } else {
           // Handle class booking/subscription
           const payload = {
-            subscription: bookingData._id,
+            subscription: bookingData._id || bookingData.id,
             discountedAmount: discountAmount,
           };
+
           res = await BookingApi.createSubscription(payload);
           toast.success("Payment & Subscription Successful");
         }
@@ -81,8 +84,15 @@ const CheckoutForm = ({
             isPackage ? "package" : "subscription"
           }`
         );
+        navigate(
+          `/order-confirmation/${res?.data?.data?._id}?type=${
+            isPackage ? "package" : "subscription"
+          }`
+        );
       } catch (apiErr) {
         setError(apiErr.message || "Booking failed");
+        // toast.error("Booking failed. Please try again.");
+        toast.error("You have already booked this subscription");
         // toast.error("Booking failed. Please try again.");
         toast.error("You have already booked this subscription");
       }
@@ -134,6 +144,9 @@ const CheckoutForm = ({
         className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
           !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
+        className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+          !stripe || loading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
         {loading ? (
           <>
@@ -167,6 +180,12 @@ const CheckoutForm = ({
   );
 };
 
+const StripePayment = ({
+  setisPaymentPage,
+  classData,
+  packageData,
+  isPackage,
+}) => {
 const StripePayment = ({
   setisPaymentPage,
   classData,
@@ -224,3 +243,4 @@ StripePayment.propTypes = {
 };
 
 export default StripePayment;
+

@@ -23,23 +23,26 @@ export default function OrderConfirmation() {
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const type = queryParams.get('type');
+  const type = queryParams.get("type");
+  const [data, setData] = useState(null);
 
   const getOrderDetails = async () => {
-    handleLoading(true)
+    handleLoading(true);
     try {
-      const res = type === "package" ? await PackagesApi.getPackageById(id) : await BookingApi.getSubscriptionDetailsById(id);
-      if(type === "package"){
+      const res =
+        type === "package"
+          ? await PackagesApi.getPackageById(id)
+          : await BookingApi.getSubscriptionDetailsById(id);
+      if (type === "package") {
         setOrderDetails(res?.data?.data?.package || null);
-      }else{
+      } else {
         setOrderDetails(res?.data?.data || null);
+        setData(res?.data?.data);
       }
-    }
-    catch (err) {
-      console.log(err)
-    }
-    finally {
-      handleLoading(false)
+    } catch (err) {
+      console.log(err);
+    } finally {
+      handleLoading(false);
     }
   };
 
@@ -110,6 +113,9 @@ export default function OrderConfirmation() {
 
   if (!orderDetails) return null;
 
+  // console.log("this sdifdsoopfbhds", orderDetails?.subscription.name);
+  console.log("this sdifdsoopfbhds", orderDetails);
+
   return (
     <div className="relative min-h-screen w-full bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden flex items-center justify-center py-8">
       {showConfetti && (
@@ -144,7 +150,7 @@ export default function OrderConfirmation() {
         <div className="flex-1 bg-white rounded-xl shadow-xl p-10 flex flex-col justify-center items-start min-w-[320px] max-w-lg">
           <img src={favicon2} alt="Logo" className="w-14 h-14 mb-6" />
           <h1 className="text-3xl font-extrabold mb-2 text-gray-800">
-            Booking confirmed successfully!
+            Booking confirmed successfully! {}
           </h1>
           <p className="text-gray-500 mb-8">
             Thank you for choosing to subscribe with OutBox. Your reservation is
@@ -195,19 +201,24 @@ export default function OrderConfirmation() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Service:</span>
-                <span>{orderDetails?.name || "Strength Training"}</span>
+                <span>
+                  {orderDetails?.name ||
+                    orderDetails?.subscription?.name ||
+                    "Strength Training"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Dates:</span>
                 <span className="text-right">
                   {orderDetails?.date && Array.isArray(orderDetails.date)
                     ? orderDetails.date.map((d, idx) => (
-                      <span key={d}>
-                        {moment(d).format("MMMM Do YYYY")}
-                        {idx < orderDetails.date.length - 1 ? ", " : ""}
-                      </span>
-                    ))
-                    : "-"}
+                        <span key={d}>
+                          {moment(d).format("MMMM Do YYYY")}
+                          {idx < orderDetails.date.length - 1 ? ", " : ""}
+                        </span>
+                      ))
+                    : ""}{" "}
+                  {moment(orderDetails?.createdAt).format("MMMM Do YYYY")}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -215,19 +226,37 @@ export default function OrderConfirmation() {
                 <span>
                   {orderDetails?.startTime && orderDetails?.endTime
                     ? `${formatTime(orderDetails.startTime)} - ${formatTime(
-                      orderDetails.endTime
-                    )}`
+                        orderDetails.endTime
+                      )}`
+                    : "-" ||
+                      (orderDetails?.subscription?.startTime &&
+                        orderDetails?.subscription?.endTime)
+                    ? `${formatTime(
+                        orderDetails.subscription.startTime
+                      )} - ${formatTime(orderDetails.subscription.endTime)}`
                     : "-"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Price:</span>
-                <span>AED {orderDetails?.price || 500}</span>
+                <span>
+                  AED{" "}
+                  {orderDetails?.price ||
+                    orderDetails?.subscription?.price ||
+                    500}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Address:</span>
                 <span className="text-right">
                   {orderDetails?.streetName ||
+                    orderDetails?.subscription?.Address.landmark +
+                      ", " +
+                      orderDetails?.subscription?.Address.streetName +
+                      ", " +
+                      orderDetails?.subscription?.Address.city.name +
+                      ", " +
+                      orderDetails?.subscription?.Address.country.name ||
                     "Dubai Jewel Park, 5 36a St - Port Saeed - Dubai - United Arab Emirates"}
                 </span>
               </div>

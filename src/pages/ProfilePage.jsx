@@ -66,7 +66,7 @@ const ProfilePage = () => {
       first_name: user?.first_name || "",
       last_name: user?.last_name || "",
       email: user?.email || "",
-      phone_number: user?.phone || user?.phone_number || "",
+      phone_number: user?.phone || "",
       address: user?.address || "",
       country: user?.country?._id || user?.country || "",
       birthday: user?.birthday || "",
@@ -82,7 +82,7 @@ const ProfilePage = () => {
     first_name: profile.first_name,
     last_name: profile.last_name,
     email: profile.email,
-    phone_number: profile.phone_number, // <-- use phone_number consistently
+    phone_number: profile.phone,
     address: profile.address,
     country: profile.country?._id || profile.country,
     birthday: profile.birthday,
@@ -265,7 +265,7 @@ const ProfilePage = () => {
         payload = {
           address: formData.address,
           country: formData.country,
-          phone_number: formData.phone_number, // <-- use phone_number from formData
+          phone_number: formData.phone,
         };
       }
       // Always use formData for update
@@ -302,7 +302,7 @@ const ProfilePage = () => {
         ...prev,
         address: user?.address || "",
         country: user?.country || "",
-        phone_number: user?.phone_number || user?.phone || "", // <-- use phone_number first
+        phone: user?.phone || "",
       }));
     }
     setIsEditing(false);
@@ -320,7 +320,7 @@ const ProfilePage = () => {
     const datePart = birthday.split("T")[0]; // "1968-02-11"
     const [year, month, day] = datePart.split("-");
     if (!year || !month || !day) return "Not specified";
-    return `${month} - ${day} - ${year}`; // Changed to MM - DD - YYYY
+    return `${year} - ${month} - ${day}`;
   };
 
   if (!user) {
@@ -463,7 +463,7 @@ const ProfilePage = () => {
                     name="month"
                     value={
                       formData.birthday
-                        ? formData.birthday.split("T")[0].split("-")[1] || ""
+                        ? formData.birthday.split("-")[1] || ""
                         : ""
                     }
                     onChange={handleBirthdayChange}
@@ -483,7 +483,7 @@ const ProfilePage = () => {
                     name="day"
                     value={
                       formData.birthday
-                        ? formData.birthday.split("T")[0].split("-")[2] || ""
+                        ? formData.birthday.split("-")[2] || ""
                         : ""
                     }
                     onChange={handleBirthdayChange}
@@ -503,7 +503,7 @@ const ProfilePage = () => {
                     name="year"
                     value={
                       formData.birthday
-                        ? formData.birthday.split("T")[0].split("-")[0] || ""
+                        ? formData.birthday.split("-")[0] || ""
                         : ""
                     }
                     onChange={handleBirthdayChange}
@@ -629,7 +629,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="tel"
-                  name="phone_number"
+                  name="phone"
                   value={formData.phone_number}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"

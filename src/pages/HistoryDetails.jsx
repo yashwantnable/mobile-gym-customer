@@ -10,7 +10,6 @@ import {
   FaClock,
   FaMapMarkerAlt,
   FaUserAlt,
-  FaArrowLeft,
   FaTag,
 } from "react-icons/fa";
 
@@ -22,7 +21,6 @@ const HistoryDetails = () => {
   const cardData = location.state?.details;
   const { loading, handleLoading } = useLoading();
 
-  // Review modal states
   const [showReviewOptions, setShowReviewOptions] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedReviewType, setSelectedReviewType] = useState(null);
@@ -34,7 +32,6 @@ const HistoryDetails = () => {
         const res = await BookingApi.getBookingByid(id);
         setBooking(res?.data?.data || cardData || null);
       } catch (error) {
-        // fallback to cardData if API fails
         if (cardData) setBooking(cardData);
         console.error("Error fetching booking details", error);
       } finally {
@@ -44,7 +41,6 @@ const HistoryDetails = () => {
     if (id) fetchBooking();
   }, [id, cardData]);
 
-  // Review handlers
   const handleReviewClick = () => {
     setShowReviewOptions(true);
   };
@@ -70,7 +66,6 @@ const HistoryDetails = () => {
     console.log("Review submitted successfully!");
   };
 
-  // Helper function to format date
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", {
@@ -80,20 +75,15 @@ const HistoryDetails = () => {
     });
   };
 
-  // Helper to normalize booking data from API
   const getBookingDetails = (booking) => {
     if (!booking) return {};
     const source = booking.subscription || booking;
-
-    // Date and time extraction
-    let date = booking.createdAt || source.date;
-    let time =
+    const date = booking.createdAt || source.date;
+    const time =
       source.startTime && source.endTime
         ? `${source.startTime} - ${source.endTime}`
         : "-";
-
-    // Address formatting
-    let address = source.Address
+    const address = source.Address
       ? [
           source.Address.country?.name,
           source.Address.city?.name,
@@ -103,16 +93,11 @@ const HistoryDetails = () => {
           .filter(Boolean)
           .join(", ")
       : source.address || "-";
-
-    // Trainer name
-    let trainerName = source.trainer
+    const trainerName = source.trainer
       ? `${source.trainer.first_name || ""} ${
           source.trainer.last_name || ""
         }`.trim()
       : source.trainerName || "-";
-
-    let price = source.price; // get price from API only
-    let name = source.name || "Session";
 
     return {
       media: source.media,
@@ -122,20 +107,21 @@ const HistoryDetails = () => {
       trainerName,
       date,
       time,
-      price,
-      name,
+      price: source.price,
+      name: source.name || "Session",
       description: source.description || "",
     };
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
+  }
 
-  if (!booking)
+  if (!booking) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50 p-4">
         <div className="text-center max-w-md">
@@ -156,8 +142,8 @@ const HistoryDetails = () => {
         </div>
       </div>
     );
+  }
 
-  // Use normalized details
   const details = getBookingDetails(booking);
 
   return (
@@ -170,7 +156,6 @@ const HistoryDetails = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-          {/* Status Banner */}
           <div className="bg-primary p-4 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -181,9 +166,6 @@ const HistoryDetails = () => {
                   <h2 className="text-xl font-bold text-third">
                     Your Session Has Been Booked!
                   </h2>
-                  {/* <p className="text-indigo-100 text-sm mt-1">
-                    Booking ID: #{id}
-                  </p> */}
                 </div>
               </div>
               <button
@@ -198,13 +180,12 @@ const HistoryDetails = () => {
 
           <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column - Image and Description */}
               <div>
                 <div className="relative rounded-xl overflow-hidden shadow-md">
                   <img
                     src={
                       details.media ||
-                      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
+                      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1170&q=80"
                     }
                     alt="Booking"
                     className="w-full h-72 object-cover"
@@ -226,7 +207,6 @@ const HistoryDetails = () => {
                 </div>
               </div>
 
-              {/* Right Column - Booking Details */}
               <div>
                 <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -327,7 +307,6 @@ const HistoryDetails = () => {
         </div>
       </div>
 
-      {/* Review Modals */}
       <ReviewOptionsModal
         isOpen={showReviewOptions}
         onClose={() => setShowReviewOptions(false)}

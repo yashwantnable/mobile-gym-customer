@@ -635,7 +635,7 @@ const HomePage = () => {
                 numberOfClasses={pkg?.numberOfClasses || 0}
                 duration={pkg?.duration || "N/A"}
                 features={pkg?.features}
-                packageData = {pkg}
+                packageData={pkg}
               />
             )}
             itemClass="mr-4 md:mr-6"

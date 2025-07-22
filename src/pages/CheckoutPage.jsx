@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const classData = location.state?.classData || {};
   const packageData = location.state?.packageData || {};
   const isPackage = Object.keys(packageData).length > 0;
+  const data = isPackage ? packageData : classData;
   const [error, setError] = useState("");
 
   console.log("classData:", classData);
@@ -38,7 +39,7 @@ export default function CheckoutPage() {
     setError("");
     try {
       const payload = {
-        subscriptionId: classData._id,
+        subscriptionId: data._id,
         promoCode: promoCode.trim(),
       };
       console.log("payload:", payload);
@@ -59,26 +60,29 @@ export default function CheckoutPage() {
       <div className="w-full max-w-6xl flex mt-5 flex-col md:flex-row justify-center gap-8">
         {/* Left: section */}
         <div className="w-full md:w-1/2">
-          {isPackage ? (
-            <>
-              <img
-                src={packageData?.image || trainer}
-                alt={packageData?.name || "Package Image"}
-                className="w-full h-72 object-cover object-center rounded mb-4"
-              />
-              <div className="text-lg tracking-widest text-gray-400 mb-1">
-                PACKAGE
-              </div>
-              <div className="text-xl font-medium mb-1 capitalize">
-                {packageData?.name || "Package Title"}
-              </div>
-              <div className="text-xs font-medium mb-1 capitalize">
-                <Description description={packageData?.description} />
-              </div>
-              <div className="text-md text-gray-500 mb-2">
+          <img
+            src={data?.media || data?.image || trainer}
+            alt={data?.name || (isPackage ? "Package Image" : "Session Image")}
+            className="w-full h-72 object-cover object-center rounded mb-4"
+          />
+          <div className="text-lg tracking-widest text-gray-400 mb-1">
+            {isPackage
+              ? "PACKAGE"
+              : data?.sessionType?.sessionName?.toUpperCase() ||
+                classData.sessionType.toUpperCase()}
+          </div>
+          <div className="text-xl font-medium mb-1 capitalize">
+            {data?.name || (isPackage ? "Package Title" : "Session Title")}
+          </div>
+          <div className="text-xs font-medium mb-1 capitalize">
+            <Description description={data?.description} />
+          </div>
+          <div className="text-md text-gray-500 mb-2">
+            {isPackage ? (
+              <>
                 <div className="font-semibold">Package Details:</div>
                 <ul className="list-disc pl-5 mt-2 space-y-1">
-                  {packageData?.features?.map((feature, index) => (
+                  {data?.features?.map((feature, index) => (
                     <li key={index} className="text-sm">
                       {feature}
                     </li>
@@ -86,85 +90,69 @@ export default function CheckoutPage() {
                 </ul>
                 <div className="mt-3">
                   <span className="font-semibold">Duration:</span>{" "}
-                  {packageData?.duration || "N/A"}
+                  {data?.duration || "N/A"}
                 </div>
                 <div>
                   <span className="font-semibold">Number of Classes:</span>{" "}
-                  {packageData?.numberOfClasses || "N/A"}
+                  {data?.numberOfClasses || "N/A"}
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <img
-                src={classData?.media || trainer}
-                alt={classData?.name || "Session Image"}
-                className="w-full h-72 object-cover object-center rounded mb-4"
-              />
-              <div className="text-lg tracking-widest text-gray-400 mb-1">
-                {classData?.sessionType?.sessionName?.toUpperCase() ||
-                  "SESSION"}
-              </div>
-              <div className="text-xl font-medium mb-1 capitalize">
-                {classData?.name || "Session Title"}
-              </div>
-              <div className="text-xs font-medium mb-1 capitalize">
-                <Description description={classData?.description} />
-              </div>
-              <div className="text-md text-gray-500 mb-2">
-                {classData?.date?.length > 0 && (
+              </>
+            ) : (
+              <>
+                {data?.date?.length > 0 && (
                   <>
                     <div>
-                      {new Date(classData.date[0]).toLocaleDateString("en-US", {
+                      {new Date(data.date[0]).toLocaleDateString("en-US", {
                         weekday: "short",
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
-                      {classData?.date?.[1] && (
+                      {data?.date?.[1] && (
                         <>
                           {" "}
                           -{" "}
-                          {new Date(classData.date[1]).toLocaleDateString(
-                            "en-US",
-                            {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
+                          {new Date(data.date[1]).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </>
                       )}
                     </div>
                     <div>
-                      {formatTimeTo12Hour(classData.startTime)} -{" "}
-                      {formatTimeTo12Hour(classData.endTime)}
+                      {data.startTime && formatTimeTo12Hour(data.startTime)}
+                      {data.startTime &&
+                        data.endTime &&
+                        ` - ${formatTimeTo12Hour(data.endTime)}`}
+                      {classData?.duration && `  ${classData.duration}`}
                     </div>
                   </>
                 )}
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <img
-                  src={
-                    classData?.trainer?.profile_image ||
-                    "https://randomuser.me/api/portraits/men/32.jpg"
-                  }
-                  alt="Instructor"
-                  className="w-8 h-8 rounded-full"
-                />
-                <div>
-                  <div className="text-[10px] uppercase text-gray-400">
-                    Instructor
-                  </div>
-                  <div className="text-xs">
-                    {classData?.trainer?.first_name}{" "}
-                    {classData?.trainer?.last_name}
+                <div className="flex items-center gap-2 mb-2">
+                  <img
+                    src={
+                      data?.trainer?.profile_image ||
+                      classData.trainer?.profile_image ||
+                      "https://randomuser.me/api/portraits/men/32.jpg"
+                    }
+                    alt="Instructor"
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div>
+                    <div className="text-[10px] uppercase text-gray-400">
+                      Instructor
+                    </div>
+                    <div className="text-xs">
+                      {data?.trainer?.first_name || classData?.trainer}{" "}
+                      {data?.trainer?.last_name}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
           <hr className="mt-5 mb-5" />
         </div>
 
@@ -174,26 +162,20 @@ export default function CheckoutPage() {
           <div className="bg-[#fafbfc] rounded-lg shadow-sm p-4 border border-gray-100">
             <div className="flex justify-between text-sm mb-2">
               <span>Subtotal</span>
-
-              <span>
-                AED {isPackage ? packageData?.price : classData?.price}
-              </span>
+              <span>AED {data?.price}</span>
             </div>
             <div className="flex justify-between text-sm mb-2">
-              <span>Vat</span>
+              <span>VAT</span>
               <span className="font-medium">0</span>
             </div>
             <div className="border-t border-gray-200 my-2"></div>
-
             <div
               className={`flex justify-between font-medium ${
                 discountDetails ? "text-sm" : "text-lg"
               }`}
             >
               <span>Total:</span>
-              <span>
-                AED {isPackage ? packageData?.price : classData?.price}
-              </span>
+              <span>AED {data?.price}</span>
             </div>
             {discountDetails && (
               <div className="flex justify-between font-medium text-sm">
@@ -314,14 +296,14 @@ export default function CheckoutPage() {
                   d="M3 5a2 2 0 012-2h2.28a2 2 0 011.94 1.52l.3 1.2a2 2 0 01-.45 1.95l-1.1 1.1a16.06 16.06 0 006.36 6.36l1.1-1.1a2 2 0 011.95-.45l1.2.3A2 2 0 0121 16.72V19a2 2 0 01-2 2h-1C9.163 21 3 14.837 3 7V5z"
                 />
               </svg>
-              {classData?.trainer?.phone_number || "(503) 729-0349"}
+              {data?.trainer?.phone_number || "(503) 729-0349"}
             </div>
             <div className="text-gray-800 text-sm sm:text-base">
-              {classData?.streetName ||
+              {data?.streetName ||
                 "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223"}
             </div>
             <div className="text-gray-600 text-sm sm:text-base">
-              {classData?.city?.name || "Metzger"}
+              {data?.city?.name || "Metzger"}
             </div>
           </div>
           <div className="w-full h-40 xs:h-52 sm:h-64 md:h-72 rounded-lg overflow-hidden border mt-6 sm:mt-10">

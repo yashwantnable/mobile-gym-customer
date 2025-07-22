@@ -13,6 +13,7 @@ import {
 import { ClassesApi } from "../Api/Classes.api";
 import toast from "react-hot-toast";
 import { useLoading } from "../loader/LoaderContext";
+import { useNavigate } from "react-router-dom";
 
 const ClassModal = ({ classData, onClose, selectedPackage }) => {
   const [joined, setJoined] = useState(false);
@@ -21,6 +22,7 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
   const [remaining, setRemaining] = useState(selectedPackage?.remaining || 0);
   const [buying, setBuying] = useState(false);
   const { handleLoading } = useLoading();
+  const navigate = useNavigate();
 
   if (!classData || classData.isExpired) return null;
 
@@ -60,11 +62,7 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
       setError("This class has expired and cannot be purchased.");
       return;
     }
-    setBuying(true);
-    setTimeout(() => {
-      setBuying(false);
-      setSuccess("Class purchased successfully!");
-    }, 1000);
+    navigate("/checkout", { state: { classData } });
   };
 
   // Example price (could be dynamic)
@@ -185,7 +183,7 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
             {/* Additional Info */}
             {classData.additionalInfo && (
               <div className="flex items-start space-x-3">
-                <FileText className="h-12 w-12 text-sixth" />
+                <FileText className="h-6 w-6 text-sixth" />
                 <div>
                   <div className="text-sm font-medium text-gray-900">
                     Additional Information

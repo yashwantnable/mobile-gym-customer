@@ -97,7 +97,8 @@ const ReviewModal = ({
         try {
           // Robustly extract subscriptionId from bookingData
           const subscriptionId =
-            bookingData?.subscriptionId?._id ||
+            // bookingData?.subscriptionId?._id ||
+            bookingData?.subscription?._id ||
             bookingData?.subscriptionId ||
             bookingData?._id;
           console.log("Fetching review for subscription ID:", subscriptionId);
@@ -160,7 +161,8 @@ const ReviewModal = ({
       });
 
       const payload = {
-        subscriptionId: bookingData?.subscriptionId || bookingData?._id,
+        subscriptionId:
+          bookingData?.subscriptionId || bookingData?.subscription?._id,
         rating: values.rating,
         review: values.review,
       };
