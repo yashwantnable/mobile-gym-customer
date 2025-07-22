@@ -966,13 +966,14 @@ const Classes = () => {
                   />
                 </div>
               </div>
+
               <FilterPanel
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 onReset={resetFilters}
-                locations={getUniqueValues("location")}
-                categories={getUniqueValues("category")}
-                sessionTypes={getUniqueValues("sessionType")}
+                locations={getUniqueOptions("location", "locationId")}
+                categories={getUniqueOptions("category", "categoryId")}
+                sessionTypes={getUniqueOptions("sessionType", "sessionTypeId")}
               />
             </div>
             {/* Main Content - Week View */}
