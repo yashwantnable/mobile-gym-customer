@@ -9,14 +9,13 @@ import "./index.css";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
 
-
 const clientId = "511854368402-jbufqprfcgkdv11qgfiv0ovqjm2oqmrd.apps.googleusercontent.com";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={clientId}>
       <Provider store={store}>
-        <App />
+        <App /> 
       </Provider>
     </GoogleOAuthProvider>
   </StrictMode>

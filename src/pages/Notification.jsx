@@ -1,42 +1,74 @@
 "use client";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import moment from "moment";
+import { NotificationApi } from "../Api/Notification.api";
+import { useLoading } from "../loader/LoaderContext";
 
 const Notification = () => {
   const [activeTab, setActiveTab] = useState("unread");
+  const [notificationData, setNotificationData] = useState([]);
+  const { showLoading, hideLoading } = useLoading();
+
+  
+
+  const handleAllRead =async () => {
+      try {
+        // showLoading();
+        const res = await NotificationApi.updateAllNotification();
+        // setNotificationData(res?.data?.data || []);
+        console.log("updateAllNotification:",res?.data?.data)
+      } catch (error) {
+        toast.error("Error fetching notifications");
+      } finally {
+        // hideLoading();
+      }
+    };
+
+  const allNotification =async () => {
+      try {
+        // showLoading();
+        const res = await NotificationApi.getAllNotification();
+        setNotificationData(res?.data?.data || []);
+        console.log("res?.data?.data noti:",res?.data?.data)
+      } catch (error) {
+        toast.error("Error fetching notifications");
+      } finally {
+        // hideLoading();
+      }
+    };
 
   // Static notification data for UI demonstration
-  const notificationData = [
-    {
-      _id: "1",
-      title: "New Message",
-      message: "You have a new message from John Doe.",
-      isRead: false,
-      createdAt: new Date(Date.now() - 60 * 1000), // 1 min ago
-    },
-    {
-      _id: "2",
-      title: "Reminder",
-      message: "Your meeting starts in 15 minutes.",
-      isRead: false,
-      createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
-    },
-    {
-      _id: "3",
-      title: "Task Completed",
-      message: 'Your task "Design Review" has been completed.',
-      isRead: true,
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    },
+  // const notificationData = [
+  //   {
+  //     _id: "1",
+  //     title: "New Message",
+  //     message: "You have a new message from John Doe.",
+  //     isRead: false,
+  //     createdAt: new Date(Date.now() - 60 * 1000), // 1 min ago
+  //   },
+  //   {
+  //     _id: "2",
+  //     title: "Reminder",
+  //     message: "Your meeting starts in 15 minutes.",
+  //     isRead: false,
+  //     createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
+  //   },
+  //   {
+  //     _id: "3",
+  //     title: "Task Completed",
+  //     message: 'Your task "Design Review" has been completed.',
+  //     isRead: true,
+  //     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+  //   },
 
-    {
-      _id: "1",
-      title: "New Message",
-      message: "You have a new message from John Doe.",
-      isRead: false,
-      createdAt: new Date(Date.now() - 60 * 1000), // 1 min ago
-    },
-  ];
+  //   {
+  //     _id: "1",
+  //     title: "New Message",
+  //     message: "You have a new message from John Doe.",
+  //     isRead: false,
+  //     createdAt: new Date(Date.now() - 60 * 1000), // 1 min ago
+  //   },
+  // ];
 
   const unreadNotifications = notificationData.filter(
     (notification) => !notification.isRead
@@ -56,6 +88,7 @@ const Notification = () => {
     );
     const timeAgo = moment(notification.createdAt).fromNow();
 
+  
     return (
       <div
         className={`flex items-start p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
@@ -145,6 +178,10 @@ const Notification = () => {
     </div>
   );
 
+    useEffect(()=>{
+      allNotification();
+    },[])
+
   return (
     <div className="w-full mx-auto max-w-4xl p-4 md:p-6 h-[calc(100vh-80px)] overflow-hidden flex flex-col bg-white rounded-lg shadow-sm">
       {/* Notification Header */}
@@ -160,7 +197,8 @@ const Notification = () => {
           </div>
           <div className="flex items-center space-x-3">
             {unreadNotifications.length > 0 && (
-              <button className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
+              <button className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              onClick={handleAllRead}>
                 Mark all as read
               </button>
             )}

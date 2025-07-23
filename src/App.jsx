@@ -27,6 +27,7 @@ import HistoryDetails from "./pages/HistoryDetails.jsx";
 import Classes from "./pages/Classes.jsx";
 import PromoCode from "./pages/PromoCode.jsx";
 import Notification from "./pages/Notification.jsx";
+import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 
 const router = createBrowserRouter([
   {
@@ -47,7 +48,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <Layout />,
+    element: (
+    <NotificationProvider>
+      <Layout />
+    </NotificationProvider>
+  ),
     children: [
       { path: "/explore", element: <HomePage /> },
       { path: "/subscriptions", element: <SubscriptionsPage /> },
@@ -211,23 +216,24 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (
-    <>
-      <Toaster
-        containerStyle={{
-          top: "4rem",
-          zIndex: "9999999999999",
-        }}
-      />
+ return (
+  <>
+    <Toaster
+      containerStyle={{
+        top: "4rem",
+        zIndex: "9999999999999",
+      }}
+    />
 
-      <LoaderProvider>
-        <Loader />
-        <ParallaxProvider>
-          <RouterProvider router={router} />
-        </ParallaxProvider>
-      </LoaderProvider>
-    </>
-  );
+    <LoaderProvider>
+      <Loader />
+      <ParallaxProvider>
+        <RouterProvider router={router} />
+      </ParallaxProvider>
+    </LoaderProvider>
+  </>
+);
+
 }
 
 export default App;

@@ -797,7 +797,7 @@ const Classes = () => {
     const values = [...new Set(classes.map((cls) => cls[field]))].filter(
       Boolean
     );
-    console.log(`Unique ${field} values:`, values);
+    // console.log(`Unique ${field} values:`, values);
     return values;
   };
 
