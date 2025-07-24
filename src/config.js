@@ -6,7 +6,7 @@ export const user_role = {
 const localUrl = "http://192.168.1.7:5000";
 const liveUrl = "https://outbox.nablean.com";
 
-const isLive = false;
+const isLive = true;
 
 export const serverUrl = isLive ? liveUrl : localUrl;
 export const server = isLive ? `${liveUrl}/api/v1/` : `${localUrl}/api/v1/`;
