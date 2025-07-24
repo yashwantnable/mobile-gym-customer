@@ -3,7 +3,8 @@ export const user_role = {
 };
 
 // const localUrl = "http://localhost:5000";
-const localUrl = "http://192.168.1.17:5000";
+const localUrl = "http://192.168.1.7:5000";
+const liveUrl = "https://outbox.nablean.com";
 
 const isLive = false;
 
