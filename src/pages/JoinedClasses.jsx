@@ -10,17 +10,28 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaTimes,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import toast from "react-hot-toast";
 import { BookingApi } from "../Api/Booking.api";
+import Pagination from "../components/Pagination";
 
 const JoinedClasses = ({ myJoinedClasses }) => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
   const [attendanceStatus, setAttendanceStatus] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const classesPerPage = 6;
+
+  // Calculate pagination
+  const totalPages = Math.ceil(myJoinedClasses.length / classesPerPage);
+  const paginatedClasses = myJoinedClasses.slice(
+    (currentPage - 1) * classesPerPage,
+    currentPage * classesPerPage
+  );
   console.log("myJoinedClasses:", myJoinedClasses);
   const handleAttend = async (classId, bookingId) => {
     setIsLoading(true);
@@ -114,91 +125,98 @@ const JoinedClasses = ({ myJoinedClasses }) => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {myJoinedClasses.map((classItem) => (
-            <div
-              key={classItem.classId}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center">
-                    <h2 className="text-xl font-bold text-gray-800">
-                      {classItem.className}
-                    </h2>
-                  </div>
-                  <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                    {classItem?.attended ? "Attended" : "Confirmed"}
-                  </span>
-                </div>
-
-                <div className="space-y-3 mb-5">
-                  <div className="flex items-center text-gray-700">
-                    <FaClock className="text-indigo-500 mr-2 flex-shrink-0" />
-                    <span>
-                      {formatDate(classItem.details.date)} •{" "}
-                      {formatTime(classItem.details.startTime)} -{" "}
-                      {formatTime(classItem.details.endTime)}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedClasses.map((classItem) => (
+              <div
+                key={classItem.classId}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100"
+              >
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center">
+                      <h2 className="text-xl font-bold text-gray-800 uppercase">
+                        {classItem.className}
+                      </h2>
+                    </div>
+                    <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                      {classItem?.attended ? "Attended" : "Confirmed"}
                     </span>
                   </div>
 
-                  <div className="flex items-center text-gray-700">
-                    <FaMapMarkerAlt className="text-red-500 mr-2 flex-shrink-0" />
-                    <span className="truncate">
-                      {classItem?.details?.location?.streetName},{" "}
-                      {classItem?.details?.location?.landmark}
-                    </span>
+                  <div className="space-y-3 mb-5">
+                    <div className="flex items-center text-gray-700">
+                      <FaClock className="text-indigo-500 mr-2 flex-shrink-0" />
+                      <span>
+                        {formatDate(classItem.details.date)} •{" "}
+                        {formatTime(classItem.details.startTime)} -{" "}
+                        {formatTime(classItem.details.endTime)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-gray-700">
+                      <FaMapMarkerAlt className="text-red-500 mr-2 flex-shrink-0" />
+                      <span className="truncate">
+                        {classItem?.details?.location?.streetName},{" "}
+                        {classItem?.details?.location?.landmark}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-gray-700">
+                      <FaUserAlt className="text-purple-500 mr-2 flex-shrink-0" />
+                      <span className="font-medium">
+                        {classItem.details.trainer.name}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center text-gray-700">
-                    <FaUserAlt className="text-purple-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium">
-                      {classItem.details.trainer.name}
-                    </span>
-                  </div>
-                </div>
+                  {expandedCards[classItem.classId] && (
+                    <div className="mb-4">
+                      <p className="text-gray-600 mb-4 pl-2 border-l-2 border-indigo-200 italic">
+                        {classItem.details.description}
+                      </p>
+                      <a
+                        href={`mailto:${classItem.details.trainer.email}`}
+                        className="text-blue-500 hover:underline flex items-center"
+                      >
+                        <FaEnvelope className="mr-1" /> Contact Trainer
+                      </a>
+                    </div>
+                  )}
 
-                {expandedCards[classItem.classId] && (
-                  <div className="mb-4">
-                    <p className="text-gray-600 mb-4 pl-2 border-l-2 border-indigo-200 italic">
-                      {classItem.details.description}
-                    </p>
-                    <a
-                      href={`mailto:${classItem.details.trainer.email}`}
-                      className="text-blue-500 hover:underline flex items-center"
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <button
+                      onClick={() => toggleExpand(classItem.classId)}
+                      className="text-sixth hover:text-fifth flex items-center text-sm"
                     >
-                      <FaEnvelope className="mr-1" /> Contact Trainer
-                    </a>
+                      {expandedCards[classItem.classId] ? (
+                        <>
+                          <FaChevronUp className="mr-1" /> Show Less
+                        </>
+                      ) : (
+                        <>
+                          <FaChevronDown className="mr-1" /> View Details
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setSelectedClass(classItem)}
+                      className="px-4 py-2 bg-sixth text-white text-sm font-medium rounded-md hover:bg-fifth transition-colors"
+                    >
+                      Full Details
+                    </button>
                   </div>
-                )}
-
-                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                  <button
-                    onClick={() => toggleExpand(classItem.classId)}
-                    className="text-sixth hover:text-fifth flex items-center text-sm"
-                  >
-                    {expandedCards[classItem.classId] ? (
-                      <>
-                        <FaChevronUp className="mr-1" /> Show Less
-                      </>
-                    ) : (
-                      <>
-                        <FaChevronDown className="mr-1" /> View Details
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setSelectedClass(classItem)}
-                    className="px-4 py-2 bg-sixth text-white text-sm font-medium rounded-md hover:bg-fifth transition-colors"
-                  >
-                    Full Details
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
 
       {/* Modal for full details */}

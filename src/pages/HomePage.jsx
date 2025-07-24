@@ -28,6 +28,7 @@ const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [traing, setTraing] = useState([]);
   const [packdata, setPackdata] = useState([]);
+  const [userPackage, setUserPackage] = useState([]);
   const [recentSearches, setRecentSearches] = useState(() => {
     const saved = localStorage.getItem("recentSearches");
     return saved ? JSON.parse(saved) : [];
@@ -87,7 +88,27 @@ const HomePage = () => {
       const packages = Array.isArray(res?.data?.data)
         ? res.data.data
         : res?.data?.data?.packages || [];
+      console.log("All packages data:", packages);
       setPackdata(packages);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  const getUserPakage = async () => {
+    const userId = user?._id;
+    handleLoading(true);
+
+    try {
+      const res = await PackagesApi.getUserPackage(userId);
+      // Ensure packdata is always an array
+      const packages = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : res?.data?.data?.packages || [];
+      console.log("User packages data:", packages);
+      setUserPackage(packages);
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -164,7 +185,10 @@ const HomePage = () => {
     getNearByLocation();
     getAllTraining();
     getAllPakages();
-  }, [pathname]);
+    if (user?._id) {
+      getUserPakage();
+    }
+  }, [pathname, user?._id]);
 
   // useEffect(() => {
   //   getAllCategory();
@@ -626,18 +650,37 @@ const HomePage = () => {
           </div>
           <HorizontalScroll
             items={Array.isArray(packdata) ? packdata : []}
-            renderItem={(pkg) => (
-              <PackageCard
-                key={pkg?._id}
-                image={pkg?.image}
-                name={pkg?.name || "No Name"}
-                price={pkg?.price || 0}
-                numberOfClasses={pkg?.numberOfClasses || 0}
-                duration={pkg?.duration || "N/A"}
-                features={pkg?.features}
-                packageData={pkg}
-              />
-            )}
+            renderItem={(pkg) => {
+              // Check if user has already purchased this package
+              // Try different possible field names for package ID
+              const isPurchased = userPackage.some(
+                (userPkg) =>
+                  userPkg.packageId === pkg._id ||
+                  userPkg.package?._id === pkg._id ||
+                  userPkg.packageId?._id === pkg._id ||
+                  userPkg._id === pkg._id
+              );
+              console.log(
+                `Package ${pkg._id} (${pkg.name}) - isPurchased:`,
+                isPurchased,
+                "userPackage:",
+                userPackage
+              );
+
+              return (
+                <PackageCard
+                  key={pkg?._id}
+                  image={pkg?.image}
+                  name={pkg?.name || "No Name"}
+                  price={pkg?.price || 0}
+                  numberOfClasses={pkg?.numberOfClasses || 0}
+                  duration={pkg?.duration || "N/A"}
+                  features={pkg?.features}
+                  packageData={pkg}
+                  isPurchased={isPurchased}
+                />
+              );
+            }}
             itemClass="mr-4 md:mr-6"
           />
         </div>

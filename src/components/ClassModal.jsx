@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Clock,
@@ -10,26 +10,34 @@ import {
   Calendar,
   CheckCircle,
 } from "lucide-react";
-import { ClassesApi } from "../Api/Classes.api";
+// import { ClassesApi } from "../Api/Classes.api";
 import toast from "react-hot-toast";
 import { useLoading } from "../loader/LoaderContext";
 import { useNavigate } from "react-router-dom";
+import Classes from "../pages/Classes";
+import { ClassesApi } from "../Api/Classes.api";
 
 const ClassModal = ({ classData, onClose, selectedPackage }) => {
-  const [joined, setJoined] = useState(false);
+  const [joined, setJoined] = useState(classData?.joined || false);
+  const [joinedPackage, setJoinedPackage] = useState(selectedPackage || null);
   const [error, setError] = useState("");
+  // const [bookingClasses, setBookingClasses] = useState([]);
   const [success, setSuccess] = useState("");
   const [remaining, setRemaining] = useState(selectedPackage?.remaining || 0);
   const [buying, setBuying] = useState(false);
   const { handleLoading } = useLoading();
   const navigate = useNavigate();
-
+  console.log("classData:", classData);
   if (!classData || classData.isExpired) return null;
 
   console.log(classData);
 
   const packageId = localStorage.getItem("packageId");
   const classId = classData && classData?.id;
+
+  useEffect(() => {
+    setJoined(classData?.joined || false);
+  }, [classData]);
 
   const handleJoin = async () => {
     if (!selectedPackage) {
@@ -49,6 +57,7 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
       setSuccess("Successfully joined the class!");
       toast.success("Congrulation you successfully joined the class");
       setJoined(true);
+      setJoinedPackage(selectedPackage); // <-- set joinedPackage here
     } catch (err) {
       console.log(err);
     } finally {
@@ -67,6 +76,8 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
 
   // Example price (could be dynamic)
   const classPrice = classData.price || 20;
+
+  console.log("this is pakage  name data ", classData);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -197,19 +208,25 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
           </div>
 
           {/* Package Info */}
-          {selectedPackage && (
+          {(joinedPackage || selectedPackage) && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sixth">Using Package:</span>
-                <span className="font-medium">{selectedPackage.name}</span>
+                <span className="font-medium">
+                  {(joinedPackage || selectedPackage).name}
+                </span>
               </div>
               <div className="text-xs text-gray-700">
-                {selectedPackage.description}
+                {(joinedPackage || selectedPackage).description}
               </div>
               <div className="text-xs text-sixth font-semibold">
-                {selectedPackage.type === "class"
-                  ? `${remaining} of ${selectedPackage.total} classes left`
-                  : `${remaining} of ${selectedPackage.total} days left`}
+                {(joinedPackage || selectedPackage).type === "class"
+                  ? `${remaining} of ${
+                      (joinedPackage || selectedPackage).total
+                    } classes left`
+                  : `${remaining} of ${
+                      (joinedPackage || selectedPackage).total
+                    } days left`}
               </div>
             </div>
           )}
@@ -223,8 +240,16 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
             </div>
           )}
 
-          {/* Show price if no package is selected */}
-          {!selectedPackage && !classData.isExpired && (
+          {/* Show package name above price only after join */}
+          {classData.packageName && (
+            <div className="flex items-center gap-2 text-base font-semibold text-sixth mt-2">
+              Package:{" "}
+              <span className="text-gray-900">
+                {bookingClasses.packageName}
+              </span>
+            </div>
+          )}
+          {!classData.isExpired && (
             <div className="flex items-center gap-2 text-lg font-bold text-sixth mt-2">
               Price: <span className="text-gray-900">AED {classPrice}</span>
             </div>
@@ -239,32 +264,33 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
           >
             Close
           </button>
-          {/* Show Join or Buy button depending on package selection */}
-          {selectedPackage ? (
-            <button
-              onClick={handleJoin}
-              disabled={classData.isExpired}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${
-                !classData.isExpired
-                  ? "bg-sixth hover:bg-sixth"
-                  : "bg-gray-300 cursor-not-allowed"
-              }`}
-            >
-              {joined ? "Joined" : "Join"}
-            </button>
-          ) : (
-            <button
-              onClick={handleBuy}
-              disabled={buying || classData.isExpired}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${
-                !classData.isExpired
-                  ? "bg-sixth hover:bg-sixth"
-                  : "bg-gray-300 cursor-not-allowed"
-              } ${buying ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {buying ? "Buying..." : "Buy Class"}
-            </button>
-          )}
+          {/* Hide Buy/Join buttons if class is already joined */}
+          {!(classData.isJoined || joined) &&
+            (selectedPackage ? (
+              <button
+                onClick={handleJoin}
+                disabled={classData.isExpired}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${
+                  !classData.isExpired
+                    ? "bg-sixth hover:bg-sixth"
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
+              >
+                Join
+              </button>
+            ) : (
+              <button
+                onClick={handleBuy}
+                disabled={buying || classData.isExpired}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow ${
+                  !classData.isExpired
+                    ? "bg-sixth hover:bg-sixth"
+                    : "bg-gray-300 cursor-not-allowed"
+                } ${buying ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {buying ? "Buying..." : "Buy Class"}
+              </button>
+            ))}
         </div>
       </div>
     </div>

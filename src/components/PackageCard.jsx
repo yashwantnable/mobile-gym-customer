@@ -9,6 +9,7 @@ const PackageCard = ({
   duration,
   features = [],
   packageData,
+  isPurchased = false,
 }) => {
   const style = {
     bg: "bg-primary",
@@ -38,12 +39,27 @@ const PackageCard = ({
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 transition-all duration-300 border ${style.border} ${style.bg} flex flex-col cursor-pointer relative shadow-lg group font-sans animate-scale-in`}
+      className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 transition-all duration-300 border ${
+        style.border
+      } ${
+        style.bg
+      } flex flex-col cursor-pointer relative shadow-lg group font-sans animate-scale-in ${
+        isPurchased ? "opacity-75" : ""
+      }`}
       style={{ minHeight: 480 }}
     >
       {/* Decorative accent */}
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-2xl opacity-20 pointer-events-none bg-fourth"></div>
       <div className="absolute bottom-0 left-0 w-20 h-20 rounded-tr-2xl opacity-10 pointer-events-none bg-sixth"></div>
+
+      {/* Purchased badge */}
+      {isPurchased && (
+        <div className="absolute top-4 left-4 z-20">
+          <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            ✓ Purchased
+          </span>
+        </div>
+      )}
 
       {/* Package header with image */}
       <div className="relative z-10">
@@ -126,12 +142,21 @@ const PackageCard = ({
 
       {/* CTA button */}
       <div className="px-5 pb-5 relative z-10 mt-auto">
-        <button
-          className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} shadow-md group-hover:scale-105 group-hover:shadow-xl`}
-          onClick={handleCheckout}
-        >
-          Buy Now
-        </button>
+        {isPurchased ? (
+          <button
+            className="w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 bg-gray-400 cursor-not-allowed shadow-md"
+            disabled
+          >
+            Already Purchased
+          </button>
+        ) : (
+          <button
+            className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} shadow-md group-hover:scale-105 group-hover:shadow-xl`}
+            onClick={handleCheckout}
+          >
+            Buy Now
+          </button>
+        )}
       </div>
     </div>
   );
