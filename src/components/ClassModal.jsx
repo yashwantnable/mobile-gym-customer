@@ -16,10 +16,14 @@ import { useLoading } from "../loader/LoaderContext";
 import { useNavigate } from "react-router-dom";
 import Classes from "../pages/Classes";
 import { ClassesApi } from "../Api/Classes.api";
+import { BookingApi } from "../Api/Booking.api";
 
 const ClassModal = ({ classData, onClose, selectedPackage }) => {
   const [joined, setJoined] = useState(classData?.joined || false);
   const [joinedPackage, setJoinedPackage] = useState(selectedPackage || null);
+  const [bought, setBought] = useState(false); // <-- add bought state
+
+  const [sessions, setSessions] = useState([]);
   const [error, setError] = useState("");
   // const [bookingClasses, setBookingClasses] = useState([]);
   const [success, setSuccess] = useState("");
@@ -35,8 +39,67 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
   const packageId = localStorage.getItem("packageId");
   const classId = classData && classData?.id;
 
+  console.log("this is the class data", classData);
+
+  // Function to check if the current class is already purchased/joined
+  const isClassAlreadyPurchased = () => {
+    if (!sessions || sessions.length === 0 || !classData) return false;
+
+    console.log("Checking if class is already purchased:", {
+      classData: classData,
+      sessionsCount: sessions.length,
+      sessions: sessions,
+    });
+
+    const isPurchased = sessions.some((session) => {
+      const subscription = session.subscription || session;
+      console.log("this is the subscription", session.subscription._id);
+      // Compare by class ID if available
+      if (classData.id && subscription._id === classData.id) {
+        console.log("Match found by ID:", classData.id);
+        return true;
+      }
+
+      // Compare by class name and date
+      if (subscription.name && classData.name) {
+        const sessionName = subscription.name.toLowerCase().trim();
+        const classDataName = classData.name.toLowerCase().trim();
+
+        if (sessionName === classDataName) {
+          // Also check date if available
+          if (classData.date && subscription.date) {
+            const classDate = new Date(classData.date).toDateString();
+            const sessionDate = new Date(subscription.date).toDateString();
+            const dateMatch = classDate === sessionDate;
+            console.log("Name match found, date comparison:", {
+              sessionName,
+              classDataName,
+              classDate,
+              sessionDate,
+              dateMatch,
+            });
+            return dateMatch;
+          }
+
+          // If no date comparison possible, just check name
+          console.log("Name match found (no date comparison):", {
+            sessionName,
+            classDataName,
+          });
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    console.log("Final result - isClassAlreadyPurchased:", isPurchased);
+    return isPurchased;
+  };
+
   useEffect(() => {
     setJoined(classData?.joined || false);
+    fetchSessions();
   }, [classData]);
 
   const handleJoin = async () => {
@@ -65,13 +128,51 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
     }
   };
 
+  const fetchSessions = async () => {
+    try {
+      handleLoading(true);
+      setError(null);
+      const response = await BookingApi.getBookingHistory();
+
+      if (response.data && response.data.success) {
+        const allSessions = response.data.data || [];
+        setSessions(allSessions);
+        // setSessions([]);
+        console.log("this is all sessions", allSessions);
+        setTotalPages(Math.ceil(allSessions.length / itemsPerPage));
+        // setTotalPages(1);
+      } else {
+        setError("Failed to fetch sessions");
+      }
+    } catch (err) {
+      console.error("Error fetching sessions:", err);
+      // setError("Failed to load sessions. Please try again later.");
+    } finally {
+      handleLoading(false);
+    }
+  };
+
   // Buy class logic (mock)
-  const handleBuy = () => {
+  // const handleBuy = () => {
+  //   if (classData.isExpired) {
+  //     setError("This class has expired and cannot be purchased.");
+  //     return;
+  //   }
+  //   setBought(true);
+  //   navigate("/checkout", { state: { classData } });
+  // };
+
+  const handleBuy = async () => {
     if (classData.isExpired) {
       setError("This class has expired and cannot be purchased.");
       return;
     }
-    navigate("/checkout", { state: { classData } });
+    setBuying(true); // Show loading state
+    setBought(true); // Hide the button
+    // Optionally wait a moment to show the change
+    setTimeout(() => {
+      navigate("/checkout", { state: { classData } });
+    }, 500); // 0.5 second delay to see the button disappear
   };
 
   // Example price (could be dynamic)
@@ -239,6 +340,13 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
               <CheckCircle className="h-5 w-5" /> {success}
             </div>
           )}
+          {/* Already Purchased Indicator */}
+          {isClassAlreadyPurchased() && (
+            <div className="flex items-center gap-2 text-blue-600 text-sm font-semibold bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <CheckCircle className="h-5 w-5" /> You have already purchased
+              this class
+            </div>
+          )}
 
           {/* Show package name above price only after join */}
           {classData.packageName && (
@@ -264,8 +372,14 @@ const ClassModal = ({ classData, onClose, selectedPackage }) => {
           >
             Close
           </button>
-          {/* Hide Buy/Join buttons if class is already joined */}
-          {!(classData.isJoined || joined) &&
+          {/* Hide Buy/Join buttons if class is already joined, bought, or isBought from backend */}
+          {!(
+            joined ||
+            bought ||
+            classData?.isJoined ||
+            classData?.isBought ||
+            isClassAlreadyPurchased()
+          ) &&
             (selectedPackage ? (
               <button
                 onClick={handleJoin}

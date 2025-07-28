@@ -11,6 +11,7 @@ import {
   FaChevronUp,
   FaTimes,
   FaCheckCircle,
+  FaBox, // Added for package icon
 } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -126,7 +127,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {paginatedClasses.map((classItem) => (
               <div
                 key={classItem.classId}
@@ -169,6 +170,14 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                         {classItem.details.trainer.name}
                       </span>
                     </div>
+
+                    <div className="flex items-center text-gray-700">
+                      <FaBox className="text-purple-500 mr-2 flex-shrink-0" />
+
+                      <span className="ml-2 text-sm text-gray-500">
+                        {classItem.packageName}
+                      </span>
+                    </div>
                   </div>
 
                   {expandedCards[classItem.classId] && (
@@ -176,12 +185,6 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                       <p className="text-gray-600 mb-4 pl-2 border-l-2 border-indigo-200 italic">
                         {classItem.details.description}
                       </p>
-                      <a
-                        href={`mailto:${classItem.details.trainer.email}`}
-                        className="text-blue-500 hover:underline flex items-center"
-                      >
-                        <FaEnvelope className="mr-1" /> Contact Trainer
-                      </a>
                     </div>
                   )}
 
@@ -222,10 +225,11 @@ const JoinedClasses = ({ myJoinedClasses }) => {
       {/* Modal for full details */}
       {selectedClass && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-start">
+                <h2 className="text-2xl font-bold text-gray-800 uppercase">
                   {selectedClass.className}
                 </h2>
                 <button
@@ -235,7 +239,10 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                   <FaTimes />
                 </button>
               </div>
+            </div>
 
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="mb-6">
@@ -264,6 +271,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                         <div>
                           <p className="font-medium">Trainer</p>
                           <p>{selectedClass.details.trainer.name}</p>
+
                           <a
                             href={`mailto:${selectedClass.details.trainer.email}`}
                             className="text-blue-500 hover:underline flex items-center"
@@ -318,51 +326,37 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                 </div>
               </div>
             </div>
-            <div className="bg-white flex justify-center rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="">
-                  <div className="">
-                    {/* Class details section remains the same */}
 
-                    {/* Attendance section */}
-                    <div className="mt-6 w-full flex justify-center">
-                      {attendanceStatus[selectedClass.classId] ===
-                      "attended" ? (
-                        <div className="flex items-center bg-green-50 text-green-800 p-3 rounded-lg">
-                          <FaCheckCircle className="mr-2 text-green-500" />
-                          <span>
-                            You've marked your attendance for this class
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <button className="px-6 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                            Can't Attend
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleAttend(
-                                selectedClass.classId,
-                                selectedClass.bookingId
-                              )
-                            }
-                            disabled={isLoading}
-                            className={`px-6 py-2 rounded-md font-medium ${
-                              isLoading
-                                ? "bg-indigo-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700"
-                            } text-white transition-colors`}
-                          >
-                            {isLoading ? "Processing..." : "Present"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Map section remains the same */}
+            {/* Fixed footer with buttons */}
+            <div className="p-6 border-t border-gray-200">
+              {attendanceStatus[selectedClass.classId] === "attended" ? (
+                <div className="flex items-center justify-center bg-green-50 text-green-800 p-3 rounded-lg">
+                  <FaCheckCircle className="mr-2 text-green-500" />
+                  <span>You've marked your attendance for this class</span>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button className="px-6 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    Can't Attend
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleAttend(
+                        selectedClass.classId,
+                        selectedClass.bookingId
+                      )
+                    }
+                    disabled={isLoading}
+                    className={`px-6 py-2 rounded-md font-medium ${
+                      isLoading
+                        ? "bg-indigo-400 cursor-not-allowed"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                    } text-white transition-colors`}
+                  >
+                    {isLoading ? "Processing..." : "Present"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

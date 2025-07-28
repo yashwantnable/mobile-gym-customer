@@ -295,7 +295,7 @@ const Classes = () => {
           onClose={() => setShowPackageModal(false)}
         />
       )}
-      <div className="flex border-b pt-10 border-gray-200">
+      <div className="flex border-b pt-10 border-gray-200 ml-[5.5%] mr-[5.5%]">
         {" "}
         <button
           onClick={() => setActiveTab("myClasses")}
