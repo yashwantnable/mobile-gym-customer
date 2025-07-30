@@ -103,7 +103,7 @@ const Classes = () => {
   useEffect(() => {
     if (location.state && location.state.tab) {
       setActiveTab(location.state.tab);
-      getClassesSubByUser;
+      getClassesSubByUser();
     }
   }, [location.state]);
 
@@ -301,7 +301,8 @@ const Classes = () => {
           onClick={() => setActiveTab("myClasses")}
           className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
             activeTab === "myClasses"
-              ? "border-b-2 border-indigo-500 text-indigo-600"
+              ? // ? "border-b-2 border-indigo-500 text-indigo-600"
+                "border-b-2 border-sixth text-sixth"
               : "text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -312,7 +313,8 @@ const Classes = () => {
           onClick={() => setActiveTab("joinNew")}
           className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
             activeTab === "joinNew"
-              ? "border-b-2 border-indigo-500 text-indigo-600"
+              ? // ? "border-b-2 border-indigo-500 text-indigo-600"
+                "border-b-2 border-sixth text-sixth"
               : "text-gray-500 hover:text-gray-700"
           }`}
         >

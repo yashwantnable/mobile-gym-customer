@@ -115,7 +115,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center">
-        <FaCalendarAlt className="mr-2 text-indigo-600" />
+        <FaCalendarAlt className="mr-2 text-sixth" />
         My Joined Classes
       </h1>
 
@@ -148,7 +148,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
 
                   <div className="space-y-3 mb-5">
                     <div className="flex items-center text-gray-700">
-                      <FaClock className="text-indigo-500 mr-2 flex-shrink-0" />
+                      <FaClock className="text-second mr-2 flex-shrink-0" />
                       <span>
                         {formatDate(classItem.details.date)} •{" "}
                         {formatTime(classItem.details.startTime)} -{" "}
@@ -157,7 +157,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                     </div>
 
                     <div className="flex items-center text-gray-700">
-                      <FaMapMarkerAlt className="text-red-500 mr-2 flex-shrink-0" />
+                      <FaMapMarkerAlt className="text-red-500  mr-2 flex-shrink-0" />
                       <span className="truncate">
                         {classItem?.details?.location?.streetName},{" "}
                         {classItem?.details?.location?.landmark}
@@ -165,14 +165,14 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                     </div>
 
                     <div className="flex items-center text-gray-700">
-                      <FaUserAlt className="text-purple-500 mr-2 flex-shrink-0" />
+                      <FaUserAlt className="text-second mr-2 flex-shrink-0" />
                       <span className="font-medium">
                         {classItem.details.trainer.name}
                       </span>
                     </div>
 
                     <div className="flex items-center text-gray-700">
-                      <FaBox className="text-purple-500 mr-2 flex-shrink-0" />
+                      <FaBox className="text-second mr-2 flex-shrink-0" />
 
                       <span className="ml-2 text-sm text-gray-500">
                         {classItem.packageName}
@@ -349,9 +349,9 @@ const JoinedClasses = ({ myJoinedClasses }) => {
                     disabled={isLoading}
                     className={`px-6 py-2 rounded-md font-medium ${
                       isLoading
-                        ? "bg-indigo-400 cursor-not-allowed"
-                        : "bg-indigo-600 hover:bg-indigo-700"
-                    } text-white transition-colors`}
+                        ? "bg-primary cursor-not-allowed"
+                        : "bg-primary hover:bg-third"
+                    } text-third  hover:text-white transition-colors`}
                   >
                     {isLoading ? "Processing..." : "Present"}
                   </button>
