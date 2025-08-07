@@ -28,6 +28,7 @@ import Classes from "./pages/Classes.jsx";
 import PromoCode from "./pages/PromoCode.jsx";
 import Notification from "./pages/Notification.jsx";
 import { NotificationProvider } from "./contexts/NotificationContext.jsx";
+import ComingSoonPage from "./pages/ComingSoonPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -54,9 +55,10 @@ const router = createBrowserRouter([
     </NotificationProvider>
   ),
     children: [
-      { path: "/explore", element: <HomePage /> },
+      { path: "catagory/:_id", element: <HomePage/> },
+      { path: "comingsoon", element: <ComingSoonPage/> },
       { path: "/subscriptions", element: <SubscriptionsPage /> },
-      { path: "/classes", element: <Classes /> },
+      { path: "/classes/:_id", element: <Classes /> },
       { path: "/sessions/:id", element: <SessionDetailPage /> },
       { path: "/", element: <MainPage /> },
       {

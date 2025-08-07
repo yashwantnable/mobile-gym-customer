@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CloudCog, X, ChevronDown } from "lucide-react";
 import SmallCalendar from "../components/SmallCalendar";
 import FilterPanel from "../components/FilterPanel";
@@ -9,7 +9,7 @@ import { useLoading } from "../loader/LoaderContext";
 import { PackagesApi } from "../Api/Package.api";
 import { useSelector } from "react-redux";
 import { ClassesApi } from "../Api/Classes.api";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { FaCalendarAlt, FaSearch } from "react-icons/fa";
 import JoinedClasses from "./JoinedClasses";
 
@@ -41,8 +41,9 @@ const transformPackageData = (apiPackage) => {
   };
 };
 
-const Classes = () => {
-  const [activeTab, setActiveTab] = useState("myClasses");
+const Classes = ({ hide }) => {
+  const { _id } = useParams();
+  const [activeTab, setActiveTab] = useState("joinNew");
   const [myJoinedClasses, setMyJoinedClasses] = useState([]);
   const [userPackages, setUserPackages] = useState([]);
   const [selectedPackageId, setSelectedPackageId] = useState("");
@@ -130,10 +131,18 @@ const Classes = () => {
     getClassesSubByUser();
   }, []);
 
-  const getAllClasses = async () => {
+  const getAllClasses = async (id) => {
+    const categoryId = id || _id;
     handleLoading(true);
+
     try {
-      const res = await ClassesApi.getAllClasses({ isSingleClass: true });
+      // Build payload conditionally
+      const payload = { isSingleClass: true };
+      if (categoryId) {
+        payload.categoryId = categoryId;
+      }
+
+      const res = await ClassesApi.getAllClasses(payload);
       const apiClasses = res?.data?.data?.subscriptions;
 
       const transformedClasses = apiClasses.map((cls) => ({
@@ -149,9 +158,9 @@ const Classes = () => {
         categoryId: cls.categoryId?._id,
         sessionType: cls.sessionType?.sessionName || "Regular",
         sessionTypeId: cls.sessionType?._id,
-        trainer:
-          `${cls.trainer?.first_name} ${cls.trainer?.last_name}` ||
-          "Unknown trainer",
+        trainer: cls.trainer
+          ? `${cls.trainer.first_name} ${cls.trainer.last_name}`
+          : "Unknown trainer",
         price: cls.price,
         additionalInfo: cls.description,
         image: cls.media,
@@ -159,19 +168,17 @@ const Classes = () => {
         isExpired: cls.isExpired,
       }));
 
-      console.log(transformedClasses);
-
       setClasses(transformedClasses);
       setFilteredClasses(transformedClasses);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching classes:", err);
     } finally {
       handleLoading(false);
     }
   };
 
   useEffect(() => {
-    getAllClasses();
+    getAllClasses(_id);
   }, []);
 
   // Debug effect to log filter changes
@@ -205,43 +212,41 @@ const Classes = () => {
     setShowModal(true);
   };
 
-  // Helper: create a Set of joined class IDs for fast lookup
-  const joinedClassIds = new Set(bookingClasses.map((jc) => jc.classId));
+  // ✅ Memoized joined class IDs
+  const joinedClassIds = useMemo(() => {
+    return new Set(bookingClasses.map((jc) => jc.classId));
+  }, [bookingClasses]);
 
-  // Merge classes to add isJoined property
-  const classesWithJoined = classes.map((cls) => ({
-    ...cls,
-    isJoined: joinedClassIds.has(cls.id),
-  }));
+  // ✅ Memoized classesWithJoined
+  const classesWithJoined = useMemo(() => {
+    return classes.map((cls) => ({
+      ...cls,
+      isJoined: joinedClassIds.has(cls.id),
+    }));
+  }, [classes, joinedClassIds]);
 
-  // Filter classes based on selected date and filters
+  // ✅ Filter effect — now stable
   useEffect(() => {
-    let filtered = classesWithJoined.filter((cls) => {
+    const filtered = classesWithJoined.filter((cls) => {
       const classDate = new Date(cls.date);
       const isSameDate =
         classDate.toDateString() === selectedDate.toDateString();
 
-      // Check if filters are applied
-      const hasLocationFilter = filters.location && filters.location.length > 0;
-      const hasCategoryFilter = filters.category && filters.category.length > 0;
-      const hasSessionTypeFilter =
-        filters.sessionType && filters.sessionType.length > 0;
-
-      // Apply filters only if they are set
       const matchesLocation =
-        !hasLocationFilter || filters.location.includes(cls.locationId);
+        !filters.location.length || filters.location.includes(cls.locationId);
       const matchesCategory =
-        !hasCategoryFilter || filters.category.includes(cls.categoryId);
+        !filters.category.length || filters.category.includes(cls.categoryId);
       const matchesSessionType =
-        !hasSessionTypeFilter ||
+        !filters.sessionType.length ||
         filters.sessionType.includes(cls.sessionTypeId);
 
       return (
         isSameDate && matchesLocation && matchesCategory && matchesSessionType
       );
     });
+
     setFilteredClasses(filtered);
-  }, [selectedDate, filters, classes, classesWithJoined]);
+  }, [selectedDate, filters, classesWithJoined]);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -285,7 +290,13 @@ const Classes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div
+      className={
+        !hide
+          ? " border bg-primary"
+          : `${filteredClasses.length > 0 ? "min-h-screen" : "h-60"}`
+      }
+    >
       {/* Package Select Modal (always open if no active package or when user clicks button) */}
       {showPackageModal && (
         <PackageSelectModal
@@ -295,33 +306,35 @@ const Classes = () => {
           onClose={() => setShowPackageModal(false)}
         />
       )}
-      <div className="flex border-b pt-10 border-gray-200 ml-[5.5%] mr-[5.5%]">
-        {" "}
-        <button
-          onClick={() => setActiveTab("myClasses")}
-          className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
-            activeTab === "myClasses"
-              ? // ? "border-b-2 border-indigo-500 text-indigo-600"
-                "border-b-2 border-sixth text-sixth"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <FaCalendarAlt className="mr-2" />
-          My Classes
-        </button>
-        <button
-          onClick={() => setActiveTab("joinNew")}
-          className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
-            activeTab === "joinNew"
-              ? // ? "border-b-2 border-indigo-500 text-indigo-600"
-                "border-b-2 border-sixth text-sixth"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <FaSearch className="mr-2" />
-          Join New Classes
-        </button>
-      </div>
+      {!hide && (
+        <div className="flex border-b pt-10 border-gray-200 ml-[5.5%] mr-[5.5%]">
+          {" "}
+          <button
+            onClick={() => setActiveTab("joinNew")}
+            className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
+              activeTab === "joinNew"
+                ? // ? "border-b-2 border-indigo-500 text-indigo-600"
+                  "border-b-2 border-sixth text-sixth"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <FaSearch className="mr-2" />
+            Join New Classes
+          </button>
+          <button
+            onClick={() => setActiveTab("myClasses")}
+            className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
+              activeTab === "myClasses"
+                ? // ? "border-b-2 border-indigo-500 text-indigo-600"
+                  "border-b-2 border-sixth text-sixth"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <FaCalendarAlt className="mr-2" />
+            My Classes
+          </button>
+        </div>
+      )}
       {activeTab === "myClasses" && (
         <div>
           <JoinedClasses myJoinedClasses={myJoinedClasses} />
@@ -412,43 +425,57 @@ const Classes = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div
+            className={!hide ? `grid grid-cols-1 lg:grid-cols-12 gap-6` : ``}
+          >
             {/* Left Sidebar - Header, Small Calendar + Filter Panel */}
-            <div className="lg:col-span-3 flex flex-col gap-6">
-              {/* Sidebar Header and Description */}
-              <div className="mb-2">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                  Class Schedule
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Browse and filter available classes. Select a class to view
-                  details, buy, or join using your package.
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">
-                    Calendar
+            {!hide && (
+              <div className="lg:col-span-3 flex flex-col gap-6">
+                {/* Sidebar Header and Description */}
+                <div className="mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    {/* {JSON.stringify(classes?.[0]?.category)} */}
+                    {classes?.[0]?.category && (
+                      <span>
+                        {classes[0].category[0].toUpperCase() +
+                          classes[0].category.slice(1)}{" "}
+                        Class Schedule
+                      </span>
+                    )}
                   </h2>
+                  <p className="text-sm text-gray-500">
+                    Browse and filter available classes. Select a class to view
+                    details, buy, or join using your package.
+                  </p>
                 </div>
-                <div className="p-4">
-                  <SmallCalendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    classesData={classesWithJoined}
-                  />
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">
+                      Calendar
+                    </h2>
+                  </div>
+                  <div className="p-4">
+                    <SmallCalendar
+                      selectedDate={selectedDate}
+                      onDateSelect={handleDateSelect}
+                      classesData={classesWithJoined}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <FilterPanel
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onReset={resetFilters}
-                locations={getUniqueOptions("location", "locationId")}
-                categories={getUniqueOptions("category", "categoryId")}
-                sessionTypes={getUniqueOptions("sessionType", "sessionTypeId")}
-              />
-            </div>
+                <FilterPanel
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onReset={resetFilters}
+                  locations={getUniqueOptions("location", "locationId")}
+                  categories={getUniqueOptions("category", "categoryId")}
+                  sessionTypes={getUniqueOptions(
+                    "sessionType",
+                    "sessionTypeId"
+                  )}
+                />
+              </div>
+            )}
             {/* Main Content - Week View */}
             <div className="lg:col-span-9">
               {/* Mobile Filters */}

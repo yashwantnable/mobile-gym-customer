@@ -17,7 +17,7 @@ const Footer = () => {
               <li><a href="#about" className="text-gray-400 hover:text-white transition">About</a></li>
               <li><a href="#values" className="text-gray-400 hover:text-white transition">Our Values</a></li>
               <li><a href="#community" className="text-gray-400 hover:text-white transition">Community</a></li>
-              <li><Link to="/explore" className="text-gray-400 hover:text-white transition">Explore</Link></li>
+              <li><Link to="/" className="text-gray-400 hover:text-white transition">Explore</Link></li>
             </ul>
           </div>
           <div>

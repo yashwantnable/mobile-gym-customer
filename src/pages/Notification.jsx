@@ -7,9 +7,19 @@ import { useLoading } from "../loader/LoaderContext";
 const Notification = () => {
   const [activeTab, setActiveTab] = useState("unread");
   const [notificationData, setNotificationData] = useState([]);
-  const { showLoading, hideLoading } = useLoading();
+  const { handleLoading } = useLoading();
 
-  
+  const handleOneRead=async(key)=>{
+    try{
+      handleLoading(true)
+      const res=await NotificationApi.updateNotification(key);
+      console.log("noti cliecked:",res?.data?.data)
+    }catch(err){
+      console.error("error:",err)
+    }finally{
+      handleLoading(false)
+    }
+  }
 
   const handleAllRead =async () => {
       try {
@@ -82,7 +92,7 @@ const Notification = () => {
     setActiveTab(tab);
   };
 
-  const NotificationItem = ({ notification, isUnread }) => {
+  const NotificationItem = ({ notification, isUnread ,handleOneRead,key,activeTab}) => {
     const formattedDate = moment(notification.createdAt).format(
       "MMM D, h:mm A"
     );
@@ -91,11 +101,16 @@ const Notification = () => {
   
     return (
       <div
-        className={`flex items-start p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
+        className={`flex items-start cursor-pointer p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
           isUnread
             ? "bg-blue-50 border-l-4 border-primary cursor-pointer"
             : "bg-white"
         }`}
+        onClick={
+    activeTab === "unread"
+      ? () => handleOneRead(notification?._id)
+      : undefined
+  }
       >
         <div className="relative flex-shrink-0 mr-3">
           <div
@@ -273,6 +288,8 @@ const Notification = () => {
                 {unreadNotifications.map((notification) => (
                   <NotificationItem
                     key={notification._id}
+                    activeTab={activeTab}
+                    handleOneRead={handleOneRead}
                     notification={notification}
                     isUnread={true}
                   />
@@ -294,12 +311,13 @@ const Notification = () => {
               {readNotifications.map((notification) => (
                 <NotificationItem
                   key={notification._id}
+                  // handleOneRead={handleOneRead}
                   notification={notification}
                   isUnread={false}
                 />
               ))}
             </>
-          ) : (
+          ) : ( 
             <EmptyState
               iconPath="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
               title="No read notifications"

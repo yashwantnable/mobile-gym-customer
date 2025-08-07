@@ -14,6 +14,7 @@ import { useLoading } from "../loader/LoaderContext";
 import { FilterApi } from "../Api/Filteration.api";
 import { GoBell } from "react-icons/go";
 import NotificationProvider from "./NotificationSocket";
+import { CategoryApi } from "../Api/Category.api";
 
 const NavBar = () => {
   const location = useLocation();
@@ -28,6 +29,21 @@ const NavBar = () => {
   const { id } = useParams();
   const { handleLoading } = useLoading();
   const [cat, setCat] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [category, setCategory] = useState([]);
+
+  const getAllCategory = async () => {
+    handleLoading(true);
+    try {
+      const res = await CategoryApi.Allcategory();
+      setCategory(res?.data?.data);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+  console.log("category:", category);
 
   const handleFilterSortBy = async (e) => {
     handleLoading(true);
@@ -49,13 +65,18 @@ const NavBar = () => {
     }
   }, [id]);
 
-  const navItems = [
-    { path: "/subscriptions", label: "DEALS", icon: Calendar },
-    { path: "/explore", label: "EXPLORE", icon: MapPin },
-    { path: "/classes", label: "CLASSES", icon: MapPin },
-    // { path: "/notification", label: "NOTIFICATIONS", icon: GoBell },
-    // { path: "/notification", name: "Notifications", icon: <GoBell /> },
-  ];
+  // const navItems = [
+  //   { path: "/subscriptions", label: "DEALS", icon: Calendar },
+  //   { path: "/explore", label: "EXPLORE", icon: MapPin },
+  //   { path: "/classes", label: "CLASSES", icon: MapPin },
+  //   // { path: "/notification", label: "NOTIFICATIONS", icon: GoBell },
+  //   // { path: "/notification", name: "Notifications", icon: <GoBell /> },
+  // ];
+  // const navItems = [
+  //   { path: "/fitness", label: "Fitness", icon: Calendar },
+  //   { path: "/classes", label: "Wellness", icon: MapPin },
+  //   { path: "/subscriptions", label: "Liveness", icon: MapPin },
+  // ];
 
   const userMenuItems = [
     { path: "/profile", label: "Profile" },
@@ -98,6 +119,10 @@ const NavBar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    getAllCategory();
+  }, []);
+
   return (
     <>
       <nav className="bg-primary text-third px-4 sm:px-6 py-3 shadow-lg sticky top-0 z-50">
@@ -131,22 +156,28 @@ const NavBar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-6 lg:space-x-8 ">
-            {navItems.map(({ path, label, icon: Icon }) => (
+          <div className="hidden md:flex space-x-6 lg:space-x-8">
+            {category.map((cat) => (
               <Link
-                key={path}
-                to={path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  location.pathname === path
-                    ? "text-third"
-                    : "text-third/80 hover:text-third "
+                key={cat?._id}
+                to={
+                  cat?.cName?.toLowerCase() === "liveness"
+                    ? "/comingsoon"
+                    : `catagory/${cat?._id}`
+                }
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                  location.pathname === `/catagory/${cat._id}`
+                    ? "text-third font-semibold"
+                    : "text-third/80 hover:text-third"
                 }`}
               >
-                {/* <Icon size={18} /> */}
-                <span>{label}</span>
-                {/* <span>{path}</span> */}
+                <span>
+                  {cat?.cName &&
+                    cat.cName[0].toUpperCase() + cat.cName.slice(1)}
+                </span>
               </Link>
             ))}
+
             {/* Notification bell moved here, after nav items and before user icon */}
             <div className="mt-2">
               {user && <NotificationProvider userId={user?._id} />}
@@ -249,19 +280,22 @@ const NavBar = () => {
       >
         <div className="px-6 py-4">
           <div className="flex flex-col space-y-4">
-            {navItems.map(({ path, label, icon: Icon }) => (
+            {category.map((cat) => (
               <Link
-                key={path}
-                to={path}
+                key={cat._id}
+                to={cat._id}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-medium ${
-                  location.pathname === path
+                  location.pathname === `/catagory/${cat._id}`
                     ? "bg-white/20 text-third"
                     : "text-third/90 hover:text-third hover:bg-white/10"
                 }`}
               >
-                <Icon size={20} />
-                <span>{label}</span>
+                {/* Optional icon/image */}
+                {/* You can use cat.image if needed */}
+                {/* Example: <img src={cat.image} alt={cat.cName} className="w-5 h-5 rounded-full" /> */}
+
+                <span>{cat.cName}</span>
               </Link>
             ))}
 

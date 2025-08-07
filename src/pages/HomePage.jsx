@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaStar, FaApple } from "react-icons/fa";
 import { DiAndroid } from "react-icons/di";
@@ -12,8 +12,10 @@ import { FilterApi } from "../Api/Filteration.api";
 import { BookingApi } from "../Api/Booking.api";
 import PackageCard from "../components/PackageCard";
 import { PackagesApi } from "../Api/Package.api";
+import Classes from "./Classes";
 
 const HomePage = () => {
+  const { _id } = useParams();
   const user = useSelector((state) => state.auth.user);
   const [location, setLocation] = useState("Select location");
   const [locationDropdown, setLocationDropdown] = useState(false);
@@ -24,6 +26,7 @@ const HomePage = () => {
   const [category, setCategory] = useState([]);
   const [sessionData, setSessions] = useState([]);
   const [subscription, setSubscription] = useState([]);
+  const [singleClassSubscriptions, setSingleClassSubscriptions] = useState([]);
   const [nearMeLocation, setNearMeLocation] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [traing, setTraing] = useState([]);
@@ -37,7 +40,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const { hash } = useLocation();
-
+  console.log("_id:", _id);
   useEffect(() => {
     if (hash) {
       setTimeout(() => {
@@ -68,11 +71,41 @@ const HomePage = () => {
     }
   };
 
+  const getCategoryById = async (id) => {
+    handleLoading(true);
+    try {
+      const res = await CategoryApi.getAllSessionByCategoryId(id);
+      setSessions(res?.data?.data);
+      console.log("getAllSessionByCategoryId:", res?.data?.data);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
   const getAllSubscription = async () => {
     handleLoading(true);
     try {
       const res = await CategoryApi.getAllSubscription();
       setSubscription(res?.data?.data);
+      setSingleClassSubscriptions(
+        res?.data?.data.filter((item) => item.isSingleClass === true)
+      );
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+  const getSubscriptionByID = async (id) => {
+    handleLoading(true);
+    try {
+      const res = await CategoryApi.getAllCategoriesById(id);
+      setSubscription(res?.data?.data);
+      setSingleClassSubscriptions(
+        res?.data?.data.filter((item) => item.isSingleClass === true)
+      );
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -134,17 +167,17 @@ const HomePage = () => {
     }
   };
 
-  const getAllSessions = async () => {
-    handleLoading(true);
-    try {
-      const res = await CategoryApi.Allsession();
-      setSessions(res?.data?.data);
-    } catch (error) {
-      console.log("Error", error);
-    } finally {
-      handleLoading(false);
-    }
-  };
+  // const getAllSessions = async () => {
+  //   handleLoading(true);
+  //   try {
+  //     const res = await CategoryApi.Allsession();
+  //     setSessions(res?.data?.data);
+  //   } catch (error) {
+  //     console.log("Error", error);
+  //   } finally {
+  //     handleLoading(false);
+  //   }
+  // };
 
   const getAllTraining = async () => {
     handleLoading(true);
@@ -180,7 +213,7 @@ const HomePage = () => {
 
   useEffect(() => {
     getAllCategory();
-    getAllSessions();
+    // getAllSessions();
     getAllSubscription();
     getNearByLocation();
     getAllTraining();
@@ -190,6 +223,10 @@ const HomePage = () => {
     }
   }, [pathname, user?._id]);
 
+  useEffect(() => {
+    getCategoryById(_id);
+    getSubscriptionByID(_id);
+  }, [_id]);
   // useEffect(() => {
   //   getAllCategory();
   //   getAllSessions();
@@ -448,146 +485,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* My Sessions */}
-      {/* {user && traing?.length > 0 && (
-        <section className="bg-primary pb-10 md:pb-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-left mb-8 md:mb-12">
-              <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-8 capitalize text-third">
-                My Training Logs
-              </h2>
-            </div>
-            <HorizontalScroll
-              items={traing}
-              renderItem={(item, idx) => {
-                const sub = item.subscription || {};
-                const address = sub.Address || {};
-                const country = address.country?.name || "";
-                const city = address.city?.name || "";
-                const landmark = address.landmark || "";
-                const street = address.streetName || "";
-                const trainer = sub.trainer || {};
-                const sessionType = sub.sessionType || {};
-                const category = sub.categoryId || {};
-                const dates = Array.isArray(sub.date) ? sub.date : [];
-                return (
-                  <div
-                    key={item._id || idx}
-                    className="bg-white rounded-xl shadow-lg overflow-hidden w-80 flex-shrink-0 transition-all duration-200 hover:shadow-2xl border border-third/20 flex flex-col cursor-pointer"
-                    onClick={() =>
-                      navigate(`/history-details/${item._id || item.id}`, {
-                        state: { details: item },
-                      })
-                    }
-                  >
-                    <img
-                      src={sub.media}
-                      alt={sub.name}
-                      className="w-full h-44 object-cover object-center"
-                    />
-                    <div className="p-4 flex flex-col gap-2 flex-1 justify-between">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="uppercase text-xs font-bold tracking-widest text-white bg-third px-2 py-0.5 rounded-full">
-                          {category.cName}
-                        </span>
-                        <span className="text-xs font-semibold text-white bg-fourth px-2 py-0.5 rounded-full">
-                          {sessionType.sessionName}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-lg mb-1 capitalize text-third line-clamp-1">
-                        {sub.name}
-                      </h3>
-                      <div className="text-xs text-third mb-1 flex items-center gap-4">
-                        <span className="font-semibold">
-                          {trainer.first_name} {trainer.last_name}
-                        </span>
-                        <span className="flex items-center gap-1 ml-auto">
-                          <IoLocationOutline className="mr-1" />
-                          {city ? city : "Location"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center text-xs text-third mb-1 gap-2">
-
-                        <span>
-                          {dates
-                            .map((date) =>
-                              new Date(date).toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })
-                            )
-                            .join(", ")}
-                        </span>
-
-                        <span className="ml-3">
-                          {sub.startTime} - {sub.endTime}
-                        </span>
-
-                        <span className="ml-auto font-semibold text-fourth">
-                          AED{sub.price}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-xs text-third mb-1 gap-2">
-                        {item.rating && (
-                          <span className="flex items-center">
-                            <FaStar className="text-yellow-400 mr-1" />
-                            {item.rating}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              }}
-              itemClass="mr-4 md:mr-6"
-            />
-          </div>
-        </section>
-      )} */}
-
-      {/* Explore OutBox Section */}
-      {category?.length > 0 && (
-        <section className="bg-primary py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-third">
-              Explore OutBox
-            </h2>
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-wrap">
-              {category.map((cat) => {
-                let bgColorClass = "bg-sixth";
-                if (cat.cName?.toLowerCase().includes("wellness"))
-                  bgColorClass = "bg-fourth";
-                if (cat.cName?.toLowerCase().includes("liveness"))
-                  bgColorClass = "bg-fifth";
-
-                return (
-                  <Link
-                    key={cat._id}
-                    to={`/subscriptions/${cat._id}?name=cat`}
-                    className="relative cursor-pointer hover:scale-105 transition-transform duration-300 flex-1 rounded-2xl overflow-hidden shadow-lg min-w-[300px] max-w-[400px]"
-                  >
-                    <img
-                      src={cat.image}
-                      alt={cat.alt}
-                      className="w-full h-56 object-cover"
-                    />
-                    <div
-                      className={`absolute inset-0 ${bgColorClass} bg-opacity-70`}
-                    ></div>
-                    <div className="absolute bottom-0 left-0 p-6 z-10">
-                      <span className="text-white text-2xl font-bold drop-shadow-lg">
-                        {cat.cName}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Top Sessions Section */}
       {sessionData?.length > 0 && (
@@ -607,7 +504,8 @@ const HomePage = () => {
                   }}
                 >
                   <div className="bg-third bg-opacity-70 rounded-full px-4 py-2 text-center">
-                    {cat.sessionName}
+                   <span>{cat?.sessionName && cat.sessionName.toUpperCase()}</span>
+
                   </div>
                 </Link>
               )}
@@ -615,14 +513,33 @@ const HomePage = () => {
           </div>
         </section>
       )}
-
-      {/* Featured Sessions */}
+      <section className="border  overflow-hidden py-10 md:py-16 mt-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
+            <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
+              Today's Classes
+            </h2>
+            <Link
+              to={`/classes/${_id}`}
+              className="text-fourth font-semibold flex items-center gap-1"
+            >
+              Show all ({singleClassSubscriptions?.length}) <span>&rarr;</span>
+            </Link>
+          </div>
+          
+            <div className="">
+              <Classes hide={true} />
+            </div>
+          </div>
+        
+      </section>
+      {/* Featured Membership */}
       {subscription?.length > 0 && (
         <section className="bg-primary py-10 md:py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
               <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
-                Find your new favorite classes
+                Top Membership
               </h2>
               <Link
                 to={`/subscriptions`}
@@ -660,12 +577,12 @@ const HomePage = () => {
                   userPkg.packageId?._id === pkg._id ||
                   userPkg._id === pkg._id
               );
-              console.log(
-                `Package ${pkg._id} (${pkg.name}) - isPurchased:`,
-                isPurchased,
-                "userPackage:",
-                userPackage
-              );
+              // console.log(
+              //   `Package ${pkg._id} (${pkg.name}) - isPurchased:`,
+              //   isPurchased,
+              //   "userPackage:",
+              //   userPackage
+              // );
 
               return (
                 <PackageCard

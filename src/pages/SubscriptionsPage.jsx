@@ -152,7 +152,7 @@ const SubscriptionsPage = () => {
 
   useEffect(() => {
     getAllLocations();
-    getAllLocationById(id);
+    // getAllLocationById(id);
   }, []);
 
   useEffect(() => {
@@ -363,7 +363,7 @@ const SubscriptionsPage = () => {
               }`}
               onClick={() => setSelectedTab("classes")}
             >
-              CLASSES
+              PROGRAMS
             </button>
             <button
               className={`px-3 sm:px-4 py-2 rounded-full font-semibold text-xs sm:text-sm ${
@@ -531,9 +531,10 @@ const SubscriptionsPage = () => {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                   {paginatedClasses.map((classItem, index) => (
                     <SubscriptionCard
+                      key={classItem._id}
                       _id={classItem._id}
                       media={classItem.media}
                       name={classItem.name}
@@ -543,6 +544,7 @@ const SubscriptionsPage = () => {
                     />
                   ))}
                 </div>
+
                 <div className="mt-4">
                   <Pagination
                     currentPage={classPage}

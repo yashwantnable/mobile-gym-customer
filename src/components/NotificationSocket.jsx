@@ -97,7 +97,7 @@ console.log("notificationData:",notificationData)
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center px-4 py-3 border-b border-slate-300 text-sm font-semibold text-primary">
+        <div className="flex justify-between items-center px-4 py-3 border-b border-slate-300 text-sm font-semibold text-dark">
           <span>Notifications</span>
           <div className="space-x-2 text-xs text-blue-400">
             <button

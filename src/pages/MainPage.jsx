@@ -16,7 +16,7 @@ const MainPage = () => {
   const [ratings, setRatings] = useState([]);
   const [currentReviews, setCurrentReviews] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+//  console.log("category:",category)
   useEffect(() => {
     if (ratings.length > 0) {
       const endIndex = Math.min(currentIndex + 2, ratings.length);
@@ -115,7 +115,7 @@ const MainPage = () => {
             >
               {/* Added text shadow for better readability */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight drop-shadow-lg">
-                Live <span className="text-fourth drop-shadow-md">Outside</span>{" "}
+                Live <span className="text-third drop-shadow-md">Outside</span>{" "}
                 The Box
               </h1>
               {/* Increased contrast for paragraph */}
@@ -126,9 +126,9 @@ const MainPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-fourth hover:bg-fourth-dark text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl"
+                className="bg-third hover:bg-fourth-dark text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl"
               >
-                <Link to={"/subscriptions"}>Join the Movement</Link>
+                <Link to={"/classes"}>Join the Movement</Link>
               </motion.button>
             </motion.div>
           </motion.div>
@@ -185,7 +185,7 @@ const MainPage = () => {
                         Outbox is a lifestyle brand
                       </span>{" "}
                       founded on the belief that life is meant to be lived{" "}
-                      <span className="text-fourth font-medium">
+                      <span className="text-third  font-semibold">
                         outside the box
                       </span>{" "}
                       — boldly, creatively, and without limits.
@@ -200,7 +200,7 @@ const MainPage = () => {
                       selves.
                     </p>
 
-                    <div className="p-4 sm:p-6 bg-white bg-opacity-90 rounded-lg border-l-4 border-fourth shadow-sm">
+                    <div className="p-4 sm:p-6 bg-white bg-opacity-90 rounded-lg border-l-4 border-third shadow-sm">
                       <p className="text-third italic">
                         "Whether through dynamic classes, mindful wellness
                         sessions, or vibrant social events, Outbox inspires you
@@ -213,7 +213,7 @@ const MainPage = () => {
                       More than a brand, Outbox is a{" "}
                       <span className="font-medium">mindset</span> — a movement
                       for those who dare to live{" "}
-                      <span className="text-fourth font-medium">
+                      <span className="text-third font-semibold">
                         fully and fearlessly
                       </span>
                       .
@@ -257,7 +257,7 @@ const MainPage = () => {
                 Our founder set out to build a brand that breaks routine — one
                 that celebrates movement, creativity, and self-expression.
               </p>
-              <blockquote className="border-l-4 border-fourth pl-4 italic">
+              <blockquote className="border-l-4 border-third pl-4 italic">
                 "Your only limit is the one you set yourself."
               </blockquote>
               <p>
@@ -273,7 +273,7 @@ const MainPage = () => {
         {/* Logo Story Section */}
         <section className="relative bg-third overflow-hidden">
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary to-fourth opacity-20"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary to-third opacity-20"></div>
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay opacity-10"></div>
           </div>
 
@@ -319,8 +319,8 @@ const MainPage = () => {
                   }}
                   className="relative"
                 >
-                  <div className="absolute inset-0 rounded-full bg-fourth opacity-20 blur-xl"></div>
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center p-6 border-2 border-fourth/20 shadow-2xl">
+                  <div className="absolute inset-0 rounded-full bg-third opacity-20 blur-xl"></div>
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center p-6 border-2 border-second/20 shadow-2xl">
                     <img
                       src={logo}
                       alt="OutBox Logo"
@@ -353,7 +353,7 @@ const MainPage = () => {
                 className="mb-16 sm:mb-20"
               >
                 <h3 className="text-3xl font-bold text-white text-center mb-12">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-fourth">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-second">
                     Our logo captures this spirit
                   </span>
                 </h3>
@@ -382,7 +382,7 @@ const MainPage = () => {
                       whileInView={{ y: 0, opacity: 1 }}
                       transition={{ duration: 0.6, delay: index * 0.15 }}
                       viewport={{ once: true }}
-                      className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-fourth/20 hover:border-fourth/50 transition-all duration-300 group"
+                      className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-third/20 hover:border-primary/50 transition-all duration-300 group"
                     >
                       <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 text-fourth">
                         {item.icon}
@@ -410,7 +410,7 @@ const MainPage = () => {
                   Liveness — all designed to help you live fully, wherever you
                   are.
                 </p>
-                <h4 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fourth to-primary">
+                <h4 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-second to-primary">
                   OutBox — Built to Move.
                 </h4>
               </motion.div>
@@ -474,7 +474,7 @@ const MainPage = () => {
                   whileInView={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className={`p-6 rounded-xl shadow-md ${value.color} flex flex-col`}
+                  className={`p-6 rounded-xl shadow-md bg-third flex flex-col`}
                 >
                   <h3 className="text-xl sm:text-2xl font-bold mb-3">
                     {value.title}
@@ -493,7 +493,7 @@ const MainPage = () => {
         >
           <motion.div
             style={{ y: y1 }}
-            className="absolute -left-40 top-1/3 w-80 h-80 rounded-full bg-fourth opacity-10 blur-3xl"
+            className="absolute -left-40 top-1/3 w-80 h-80 rounded-full bg-third opacity-10 blur-3xl"
           />
 
           <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -530,7 +530,7 @@ const MainPage = () => {
                       className="flex items-start"
                     >
                       <div className="flex-shrink-0 mt-1">
-                        <div className="w-5 h-5 rounded-full bg-fourth"></div>
+                        <div className="w-3 h-3 rounded-full bg-primary"></div>
                       </div>
                       <p className="ml-4 text-lg text-primary">{item}</p>
                     </motion.div>
@@ -562,7 +562,7 @@ const MainPage = () => {
                           ? `${currentReviews[0].review.substring(0, 100)}...`
                           : currentReviews[0].review}
                       </p>
-                      <p className="font-bold text-fourth">
+                      <p className="font-bold text-third">
                         — {currentReviews[0].created_by.first_name}
                         <span className="text-yellow-400 ml-1">
                           {"★".repeat(currentReviews[0].rating)}
@@ -579,7 +579,7 @@ const MainPage = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
                     viewport={{ once: true }}
-                    className="absolute top-0 right-0 bg-fourth p-6 rounded-xl shadow-lg w-64 z-10 text-white"
+                    className="absolute top-0 right-0 bg-primary p-6 rounded-xl shadow-lg w-64 z-10 text-third"
                   >
                     <>
                       <p className="italic mb-3">
@@ -626,13 +626,16 @@ const MainPage = () => {
                     {category.map((cat) => {
                       let bgColorClass = "bg-sixth";
                       let textColor = "text-white";
+                      // let path = "/fitness";
                       if (cat.cName?.toLowerCase().includes("wellness")) {
-                        bgColorClass = "bg-fourth";
-                        textColor = "text-white";
-                      }
-                      if (cat.cName?.toLowerCase().includes("liveness")) {
                         bgColorClass = "bg-fifth";
                         textColor = "text-white";
+                        // path = "/wellness";
+                      }
+                      if (cat.cName?.toLowerCase().includes("liveness")) {
+                        bgColorClass = "bg-fourth";
+                        textColor = "text-white";
+                        // path = "/liveness";
                       }
 
                       return (
@@ -713,7 +716,7 @@ const MainPage = () => {
                           </div>
                           {/* Clickable overlay for navigation */}
                           <Link
-                            to={`/subscriptions/${cat._id}?name=cat`}
+                            to={`catagory/${cat._id}`}
                             className="absolute inset-0 z-20"
                           >
                             <span className="sr-only">Go to {cat.cName}</span>

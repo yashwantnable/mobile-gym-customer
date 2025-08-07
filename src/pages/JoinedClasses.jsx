@@ -18,6 +18,7 @@ import "leaflet/dist/leaflet.css";
 import toast from "react-hot-toast";
 import { BookingApi } from "../Api/Booking.api";
 import Pagination from "../components/Pagination";
+import { Link } from "react-router-dom";
 
 const JoinedClasses = ({ myJoinedClasses }) => {
   const [selectedClass, setSelectedClass] = useState(null);
@@ -33,7 +34,7 @@ const JoinedClasses = ({ myJoinedClasses }) => {
     (currentPage - 1) * classesPerPage,
     currentPage * classesPerPage
   );
-  console.log("myJoinedClasses:", myJoinedClasses);
+  // console.log("myJoinedClasses:", myJoinedClasses);
   const handleAttend = async (classId, bookingId) => {
     setIsLoading(true);
     const loadingToast = toast.loading("Marking attendance...");
@@ -121,9 +122,17 @@ const JoinedClasses = ({ myJoinedClasses }) => {
 
       {myJoinedClasses.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-lg">
+          <div className="flex flex-col items-center">
+            <p className="text-gray-500 text-lg">
             You haven't joined any classes yet.
           </p>
+          <Link
+            to={`/subscriptions`}
+            className="text-fourth font-semibold flex items-center gap-1"
+          >
+            Join Now
+          </Link>
+          </div>
         </div>
       ) : (
         <>

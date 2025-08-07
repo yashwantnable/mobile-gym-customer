@@ -21,7 +21,7 @@ const SmallCalendar = ({ selectedDate, onDateSelect, classesData }) => {
     "December",
   ];
 
-  console.log("this is classesdffffffff data", classesData);
+  // console.log("this is classesdffffffff data", classesData);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();

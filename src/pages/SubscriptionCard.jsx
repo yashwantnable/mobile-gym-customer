@@ -22,7 +22,7 @@ const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass }) => {
 
   return (
     <div
-      className="bg-[#f8ede7] rounded-2xl p-4 w-[320px] shadow-md cursor-pointer"
+      className="bg-white rounded-2xl p-4  shadow-md cursor-pointer"
       onClick={handleNavigate}
     >
       <img
@@ -34,7 +34,7 @@ const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass }) => {
         <span className="text-[#6b6b6b] text-sm tracking-wide">
           {dateRange}
         </span>
-        <span className="bg-[#f3e6d6] text-[#7a5c3e] text-xs px-3 py-1 rounded-full font-semibold">
+        <span className="bg-[#f3e6d6] text-[#7a5c3e] text-xs px-3 py-1 rounded-full font-semibold flex flex-col items-center justify-center leading-tight text-center min-w-[60px] min-h-[40px]">
           {classesText}
         </span>
       </div>
