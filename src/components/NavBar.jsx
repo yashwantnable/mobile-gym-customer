@@ -283,7 +283,11 @@ const NavBar = () => {
             {category.map((cat) => (
               <Link
                 key={cat._id}
-                to={cat._id}
+                 to={
+                  cat?.cName?.toLowerCase() === "liveness"
+                    ? "/comingsoon"
+                    : `catagory/${cat?._id}`
+                }
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-medium ${
                   location.pathname === `/catagory/${cat._id}`
