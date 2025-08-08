@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useBrandColor } from "../contexts/BrandColorContext";
 
 const SmallCalendar = ({ selectedDate, onDateSelect, classesData }) => {
   const [currentMonth, setCurrentMonth] = useState(
     new Date(selectedDate.getFullYear(), selectedDate.getMonth())
   );
-
+const { brandColor } = useBrandColor();
   const monthNames = [
     "January",
     "February",
@@ -135,8 +136,8 @@ const SmallCalendar = ({ selectedDate, onDateSelect, classesData }) => {
                     ${
                       getClassForDate(day)?.isJoined ||
                       getClassForDate(day)?.isBooked
-                        ? "bg-red-500"
-                        : "bg-sixth"
+                        ? `bg-${brandColor}`
+                        : `bg-${brandColor}`
                     }
                     rounded-full`}
                 ></div>

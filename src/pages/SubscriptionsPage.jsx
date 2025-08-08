@@ -9,10 +9,13 @@ import { CategoryApi } from "../Api/Category.api";
 import moment from "moment";
 import { FilterApi } from "../Api/Filteration.api";
 import SubscriptionCard from "./SubscriptionCard";
+import { ClassesApi } from "../Api/Classes.api";
 
 const SubscriptionsPage = () => {
+  const [selectedType, setSelectedType] = useState("");
   const [selectedTab, setSelectedTab] = useState("classes");
   const [selectedActivities, setSelectedActivities] = useState([]);
+  const [selectedActivity, setSelectedActivity] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDistance, setSelectedDistance] = useState("Select Miles");
@@ -41,6 +44,39 @@ const SubscriptionsPage = () => {
     ? locationdata.find((loc) => loc.value === selectedLocation)?.label || ""
     : "";
 
+  const handleCheckboxChange = (filterType, value) => {
+    let newSelectedType = selectedType;
+    let newSelectedActivity = selectedActivity;
+
+    if (filterType === "type") {
+      // Toggle type
+      newSelectedType = selectedType === value ? "" : value;
+      setSelectedType(newSelectedType);
+    }
+
+    if (filterType === "activity") {
+      // Toggle activity
+      newSelectedActivity = selectedActivity === value ? null : value;
+      setSelectedActivity(newSelectedActivity);
+    }
+
+    // Build payload
+    let payload = { isExpired: false };
+
+    if (newSelectedType === "single") {
+      payload.isSingleClass = true;
+    } else if (newSelectedType === "long") {
+      payload.isSingleClass = false;
+    }
+    // "all" means don't set isSingleClass
+
+    if (newSelectedActivity) {
+      payload.sessionTypeId = newSelectedActivity;
+    }
+
+    getFilteredSubscription(payload);
+  };
+
   const getAllCategoriesById = async () => {
     handleLoading(true);
     try {
@@ -53,13 +89,24 @@ const SubscriptionsPage = () => {
     }
   };
 
-  console.log("location ka data hai", locationdata);
-
   const getAllSubscription = async () => {
     handleLoading(true);
     try {
       const res = await CategoryApi.getAllSubscription();
       setClasses(res?.data?.data);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  const getFilteredSubscription = async (payload) => {
+    handleLoading(true);
+    try {
+      const res = await ClassesApi.getAllClasses(payload);
+      setClasses(res?.data?.data?.subscriptions);
+      console.log("CLASS FILTER:", res?.data?.data?.subscriptions);
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -228,6 +275,8 @@ const SubscriptionsPage = () => {
 
   const clearAllFilters = () => {
     setSelectedActivities([]);
+    setSelectedActivity();
+    setSelectedType();
     setSearchQuery("");
     setSelectedDate(null);
     setSelectedDistance("Select Miles");
@@ -476,8 +525,42 @@ const SubscriptionsPage = () => {
                   </div>
                 </div>
 
+                {/* CLASS TYPE FILTER */}
+                <div>
+                  <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-base">
+                    Class Type
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedType === "single"}
+                      onChange={() => handleCheckboxChange("type", "single")}
+                    />
+                    Single
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedType === "long"}
+                      onChange={() => handleCheckboxChange("type", "long")}
+                    />
+                    Long Classes
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedType === "all"}
+                      onChange={() => handleCheckboxChange("type", "all")}
+                    />
+                    All Classes
+                  </label>
+                </div>
+
                 {activities.length > 0 && (
-                  <div className="mb-4 sm:mb-6">
+                  <div className="mb-4 sm:mb-6 mt-4">
                     <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-base">
                       Activities
                     </div>
@@ -488,8 +571,10 @@ const SubscriptionsPage = () => {
                       >
                         <input
                           type="checkbox"
-                          checked={selectedActivities.includes(activity._id)}
-                          onChange={() => handleActivityToggle(activity._id)}
+                          checked={selectedActivity === activity._id}
+                          onChange={() =>
+                            handleCheckboxChange("activity", activity._id)
+                          }
                           className="accent-primary-600"
                         />
                         <span className="text-gray-700">

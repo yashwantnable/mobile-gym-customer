@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { CheckCircle, X } from "lucide-react";
 import HorizontalScroll from "./HorizontalScroll";
-
+import { useBrandColor } from "../contexts/BrandColorContext";
 const PackageSelectModal = ({
   packages,
+  selectedCatName,
   activePackageId,
   onActivate,
   onClose,
 }) => {
   const [activating, setActivating] = useState("");
-
+  const { brandColor } = useBrandColor();
   const handleActivate = (pkgId) => {
     console.log(pkgId);
     setActivating(pkgId);
@@ -23,7 +24,9 @@ const PackageSelectModal = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-100 p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-sixth rounded-t-2xl">
+        <div
+          className={`flex items-center justify-between px-8 py-6 border-b border-gray-100 rounded-t-2xl bg-${brandColor}`}
+        >
           <div>
             <h2 className="text-2xl font-bold text-white mb-1">
               Select Your Package

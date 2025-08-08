@@ -40,7 +40,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const { hash } = useLocation();
-  console.log("_id:", _id);
+  // console.log("_id:", _id);
   useEffect(() => {
     if (hash) {
       setTimeout(() => {
@@ -55,6 +55,7 @@ const HomePage = () => {
 
   const { handleLoading } = useLoading();
 
+  console.log("subscription:",subscription)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -76,7 +77,7 @@ const HomePage = () => {
     try {
       const res = await CategoryApi.getAllSessionByCategoryId(id);
       setSessions(res?.data?.data);
-      console.log("getAllSessionByCategoryId:", res?.data?.data);
+      // console.log("getAllSessionByCategoryId:", res?.data?.data);
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -98,6 +99,7 @@ const HomePage = () => {
       handleLoading(false);
     }
   };
+  
   const getSubscriptionByID = async (id) => {
     handleLoading(true);
     try {
@@ -121,7 +123,6 @@ const HomePage = () => {
       const packages = Array.isArray(res?.data?.data)
         ? res.data.data
         : res?.data?.data?.packages || [];
-      console.log("All packages data:", packages);
       setPackdata(packages);
     } catch (error) {
       console.log("Error", error);
@@ -140,7 +141,6 @@ const HomePage = () => {
       const packages = Array.isArray(res?.data?.data)
         ? res.data.data
         : res?.data?.data?.packages || [];
-      console.log("User packages data:", packages);
       setUserPackage(packages);
     } catch (error) {
       console.log("Error", error);
@@ -528,7 +528,7 @@ const HomePage = () => {
           </div>
           
             <div className="">
-              <Classes hide={true} />
+              <Classes hide={true}/>
             </div>
           </div>
         

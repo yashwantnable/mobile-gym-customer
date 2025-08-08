@@ -14,7 +14,7 @@ const NotificationProvider = ({ userId }) => {
     updateNotification,
     setNotificationData,
   } = useNotification();
-console.log("notificationData:",notificationData)
+// console.log("notificationData:",notificationData)
   useEffect(() => {
     const socket = io(serverUrl, { transports: ["websocket"] });
 

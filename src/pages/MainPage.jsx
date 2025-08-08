@@ -128,7 +128,7 @@ const MainPage = () => {
                 whileTap={{ scale: 0.95 }}
                 className="bg-third hover:bg-fourth-dark text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl"
               >
-                <Link to={"/classes"}>Join the Movement</Link>
+                <Link to={`/classes/${category[0]?._id}`}>Join the Movement</Link>
               </motion.button>
             </motion.div>
           </motion.div>

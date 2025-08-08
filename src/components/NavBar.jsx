@@ -15,9 +15,11 @@ import { FilterApi } from "../Api/Filteration.api";
 import { GoBell } from "react-icons/go";
 import NotificationProvider from "./NotificationSocket";
 import { CategoryApi } from "../Api/Category.api";
+import { useBrandColor } from "../contexts/BrandColorContext";
 
 const NavBar = () => {
   const location = useLocation();
+  const { setBrandColor } = useBrandColor();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -32,6 +34,13 @@ const NavBar = () => {
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
 
+    const handleSetColor = (catName) => {
+    const name = catName?.toLowerCase();
+    if (name === "wellness") setBrandColor("fourth");
+    else if (name === "liveness") setBrandColor("fifth");
+    else if (name === "fitness") setBrandColor("sixth");
+  };
+
   const getAllCategory = async () => {
     handleLoading(true);
     try {
@@ -43,7 +52,6 @@ const NavBar = () => {
       handleLoading(false);
     }
   };
-  console.log("category:", category);
 
   const handleFilterSortBy = async (e) => {
     handleLoading(true);
@@ -157,26 +165,27 @@ const NavBar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-6 lg:space-x-8">
-            {category.map((cat) => (
-              <Link
-                key={cat?._id}
-                to={
-                  cat?.cName?.toLowerCase() === "liveness"
-                    ? "/comingsoon"
-                    : `catagory/${cat?._id}`
-                }
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname === `/catagory/${cat._id}`
-                    ? "text-third font-semibold"
-                    : "text-third/80 hover:text-third"
-                }`}
-              >
-                <span>
-                  {cat?.cName &&
-                    cat.cName[0].toUpperCase() + cat.cName.slice(1)}
-                </span>
-              </Link>
-            ))}
+           {category.map((cat) => (
+        <Link
+          key={cat?._id}
+          to={
+            cat?.cName?.toLowerCase() === "liveness"
+              ? "/comingsoon"
+              : `catagory/${cat?._id}`
+          }
+          onClick={() => handleSetColor(cat?.cName)} // ⬅️ update on click
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+            location.pathname === `/catagory/${cat._id}`
+              ? "text-third font-semibold"
+              : "text-third/80 hover:text-third"
+          }`}
+        >
+          <span>
+            {cat?.cName &&
+              cat.cName[0].toUpperCase() + cat.cName.slice(1)}
+          </span>
+        </Link>
+      ))}
 
             {/* Notification bell moved here, after nav items and before user icon */}
             <div className="mt-2">

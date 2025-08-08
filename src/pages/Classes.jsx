@@ -12,7 +12,8 @@ import { ClassesApi } from "../Api/Classes.api";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { FaCalendarAlt, FaSearch } from "react-icons/fa";
 import JoinedClasses from "./JoinedClasses";
-
+import { CategoryApi } from "../Api/Category.api";
+import { useBrandColor } from "../contexts/BrandColorContext";
 const transformPackageData = (apiPackage) => {
   return {
     id: apiPackage.package._id,
@@ -41,10 +42,15 @@ const transformPackageData = (apiPackage) => {
   };
 };
 
-const Classes = ({ hide }) => {
+const Classes = ({ hide, category }) => {
   const { _id } = useParams();
+  const { brandColor, setBrandColor } = useBrandColor();
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCatName, setSelectedCatName] = useState("Select Category");
   const [activeTab, setActiveTab] = useState("joinNew");
   const [myJoinedClasses, setMyJoinedClasses] = useState([]);
+  const [categories, setCategory] = useState([]);
+  const [selected, setSelected] = useState(_id || "");
   const [userPackages, setUserPackages] = useState([]);
   const [selectedPackageId, setSelectedPackageId] = useState("");
   const packageId = localStorage.getItem("packageId");
@@ -70,7 +76,6 @@ const Classes = ({ hide }) => {
     handleLoading(true);
     try {
       const res = await ClassesApi.getClassesSubByUser();
-      console.log(res.data?.data);
       setMyJoinedClasses(res.data?.data);
     } catch (err) {
       console.log(err);
@@ -79,12 +84,21 @@ const Classes = ({ hide }) => {
     }
   };
 
+  useEffect(() => {
+    if (categories.length > 0) {
+      if (_id) {
+        setSelected(_id); // from URL params
+      } else {
+        setSelected(categories[0]._id); // default to first category
+      }
+    }
+  }, [categories, _id]);
+
   const getAllBookingclasess = async () => {
     handleLoading(true);
 
     try {
       const res = await ClassesApi.getClassesSubByUser();
-      console.log("API response get classes", res?.data?.data);
       setBookingClasses(res?.data?.data);
     } catch (error) {
       console.log("Error", error);
@@ -131,19 +145,14 @@ const Classes = ({ hide }) => {
     getClassesSubByUser();
   }, []);
 
-  const getAllClasses = async (id) => {
-    const categoryId = id || _id;
+  const getAllClasses = async (categoryId) => {
     handleLoading(true);
-
     try {
-      // Build payload conditionally
       const payload = { isSingleClass: true };
-      if (categoryId) {
-        payload.categoryId = categoryId;
-      }
+      if (categoryId) payload.categoryId = categoryId;
 
       const res = await ClassesApi.getAllClasses(payload);
-      const apiClasses = res?.data?.data?.subscriptions;
+      const apiClasses = res?.data?.data?.subscriptions || [];
 
       const transformedClasses = apiClasses.map((cls) => ({
         id: cls._id,
@@ -177,13 +186,30 @@ const Classes = ({ hide }) => {
     }
   };
 
+  const getCategoryClass = (catName) => {
+    const name = catName?.toLowerCase();
+    if (name === "wellness") return "border-b-2 border-fourth text-fourth";
+    if (name === "liveness") return "border-b-2 border-fifth text-fifth";
+    if (name === "fitness") return "border-b-2 border-sixth text-sixth";
+    return "";
+  };
+
   useEffect(() => {
-    getAllClasses(_id);
+    getAllCategory();
   }, []);
+
+  useEffect(() => {
+    if (selected) {
+      getAllClasses(selected);
+    }
+  }, [selected]);
+
+  // useEffect(() => {
+  //   getAllCategory();
+  // }, [selected]);
 
   // Debug effect to log filter changes
   useEffect(() => {
-    console.log("Filters changed:", filters);
   }, [filters]);
 
   useEffect(() => {
@@ -269,6 +295,29 @@ const Classes = ({ hide }) => {
     });
   };
 
+  const getAllCategory = async () => {
+    handleLoading(true);
+    try {
+      const res = await CategoryApi.Allcategory();
+      const fetchedCategories = res?.data?.data || [];
+      setCategory(fetchedCategories);
+
+      // If params id exists → use it, else use first category's _id
+      if (_id) {
+        setSelected(_id);
+      } else if (fetchedCategories.length > 0) {
+        setSelected(fetchedCategories[0]._id);
+        setSelectedCatName(fetchedCategories[0].cName);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  const activeCategoryName =
+    selectedCatName || categories.find((cat) => cat._id === _id)?.cName || "";
   const getUniqueValues = (field) => {
     const values = [...new Set(classes.map((cls) => cls[field]))].filter(
       Boolean
@@ -301,6 +350,7 @@ const Classes = ({ hide }) => {
       {showPackageModal && (
         <PackageSelectModal
           packages={userPackages}
+          selectedCatName={selectedCatName}
           activePackageId={activePackageId}
           onActivate={handleActivatePackage}
           onClose={() => setShowPackageModal(false)}
@@ -313,8 +363,7 @@ const Classes = ({ hide }) => {
             onClick={() => setActiveTab("joinNew")}
             className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
               activeTab === "joinNew"
-                ? // ? "border-b-2 border-indigo-500 text-indigo-600"
-                  "border-b-2 border-sixth text-sixth"
+                ? getCategoryClass(activeCategoryName)
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -326,7 +375,7 @@ const Classes = ({ hide }) => {
             className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
               activeTab === "myClasses"
                 ? // ? "border-b-2 border-indigo-500 text-indigo-600"
-                  "border-b-2 border-sixth text-sixth"
+                  `border-b-2 border-${brandColor} text-${brandColor}`
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -407,15 +456,21 @@ const Classes = ({ hide }) => {
                   </div>
                   {userPackages.length > 0 ? (
                     <button
-                      className="px-4 py-2.5 rounded-lg bg-sixth text-white font-semibold text-sm shadow-md hover:bg-sixth/90 transition-colors focus:ring-2 focus:ring-sixth/50 focus:outline-none"
+                      className={`bg-${brandColor} px-4 py-2.5 rounded-lg text-white font-semibold text-sm shadow-md hover:opacity-90 transition-colors focus:ring-2 focus:ring-offset-1 focus:outline-none`}
                       onClick={() => setShowPackageModal(true)}
                     >
                       Choose Package
                     </button>
                   ) : (
                     <button
-                      className="px-4 py-2.5 rounded-lg bg-sixth text-white font-semibold text-sm shadow-md hover:bg-sixth/90 transition-colors focus:ring-2 focus:ring-sixth/50 focus:outline-none"
-                      onClick={() => navigate("/explore#packages")}
+                      className={`${
+                        selectedCatName?.toLowerCase() === "wellness"
+                          ? "bg-fourth"
+                          : selectedCatName?.toLowerCase() === "liveness"
+                          ? "bg-fifth"
+                          : "bg-sixth"
+                      } px-4 py-2.5 rounded-lg text-white font-semibold text-sm shadow-md hover:opacity-90 transition-colors focus:ring-2 focus:outline-none`}
+                      onClick={() => navigate(`/catagory/${_id}#packages`)}
                     >
                       Buy Packages
                     </button>
@@ -435,19 +490,59 @@ const Classes = ({ hide }) => {
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">
                     {/* {JSON.stringify(classes?.[0]?.category)} */}
-                    {classes?.[0]?.category && (
-                      <span>
-                        {classes[0].category[0].toUpperCase() +
-                          classes[0].category.slice(1)}{" "}
-                        Class Schedule
-                      </span>
-                    )}
+                    <span>
+                      {/* {JSON.stringify(classes[0]?.category)} */}
+                      {`${
+                        classes?.[0]?.category ? classes[0].category + " " : ""
+                      }Class Schedule`}
+                    </span>
                   </h2>
                   <p className="text-sm text-gray-500">
                     Browse and filter available classes. Select a class to view
                     details, buy, or join using your package.
                   </p>
                 </div>
+
+                <div className="w-full">
+                  <select
+                    value={selected}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const selectedCategory = categories.find(
+                        (cat) => cat._id === selectedId
+                      );
+
+                      setSelected(selectedId);
+                      setSelectedCatName(selectedCategory?.cName || "");
+
+                      // ⬅️ update brand color based on cName
+                      if (
+                        selectedCategory?.cName?.toLowerCase() === "wellness"
+                      ) {
+                        setBrandColor("fourth");
+                      } else if (
+                        selectedCategory?.cName?.toLowerCase() === "liveness"
+                      ) {
+                        setBrandColor("fifth");
+                      } else if (
+                        selectedCategory?.cName?.toLowerCase() === "fitness"
+                      ) {
+                        setBrandColor("sixth");
+                      }
+                    }}
+                    className="block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="" disabled>
+                      Select Category
+                    </option>
+                    {categories?.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.cName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-200">
                     <h2 className="text-lg font-medium text-gray-900">
@@ -457,6 +552,7 @@ const Classes = ({ hide }) => {
                   <div className="p-4">
                     <SmallCalendar
                       selectedDate={selectedDate}
+                      selectedCatName={selectedCatName}
                       onDateSelect={handleDateSelect}
                       classesData={classesWithJoined}
                     />
