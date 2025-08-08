@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBrandColor } from "../contexts/BrandColorContext";
 
 const PackageCard = ({
   image,
@@ -21,6 +22,7 @@ const PackageCard = ({
   const navigate = useNavigate();
 
   // Feature pagination state
+  const { brandColor } = useBrandColor();
   const [visibleCount, setVisibleCount] = useState(3);
   const totalFeatures = features.length;
   const canShowMore = visibleCount < totalFeatures;
@@ -39,14 +41,8 @@ const PackageCard = ({
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 transition-all duration-300 border ${
-        style.border
-      } ${
-        style.bg
-      } flex flex-col cursor-pointer relative shadow-lg group font-sans animate-scale-in ${
-        isPurchased ? "opacity-75" : ""
-      }`}
-      style={{ minHeight: 480 }}
+      className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 flex flex-col h-full transition-all duration-300 border border-second ${style.bg} cursor-pointer relative shadow-lg group font-sans`}
+    
     >
       {/* Decorative accent */}
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-2xl opacity-20 pointer-events-none bg-fourth"></div>
@@ -71,7 +67,7 @@ const PackageCard = ({
         <div className="p-5 pb-2">
           <div className="flex justify-between items-center mb-3">
             <span
-              className={`text-xs font-bold tracking-widest ${style.text} bg-white bg-opacity-80 px-3 py-1 rounded-full shadow-sm border border-fifth`}
+              className={`text-xs font-bold tracking-widest ${style.text} bg-white bg-opacity-80 px-3 py-1 rounded-full shadow-sm border border-second`}
             >
               {duration}
             </span>
@@ -83,7 +79,7 @@ const PackageCard = ({
             {name}
           </h3>
           <div className="mb-2 flex items-end gap-2">
-            <span className="text-3xl font-black text-custom-brown">
+            <span className="text-3xl font-black text-third">
               AED {price}
             </span>
             <span className="text-xs text-custom-gray font-medium mb-1">
@@ -151,7 +147,7 @@ const PackageCard = ({
           </button>
         ) : (
           <button
-            className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} shadow-md group-hover:scale-105 group-hover:shadow-xl`}
+            className={`w-full py-3 px-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${style.button} bg-${brandColor} shadow-md group-hover:scale-105 group-hover:shadow-xl`}
             onClick={handleCheckout}
           >
             Buy Now
