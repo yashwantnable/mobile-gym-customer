@@ -10,13 +10,15 @@ import { CategoryApi } from "../Api/Category.api";
 import { useLoading } from "../loader/LoaderContext";
 import { Link } from "react-router-dom";
 import { ReviewgApi } from "../Api/Review.api";
+import { IoBicycleSharp } from "react-icons/io5";
+import { FaLeaf, FaPuzzlePiece } from "react-icons/fa";
 
 const MainPage = () => {
   const [category, setCategory] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [currentReviews, setCurrentReviews] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-//  console.log("category:",category)
+  //  console.log("category:",category)
   useEffect(() => {
     if (ratings.length > 0) {
       const endIndex = Math.min(currentIndex + 2, ratings.length);
@@ -128,7 +130,9 @@ const MainPage = () => {
                 whileTap={{ scale: 0.95 }}
                 className="bg-third hover:bg-fourth-dark text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl"
               >
-                <Link to={`/classes/${category[0]?._id}`}>Join the Movement</Link>
+                <Link to={`/classes/${category[0]?._id}`}>
+                  Join the Movement
+                </Link>
               </motion.button>
             </motion.div>
           </motion.div>
@@ -363,17 +367,17 @@ const MainPage = () => {
                     {
                       title: "Wheels in Motion",
                       desc: "Our logo represents constant movement and progress, driving you forward.",
-                      icon: "🚴‍♂️",
+                      icon: <IoBicycleSharp />,
                     },
                     {
                       title: "Structure Meets Creativity",
                       desc: "A balance between discipline and imagination in every experience.",
-                      icon: "🧩",
+                      icon: <FaPuzzlePiece />,
                     },
                     {
                       title: "Space to Breathe",
                       desc: "Freedom to express, grow, and thrive in your own way.",
-                      icon: "🌱",
+                      icon: <FaLeaf />,
                     },
                   ].map((item, index) => (
                     <motion.div
@@ -384,13 +388,14 @@ const MainPage = () => {
                       viewport={{ once: true }}
                       className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-third/20 hover:border-primary/50 transition-all duration-300 group"
                     >
-                      <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 text-fourth">
+                      <div className="flex justify-center items-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 text-primary">
                         {item.icon}
                       </div>
-                      <h4 className="text-xl font-bold text-white mb-3">
+
+                      <h4 className="flex justify-center text-xl font-bold text-white mb-3">
                         {item.title}
                       </h4>
-                      <p className="text-primary leading-relaxed">
+                      <p className="flex items-center justify-center text-center text-primary leading-relaxed">
                         {item.desc}
                       </p>
                     </motion.div>
