@@ -9,18 +9,22 @@ import App from "./App.jsx";
 import "./index.css";
 import { store } from "./store/store.js";
 import { BrandColorProvider } from "./contexts/BrandColorContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
 const clientId =
   "511854368402-jbufqprfcgkdv11qgfiv0ovqjm2oqmrd.apps.googleusercontent.com";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <GoogleOAuthProvider clientId={clientId}>
-      <Provider store={store}>
+ <StrictMode>
+  <GoogleOAuthProvider clientId={clientId}>
+    <Provider store={store}>
+      <ThemeProvider>   
         <BrandColorProvider>
           <App />
         </BrandColorProvider>
-      </Provider>
-    </GoogleOAuthProvider>
-  </StrictMode>
+      </ThemeProvider>
+    </Provider>
+  </GoogleOAuthProvider>
+</StrictMode>
+
 );

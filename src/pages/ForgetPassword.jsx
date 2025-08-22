@@ -12,8 +12,8 @@ import toast from "react-hot-toast";
 import InputField from "../components/InputField";
 import { CommonButton } from "../components/Button";
 import gola from "../../public/gola.jpg";
-import { useLoading } from "../context/LoadingContext";
 import { userSchemaValidation } from "../utils/ValidationSchema";
+import { useLoading } from "../loader/LoaderContext";
 
 const forgetPasswordSchema = userSchemaValidation.pick(["email"]);
 

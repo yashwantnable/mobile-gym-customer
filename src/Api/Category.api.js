@@ -14,3 +14,9 @@ export const CategoryApi = {
     Api.get(`subscription/get-subscriptions-by-session/${id}`),
   getAllTrainers: () => Api.get("trainer/get-all-trainers"),
 };
+
+export const PoliciesApi = {
+  allPolicies: () => Api.get("master/all-tnc"),
+  getAllTerms: () => Api.get("master/get-all-terms"),
+  getAllPolicies: () => Api.get("master/get-all-privacy"),
+};

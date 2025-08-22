@@ -1,12 +1,15 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { GoBell } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import moment from "moment";
 import { useNotification } from "../contexts/NotificationContext";
 import { serverUrl } from "../config";
+import { useTheme } from "../contexts/ThemeContext";
           
 const NotificationProvider = ({ userId }) => {
+  const { lightMode } = useTheme();
+  // console.log("lightMode:", lightMode);
   const navigate = useNavigate();
   const {
     notificationData,
@@ -79,7 +82,7 @@ const NotificationProvider = ({ userId }) => {
   return (
     <div className="relative group">
       {/* Bell Icon */}
-      <div className="text-xl cursor-pointer hover:text-yellow-400 transition-all relative">
+      <div className={`text-xl cursor-pointer ${!lightMode&&"text-white"} hover:text-yellow-400 transition-all relative`}>
         <GoBell />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">

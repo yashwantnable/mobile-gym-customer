@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Calendar, MapPin, User, Menu, X } from "lucide-react";
 import logo from "../../public/Logos/main-logo-dark-01.png";
+import Darklogo from "../../public/Logos/main-logo-lite-01.png";
 import fitness from "../../public/Logos/fitness-logo.png";
 import wellness from "../../public/Logos/wellness-main-logo.png";
 import liveness from "../../public/Logos/liveness-logo-red.png";
@@ -12,13 +13,17 @@ import { logout } from "../store/authSlice";
 import toast from "react-hot-toast";
 import { useLoading } from "../loader/LoaderContext";
 import { FilterApi } from "../Api/Filteration.api";
-import { GoBell } from "react-icons/go";
 import NotificationProvider from "./NotificationSocket";
 import { CategoryApi } from "../Api/Category.api";
 import { useBrandColor } from "../contexts/BrandColorContext";
+import { FiMoon, FiSun } from "react-icons/fi";
+import { useTheme } from "../contexts/ThemeContext";
 
 const NavBar = () => {
   const location = useLocation();
+  const { lightMode, setLightMode } = useTheme();
+  // console.log("lightMode:", lightMode);
+
   const { setBrandColor } = useBrandColor();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -34,12 +39,49 @@ const NavBar = () => {
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
 
-    const handleSetColor = (catName) => {
+  // const handleSetColor = (catName) => {
+  //   const name = catName?.toLowerCase();
+  //   if (name === "wellness") setBrandColor("fourth");
+  //   else if (name === "liveness") setBrandColor("fifth");
+  //   else if (name === "fitness") setBrandColor("sixth");
+  // };
+
+  useEffect(() => {
+  if (location.pathname === "/") {
+    setCat(null);
+  }
+}, [location.pathname]);
+
+
+  const handleSetColor = (catName) => {
     const name = catName?.toLowerCase();
+    setCat(name); // <-- update state so logo changes instantly
     if (name === "wellness") setBrandColor("fourth");
     else if (name === "liveness") setBrandColor("fifth");
     else if (name === "fitness") setBrandColor("sixth");
   };
+
+  const toggleDarkMode = () => {
+    setLightMode((prev) => {
+      const newTheme = !prev ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      if (newTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      return !prev;
+    });
+  };
+
+  // Ensure theme persists on reload
+  useEffect(() => {
+    if (lightMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [lightMode]);
 
   const getAllCategory = async () => {
     handleLoading(true);
@@ -72,19 +114,6 @@ const NavBar = () => {
       setCat(null);
     }
   }, [id]);
-
-  // const navItems = [
-  //   { path: "/subscriptions", label: "DEALS", icon: Calendar },
-  //   { path: "/explore", label: "EXPLORE", icon: MapPin },
-  //   { path: "/classes", label: "CLASSES", icon: MapPin },
-  //   // { path: "/notification", label: "NOTIFICATIONS", icon: GoBell },
-  //   // { path: "/notification", name: "Notifications", icon: <GoBell /> },
-  // ];
-  // const navItems = [
-  //   { path: "/fitness", label: "Fitness", icon: Calendar },
-  //   { path: "/classes", label: "Wellness", icon: MapPin },
-  //   { path: "/subscriptions", label: "Liveness", icon: MapPin },
-  // ];
 
   const userMenuItems = [
     { path: "/profile", label: "Profile" },
@@ -133,12 +162,16 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="bg-primary text-third px-4 sm:px-6 py-3 shadow-lg sticky top-0 z-50">
+      <nav
+        className={`${
+          lightMode ? "bg-primary" : "bg-gray-900"
+        } text-third px-4 sm:px-6 py-3 shadow-lg sticky top-0 z-50`}
+      >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          {/* <Link to="/" className="flex items-center space-x-2 group">
             <img
-              src={logo}
+              src={lightMode ? logo : Darklogo}
               alt="Logo"
               className={`h-11 sm:h-11 object-contain transition-transform ${
                 cat === "fitness" || cat === "wellness" || cat === "liveness"
@@ -161,31 +194,69 @@ const NavBar = () => {
                 className="h-11 sm:h-11 object-contain transition-transform group-hover:opacity-0"
               />
             )}
+          </Link> */}
+          {/* Logo Section */}
+          <Link to="/" className="flex items-center space-x-2 group">
+            <img
+              src={
+                cat?.toLowerCase() === "fitness"
+                  ? fitness
+                  : cat?.toLowerCase() === "wellness"
+                  ? wellness
+                  : cat?.toLowerCase() === "liveness"
+                  ? liveness
+                  : lightMode
+                  ? logo
+                  : Darklogo
+              }
+              alt="Logo"
+              className="h-11 sm:h-11 object-contain transition-transform hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-6 lg:space-x-8">
-           {category.map((cat) => (
-        <Link
-          key={cat?._id}
-          to={
-            cat?.cName?.toLowerCase() === "liveness"
-              ? "/comingsoon"
-              : `catagory/${cat?._id}`
-          }
-          onClick={() => handleSetColor(cat?.cName)} // ⬅️ update on click
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-            location.pathname === `/catagory/${cat._id}`
-              ? "text-third font-semibold"
-              : "text-third/80 hover:text-third"
-          }`}
-        >
-          <span>
-            {cat?.cName &&
-              cat.cName[0].toUpperCase() + cat.cName.slice(1)}
-          </span>
-        </Link>
-      ))}
+            {category.map((cat) => (
+              <Link
+                key={cat?._id}
+                to={
+                  cat?.cName?.toLowerCase() === "liveness"
+                    ? "/comingsoon"
+                    : `catagory/${cat?._id}`
+                }
+                onClick={() => handleSetColor(cat?.cName)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all
+  ${
+    (cat?.cName?.toLowerCase() === "liveness" &&
+      location.pathname === "/comingsoon") ||
+    location.pathname === `/catagory/${cat._id}`
+      ? lightMode
+        ? "text-third font-semibold"
+        : "text-white font-semibold"
+      : lightMode
+      ? "text-third/80 hover:text-black"
+      : "text-gray-300 hover:text-white"
+  }`}
+              >
+                <span>
+                  {cat?.cName &&
+                    cat.cName[0].toUpperCase() + cat.cName.slice(1)}
+                </span>
+              </Link>
+            ))}
+
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg transition-colors"
+              title="Toggle Dark Mode"
+            >
+              {lightMode ? (
+                <FiMoon className="h-5 w-5 text-third/40" />
+              ) : (
+                <FiSun className="h-5 w-5 text-yellow-400" />
+              )}
+            </button>
 
             {/* Notification bell moved here, after nav items and before user icon */}
             <div className="mt-2">
@@ -201,7 +272,9 @@ const NavBar = () => {
                     onClick={() => setDropdownOpen((prev) => !prev)}
                     className="flex items-center space-x-1 focus:outline-none"
                   >
-                    <div className="w-9 h-9 rounded-full bg-third/40 flex items-center justify-center overflow-hidden">
+                    <div
+                      className={`w-9 h-9 rounded-full bg-third/40  flex items-center justify-center overflow-hidden`}
+                    >
                       {user?.image ? (
                         <img
                           src={user.image}
@@ -213,7 +286,11 @@ const NavBar = () => {
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       ) : (
-                        <User className="w-5 h-5 text-third" />
+                        <User
+                          className={`w-5 h-5  ${
+                            !lightMode ? "text-white" : "text-third"
+                          }`}
+                        />
                       )}
                     </div>
                   </button>
@@ -292,7 +369,7 @@ const NavBar = () => {
             {category.map((cat) => (
               <Link
                 key={cat._id}
-                 to={
+                to={
                   cat?.cName?.toLowerCase() === "liveness"
                     ? "/comingsoon"
                     : `catagory/${cat?._id}`
@@ -360,6 +437,7 @@ const NavBar = () => {
           </div>
         </div>
       </div>
+
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

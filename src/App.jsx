@@ -29,6 +29,7 @@ import PromoCode from "./pages/PromoCode.jsx";
 import Notification from "./pages/Notification.jsx";
 import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 import ComingSoonPage from "./pages/ComingSoonPage.jsx";
+import ForgetPassword from "./pages/ForgetPassword.jsx";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,14 @@ const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <LoginPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "forget-password",
+    element: (
+      <PublicRoute>
+        <ForgetPassword />
       </PublicRoute>
     ),
   },

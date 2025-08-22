@@ -12,13 +12,15 @@ import { Link } from "react-router-dom";
 import { ReviewgApi } from "../Api/Review.api";
 import { IoBicycleSharp } from "react-icons/io5";
 import { FaLeaf, FaPuzzlePiece } from "react-icons/fa";
+import { useTheme } from "../contexts/ThemeContext";
 
 const MainPage = () => {
+  const { lightMode, setLightMode } = useTheme();
   const [category, setCategory] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [currentReviews, setCurrentReviews] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  //  console.log("category:",category)
+ console.log("lightMode:",lightMode)
   useEffect(() => {
     if (ratings.length > 0) {
       const endIndex = Math.min(currentIndex + 2, ratings.length);
@@ -89,7 +91,11 @@ const MainPage = () => {
   return (
     <ParallaxProvider>
       <div
-        className="font-sans text-primary bg-white overflow-x-hidden"
+        className={`font-sans overflow-x-hidden transition-colors duration-300 ${
+          lightMode 
+            ? "text-third bg-primary" 
+            : "text-primary bg-third"
+        }`}
         ref={containerRef}
       >
         {/* Hero section */}
@@ -99,7 +105,11 @@ const MainPage = () => {
         >
           <motion.div style={{ opacity: heroOpacity }} className="inset-0 z-0">
             {/* Improved background overlay for better text contrast */}
-            <div className="absolute inset-0 bg-gradient-to-r from-third/90 to-primary/90"></div>
+            <div className={`absolute inset-0 ${
+              lightMode 
+                ? "bg-gradient-to-r from-third/90 to-primary/90" 
+                : "bg-gradient-to-r from-primary/20 to-third/90"
+            }`}></div>
             {/* Dark overlay to ensure text visibility on any image */}
             <div className="absolute inset-0 bg-black/30"></div>
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center mix-blend-overlay"></div>
@@ -116,8 +126,8 @@ const MainPage = () => {
               className="max-w-4xl mx-auto"
             >
               {/* Added text shadow for better readability */}
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight drop-shadow-lg">
-                Live <span className="text-third drop-shadow-md">Outside</span>{" "}
+              <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold ${lightMode?"text-white":"text-second"} mb-4 sm:mb-6 leading-tight drop-shadow-lg`}>
+                Live <span className={`${lightMode?"text-third":"text-primary"} drop-shadow-md`}>Outside</span>{" "}
                 The Box
               </h1>
               {/* Increased contrast for paragraph */}
@@ -128,7 +138,11 @@ const MainPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-third hover:bg-fourth-dark text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl"
+                className={`${
+                  lightMode 
+                    ? "bg-third hover:bg-fourth-dark text-primary" 
+                    : "bg-second hover:bg-fourth-dark text-primary"
+                } font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 shadow-xl`}
               >
                 <Link to={`/classes/${category[0]?._id}`}>
                   Join the Movement
@@ -165,8 +179,11 @@ const MainPage = () => {
             </motion.div>
           </motion.div>
         </section>
+        
         {/* About section */}
-        <section id="about" className="py-16 sm:py-20 bg-primary relative">
+        <section id="about" className={`py-16 sm:py-20 ${
+          lightMode ? "bg-primary" : "bg-third"
+        } relative`}>
           <div className="container mx-auto px-4 sm:px-6 relative z-10">
             <div className="container mx-auto px-4 sm:px-6">
               <motion.div
@@ -176,20 +193,22 @@ const MainPage = () => {
                 viewport={{ once: true, margin: "-100px" }}
                 className="max-w-7xl mx-auto"
               >
-                <Header content={"About OutBox"} textColor="text-third" />
+                <Header content={"About OutBox"} textColor={lightMode ? "text-third" : "text-primary"} />
                 <div className="grid md:grid-cols-1 gap-8 sm:gap-12 items-center">
                   <motion.div
                     initial={{ x: 50, opacity: 0 }}
                     whileInView={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="space-y-4 sm:space-y-6 text-third"
+                    className={`space-y-4 sm:space-y-6 ${
+                      lightMode ? "text-third" : "text-primary"
+                    }`}
                   >
                     <p>
                       <span className="font-bold">
                         Outbox is a lifestyle brand
                       </span>{" "}
                       founded on the belief that life is meant to be lived{" "}
-                      <span className="text-third  font-semibold">
+                      <span className={`${lightMode ? "text-third" : "text-primary"} font-semibold`}>
                         outside the box
                       </span>{" "}
                       — boldly, creatively, and without limits.
@@ -204,8 +223,12 @@ const MainPage = () => {
                       selves.
                     </p>
 
-                    <div className="p-4 sm:p-6 bg-white bg-opacity-90 rounded-lg border-l-4 border-third shadow-sm">
-                      <p className="text-third italic">
+                    <div className={`p-4 sm:p-6 rounded-lg border-l-4 border-third shadow-sm ${
+                      lightMode 
+                        ? "bg-white bg-opacity-90" 
+                        : "bg-primary bg-opacity-20"
+                    }`}>
+                      <p className={`${lightMode ? "text-third" : "text-primary"} italic`}>
                         "Whether through dynamic classes, mindful wellness
                         sessions, or vibrant social events, Outbox inspires you
                         to move, grow, and connect in ways that spark
@@ -217,7 +240,7 @@ const MainPage = () => {
                       More than a brand, Outbox is a{" "}
                       <span className="font-medium">mindset</span> — a movement
                       for those who dare to live{" "}
-                      <span className="text-third font-semibold">
+                      <span className={`${lightMode ? "text-third" : "text-primary"} font-semibold`}>
                         fully and fearlessly
                       </span>
                       .
@@ -230,7 +253,9 @@ const MainPage = () => {
         </section>
 
         {/* Brand Story section */}
-        <section className="my-20 max-w-7xl mx-auto px-4">
+        <section className={`my-20 max-w-7xl mx-auto px-4 ${
+          lightMode ? "" : "text-primary"
+        }`}>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ x: -50, opacity: 0 }}
@@ -248,9 +273,9 @@ const MainPage = () => {
               whileInView={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="space-y-6 text-third"
+              className={`space-y-6 ${lightMode ? "text-third" : "text-primary"}`}
             >
-              <Header content={"Brand Story"} textColor="text-third" />
+              <Header content={"Brand Story"} textColor={lightMode ? "text-third" : "text-primary"} />
               <p>
                 Outbox was born from one bold thought:{" "}
                 <span className="font-semibold">
@@ -261,7 +286,9 @@ const MainPage = () => {
                 Our founder set out to build a brand that breaks routine — one
                 that celebrates movement, creativity, and self-expression.
               </p>
-              <blockquote className="border-l-4 border-third pl-4 italic">
+              <blockquote className={`border-l-4 ${
+                lightMode ? "border-third" : "border-primary"
+              } pl-4 italic`}>
                 "Your only limit is the one you set yourself."
               </blockquote>
               <p>
@@ -275,9 +302,13 @@ const MainPage = () => {
         </section>
 
         {/* Logo Story Section */}
-        <section className="relative bg-third overflow-hidden">
+        <section className={`relative overflow-hidden ${
+          lightMode ? "bg-third" : "bg-second"
+        }`}>
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary to-third opacity-20"></div>
+            <div className={`absolute inset-0 bg-gradient-to-br opacity-20 ${
+              lightMode ? "from-primary to-third" : "from-third to-primary"
+            }`}></div>
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay opacity-10"></div>
           </div>
 
@@ -290,14 +321,16 @@ const MainPage = () => {
                 viewport={{ once: true }}
                 className="mb-12 sm:mb-16"
               >
-                <h2 className="text-4xl sm:text-5xl font-bold text-white text-center mb-6">
+                <h2 className="text-4xl sm:text-5xl font-bold text-center mb-6">
                   <Header
                     content={"Our Logo Story"}
-                    background={"bg-white"}
-                    text={"text-white"}
+                    background={lightMode ? "bg-white" : "bg-third"}
+                    text={lightMode ? "text-white" : "text-primary"}
                   />
                 </h2>
-                <p className="text-xl text-primary text-center max-w-3xl mx-auto leading-relaxed">
+                <p className={`text-xl text-center max-w-3xl mx-auto leading-relaxed ${
+                  lightMode ? "text-primary" : "text-third font-semibold"
+                }`}>
                   OutBox was born to break the mold — redefining how people
                   experience movement, health, and connection.
                 </p>
@@ -323,8 +356,14 @@ const MainPage = () => {
                   }}
                   className="relative"
                 >
-                  <div className="absolute inset-0 rounded-full bg-third opacity-20 blur-xl"></div>
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center p-6 border-2 border-second/20 shadow-2xl">
+                  <div className={`absolute inset-0 rounded-full opacity-20 blur-xl ${
+                    lightMode ? "bg-third" : "bg-primary"
+                  }`}></div>
+                  <div className={`w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 backdrop-blur-md rounded-full flex items-center justify-center p-6 border-2 shadow-2xl ${
+                    lightMode 
+                      ? "bg-white/10 border-second/20" 
+                      : "bg-third/10 border-primary/20"
+                  }`}>
                     <img
                       src={logo}
                       alt="OutBox Logo"
@@ -341,7 +380,9 @@ const MainPage = () => {
                 viewport={{ once: true }}
                 className="mb-16 sm:mb-20"
               >
-                <p className="text-lg sm:text-xl text-primary text-center max-w-4xl mx-auto leading-relaxed">
+                <p className={`text-lg sm:text-xl text-center max-w-4xl mx-auto leading-relaxed ${
+                  lightMode ? "text-primary" : "text-third font-semibold"
+                }`}>
                   Our name means operating outside the box, both literally and
                   figuratively. We bring fitness, wellness, and community
                   experiences to you — transforming everyday spaces into places
@@ -356,8 +397,10 @@ const MainPage = () => {
                 viewport={{ once: true }}
                 className="mb-16 sm:mb-20"
               >
-                <h3 className="text-3xl font-bold text-white text-center mb-12">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-second">
+                <h3 className="text-3xl font-bold text-center mb-12">
+                  <span className={`bg-clip-text text-transparent bg-gradient-to-r ${
+                    lightMode ? "from-primary to-second" : "from-second to-primary"
+                  }`}>
                     Our logo captures this spirit
                   </span>
                 </h3>
@@ -386,16 +429,26 @@ const MainPage = () => {
                       whileInView={{ y: 0, opacity: 1 }}
                       transition={{ duration: 0.6, delay: index * 0.15 }}
                       viewport={{ once: true }}
-                      className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-third/20 hover:border-primary/50 transition-all duration-300 group"
+                      className={`rounded-xl p-8 backdrop-blur-sm border transition-all duration-300 group ${
+                        lightMode 
+                          ? "bg-white/10 border-third/20 hover:border-primary/50 text-primary" 
+                          : "bg-third/10 border-primary/20 hover:border-second/50 text-third"
+                      }`}
                     >
-                      <div className="flex justify-center items-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 text-primary">
+                      <div className={`flex justify-center items-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 ${
+                        lightMode ? "text-primary" : "text-third"
+                      }`}>
                         {item.icon}
                       </div>
 
-                      <h4 className="flex justify-center text-xl font-bold text-white mb-3">
+                      <h4 className={`flex justify-center text-xl font-bold mb-3 ${
+                        lightMode ? "text-white" : "text-primary font-bold"
+                      }`}>
                         {item.title}
                       </h4>
-                      <p className="flex items-center justify-center text-center text-primary leading-relaxed">
+                      <p className={`flex items-center justify-center text-center leading-relaxed ${
+                        lightMode ? "text-primary" : "text-third font-semibold"
+                      }`}>
                         {item.desc}
                       </p>
                     </motion.div>
@@ -410,12 +463,16 @@ const MainPage = () => {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <p className="text-lg text-primary mb-8 max-w-3xl mx-auto leading-relaxed">
+                <p className={`text-lg mb-8 max-w-3xl mx-auto leading-relaxed ${
+                  lightMode ? "text-primary" : "text-third"
+                }`}>
                   OutBox lives through three sub-brands: Fitness, Wellness, and
                   Liveness — all designed to help you live fully, wherever you
                   are.
                 </p>
-                <h4 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-second to-primary">
+                <h4 className={`text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${
+                  lightMode ? "from-second to-primary" : "from-primary to-second"
+                }`}>
                   OutBox — Built to Move.
                 </h4>
               </motion.div>
@@ -424,7 +481,9 @@ const MainPage = () => {
         </section>
 
         {/* Values Section*/}
-        <section id="values" className="py-16 sm:py-20 bg-primary">
+        <section id="values" className={`py-16 sm:py-20 ${
+          lightMode ? "bg-primary" : "bg-third"
+        }`}>
           <div className="container mx-auto px-4 sm:px-6">
             <motion.div
               initial={{ opacity: 0 }}
@@ -433,8 +492,10 @@ const MainPage = () => {
               viewport={{ once: true, margin: "-100px" }}
               className="max-w-4xl mx-auto text-center mb-12 sm:mb-16"
             >
-              <Header content={"Our Values"} textColor="text-third" />
-              <p className="text-lg sm:text-xl text-third leading-relaxed">
+              <Header content={"Our Values"} textColor={lightMode ? "text-third" : "text-primary"} />
+              <p className={`text-lg sm:text-xl leading-relaxed ${
+                lightMode ? "text-third" : "text-primary"
+              }`}>
                 At OutBox, our values are the foundation of everything we do.
                 They guide how we move, create, and connect.
               </p>
@@ -446,31 +507,33 @@ const MainPage = () => {
                   title: "Courage",
                   description:
                     "We believe in stepping beyond comfort zones and embracing challenges with fearless determination.",
-                  color: "bg-third text-primary",
+                  color: lightMode ? "bg-third text-primary" : "bg-primary text-third",
                 },
                 {
                   title: "Creativity",
                   description:
                     "Innovation and imagination fuel our approach, encouraging new ways to move, think, and celebrate life.",
-                  color: "bg-fourth text-white",
+                  color: lightMode ? "bg-fourth text-white" : "bg-fourth text-white",
                 },
                 {
                   title: "Community",
                   description:
                     "OutBox is more than a brand — it's a vibrant community where connections are forged, and support is real.",
-                  color: "bg-fifth text-white",
+                  color: lightMode ? "bg-fifth text-white" : "bg-fifth text-white",
                 },
                 {
                   title: "Authenticity",
                   description:
                     "Being true to yourself is at the heart of OutBox. We celebrate individuality and genuine self-expression.",
-                  color: "bg-sixth text-white",
+                  color: lightMode ? "bg-sixth text-white" : "bg-sixth text-white",
                 },
                 {
                   title: "Empowerment",
                   description:
                     "We inspire and equip people to take control of their health, wellness, and happiness.",
-                  color: "bg-primary text-third border-2 border-third",
+                  color: lightMode 
+                    ? "bg-primary text-third border-2 border-third" 
+                    : "bg-third text-primary border-2 border-primary",
                 },
               ].map((value, index) => (
                 <motion.div
@@ -479,7 +542,7 @@ const MainPage = () => {
                   whileInView={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className={`p-6 rounded-xl shadow-md bg-third flex flex-col`}
+                  className={`p-6 rounded-xl shadow-md flex flex-col ${value.color}`}
                 >
                   <h3 className="text-xl sm:text-2xl font-bold mb-3">
                     {value.title}
@@ -494,11 +557,15 @@ const MainPage = () => {
         {/* Community Section*/}
         <section
           id="community"
-          className="py-24 sm:py-32 bg-third relative overflow-hidden"
+          className={`py-24 sm:py-32 relative overflow-hidden ${
+            lightMode ? "bg-third" : "bg-second"
+          }`}
         >
           <motion.div
             style={{ y: y1 }}
-            className="absolute -left-40 top-1/3 w-80 h-80 rounded-full bg-third opacity-10 blur-3xl"
+            className={`absolute -left-40 top-1/3 w-80 h-80 rounded-full opacity-10 blur-3xl ${
+              lightMode ? "bg-third" : "bg-primary"
+            }`}
           />
 
           <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -512,10 +579,12 @@ const MainPage = () => {
               >
                 <Header
                   content={"The OutBox Community"}
-                  text="text-white"
-                  background={"bg-white"}
+                  text={lightMode ? "text-white" : "text-white"}
+                  background={lightMode ? "bg-white" : "bg-third"}
                 />
-                <p className="text-lg text-primary mb-6">
+                <p className={`text-lg mb-6 ${
+                  lightMode ? "text-primary" : "text-white"
+                }`}>
                   OutBox isn't just a brand — it's a movement powered by people.
                 </p>
 
@@ -535,9 +604,13 @@ const MainPage = () => {
                       className="flex items-start"
                     >
                       <div className="flex-shrink-0 mt-1">
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
+                        <div className={`w-3 h-3 rounded-full ${
+                          lightMode ? "bg-primary" : "bg-primary"
+                        }`}></div>
                       </div>
-                      <p className="ml-4 text-lg text-primary">{item}</p>
+                      <p className={`ml-4 text-lg ${
+                        lightMode ? "text-primary" : "text-primary"
+                      }`}>{item}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -558,16 +631,18 @@ const MainPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                   viewport={{ once: true }}
-                  className="absolute bottom-0 left-0 bg-white p-6 rounded-xl shadow-lg w-64 z-10"
+                  className={`absolute bottom-0 left-0 p-6 rounded-xl shadow-lg w-64 z-10 ${
+                    lightMode ? "bg-white text-third" : "bg-third text-primary"
+                  }`}
                 >
                   {currentReviews[0] && (
                     <>
-                      <p className="text-third italic mb-3">
+                      <p className="italic mb-3">
                         {currentReviews[0].review.length > 100
                           ? `${currentReviews[0].review.substring(0, 100)}...`
                           : currentReviews[0].review}
                       </p>
-                      <p className="font-bold text-third">
+                      <p className="font-bold">
                         — {currentReviews[0].created_by.first_name}
                         <span className="text-yellow-400 ml-1">
                           {"★".repeat(currentReviews[0].rating)}
@@ -584,7 +659,9 @@ const MainPage = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
                     viewport={{ once: true }}
-                    className="absolute top-0 right-0 bg-primary p-6 rounded-xl shadow-lg w-64 z-10 text-third"
+                    className={`absolute top-0 right-0 p-6 rounded-xl shadow-lg w-64 z-10 ${
+                      lightMode ? "bg-primary text-third" : "bg-primary text-third"
+                    }`}
                   >
                     <>
                       <p className="italic mb-3">
@@ -608,7 +685,9 @@ const MainPage = () => {
         </section>
 
         {/* Sub-Brands Section */}
-        <section className="py-16 sm:py-20 bg-primary">
+        <section className={`py-16 sm:py-20 ${
+          lightMode ? "bg-primary" : "bg-third"
+        }`}>
           <div className="container mx-auto px-4 sm:px-6">
             <motion.div
               initial={{ opacity: 0 }}
@@ -617,8 +696,10 @@ const MainPage = () => {
               viewport={{ once: true, margin: "-100px" }}
               className="max-w-4xl mx-auto text-center mb-12 sm:mb-3"
             >
-              <Header content={"Our Sub-Brands"} textColor="text-third" />
-              <p className="text-lg sm:text-xl text-third leading-relaxed">
+              <Header content={"Our Sub-Brands"} text={lightMode ? "text-third" : "text-primary"} />
+              <p className={`text-lg sm:text-xl leading-relaxed ${
+                lightMode ? "text-third" : "text-primary"
+              }`}>
                 OutBox lives through three sub-brands all designed to help you
                 live fully, wherever you are.
               </p>

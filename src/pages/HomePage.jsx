@@ -13,6 +13,7 @@ import { BookingApi } from "../Api/Booking.api";
 import PackageCard from "../components/PackageCard";
 import { PackagesApi } from "../Api/Package.api";
 import Classes from "./Classes";
+import Tooltip from "../components/Tooltip";
 
 const HomePage = () => {
   const { _id } = useParams();
@@ -55,7 +56,6 @@ const HomePage = () => {
 
   const { handleLoading } = useLoading();
 
-  console.log("subscription:",subscription)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -99,7 +99,7 @@ const HomePage = () => {
       handleLoading(false);
     }
   };
-  
+
   const getSubscriptionByID = async (id) => {
     handleLoading(true);
     try {
@@ -485,7 +485,6 @@ const HomePage = () => {
         </div>
       </section>
 
-
       {/* Top Sessions Section */}
       {sessionData?.length > 0 && (
         <section className="bg-primary py-10 md:py-16 px-4 sm:px-6 lg:px-8">
@@ -493,26 +492,100 @@ const HomePage = () => {
             <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-8 capitalize text-third text-start">
               Top fitness Sessions
             </h2>
-            <HorizontalScroll
-              items={sessionData}
-              renderItem={(cat) => (
-                <Link
-                  to={`/subscriptions/${cat?._id}?name=session`}
-                  className="w-40 h-40 md:w-56 md:h-56 hover:opacity-90 cursor-pointer flex items-center justify-center rounded-full bg-center bg-cover text-lg md:text-2xl font-semibold text-white shadow-md"
-                  style={{
-                    backgroundImage: `url(${cat.image})`,
-                  }}
-                >
-                  <div className="bg-third bg-opacity-70 rounded-full px-4 py-2 text-center">
-                   <span>{cat?.sessionName && cat.sessionName.toUpperCase()}</span>
 
+            {/* Make wrapper allow overflow */}
+            <div
+              style={{ position: "relative", overflow: "visible", zIndex: 1 }}
+            >
+              <HorizontalScroll
+                items={sessionData}
+                renderItem={(cat) => (
+                  <div
+                    className="group flex flex-col items-center"
+                    style={{
+                      position: "relative",
+                      overflow: "visible",
+                      zIndex: 1,
+                    }}
+                  >
+                    <Link
+                      to={`/subscriptions/${cat?._id}?name=session`}
+                      className="w-40 h-40 md:w-56 md:h-56 hover:opacity-90 cursor-pointer flex items-end justify-center rounded-full bg-center bg-cover text-lg md:text-2xl font-semibold text-white shadow-md"
+                      style={{
+                        backgroundImage: `url(${cat.image})`,
+                        position: "relative",
+                        overflow: "visible",
+                        zIndex: 2,
+                      }}
+                    >
+                      {/* Gradient overlay */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          borderRadius: "9999px",
+                          background:
+                            "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
+                        }}
+                      />
+                      {/* Session name */}
+                      <div style={{ position: "relative", zIndex: 3 }}>
+                        <span className="text-white text-sm md:text-base font-semibold">
+                          {cat?.sessionName?.toUpperCase()}
+                        </span>
+                      </div>
+                    </Link>
+
+                    {/* Tooltip */}
+                    {cat.description && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          marginTop: "8px",
+                          width: "200px",
+                          padding: "12px",
+                          backgroundColor: "#FCD34D", // bg-third
+                          color: "#111827", // text-primary
+                          fontSize: "14px",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          opacity: 0,
+                          visibility: "hidden",
+                          transition: "opacity 0.3s ease, visibility 0.3s ease",
+                          zIndex: 99999,
+                        }}
+                        className="group-hover:opacity-100 group-hover:visible"
+                      >
+                        <p style={{ textAlign: "center" }}>{cat.description}</p>
+                        {/* Arrow */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "100%",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: 0,
+                            height: 0,
+                            borderLeft: "8px solid transparent",
+                            borderRight: "8px solid transparent",
+                            borderBottom: "8px solid #FCD34D", // same as bg
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                </Link>
-              )}
-            />
+                )}
+              />
+            </div>
           </div>
         </section>
       )}
+
       <section className="border  overflow-hidden py-10 md:py-16 mt-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
@@ -526,12 +599,11 @@ const HomePage = () => {
               Show all ({singleClassSubscriptions?.length}) <span>&rarr;</span>
             </Link>
           </div>
-          
-            <div className="">
-              <Classes hide={true}/>
-            </div>
+
+          <div className="">
+            <Classes hide={true} />
           </div>
-        
+        </div>
       </section>
       {/* Featured Membership */}
       {subscription?.length > 0 && (

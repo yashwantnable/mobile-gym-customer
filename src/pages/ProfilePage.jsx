@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Edit2, Save, Mail, Phone, User, Camera } from "lucide-react";
@@ -25,10 +24,12 @@ const ProfilePage = () => {
     phone_number: logdata.phone_number || "",
     address: user?.address || "",
     country: user?.country?._id || user?.country || "",
-    birthday: user?.birthday || "", // now a string
+    birthday: user?.birthday || "",
     gender: user?.gender || "",
     profile_image: user?.profile_image || null,
+    emirates_id: user?.emirates_id || "",
   });
+
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -46,10 +47,9 @@ const ProfilePage = () => {
   const getProfile = async () => {
     handleLoading(true);
     try {
-      const userId = user?._id || user?.id; // Get user id from redux
-      const res = await AuthApi.getuserProfile(userId); // Pass id to API
+      const userId = user?._id || user?.id;
+      const res = await AuthApi.getuserProfile(userId);
       setLogdata(res?.data?.data);
-      console.log(res?.data?.data);
     } catch (error) {
       console.log("Error", error);
     } finally {
@@ -61,18 +61,18 @@ const ProfilePage = () => {
     getProfile();
   }, []);
 
-  // Update formData and imagePreview when user changes (e.g., after API fetch)
   useEffect(() => {
     setFormData({
       first_name: user?.first_name || "",
       last_name: user?.last_name || "",
       email: user?.email || "",
-      phone_number: user?.phone || "",
+      phone_number: user?.phone_number || "",
       address: user?.address || "",
       country: user?.country?._id || user?.country || "",
       birthday: user?.birthday || "",
       gender: user?.gender || "",
       profile_image: user?.profile_image || null,
+      emirates_id: user?.emirates_id || "",
     });
     setImagePreview(user?.profile_image || null);
     setProfileImage(user?.profile_image || null);
@@ -83,12 +83,13 @@ const ProfilePage = () => {
     first_name: profile.first_name,
     last_name: profile.last_name,
     email: profile.email,
-    phone_number: profile.phone,
+    phone_number: profile.phone_number,
     address: profile.address,
     country: profile.country?._id || profile.country,
     birthday: profile.birthday,
     gender: profile.gender,
     profile_image: profile.profile_image,
+    emirates_id: profile.emirates_id,
   });
 
   const getupdateuser = async (value) => {
@@ -237,7 +238,8 @@ const ProfilePage = () => {
         payload = {
           birthday: formData.birthday,
           gender: formData.gender,
-          profile_image: formData.profile_image, // Always include profile_image
+          profile_image: formData.profile_image,
+          emirates_id: formData.emirates_id,
         };
         // If profileImage is updated and is a file, handle multipart upload
         if (profileImage && typeof profileImage !== "string") {
@@ -266,7 +268,7 @@ const ProfilePage = () => {
         payload = {
           address: formData.address,
           country: formData.country,
-          phone_number: formData.phone,
+          phone_number: formData.phone_number,
         };
       }
       // Always use formData for update
@@ -303,7 +305,7 @@ const ProfilePage = () => {
         ...prev,
         address: user?.address || "",
         country: user?.country || "",
-        phone: user?.phone || "",
+        phone_number: user?.phone_number || "",
       }));
     }
     setIsEditing(false);
@@ -313,6 +315,19 @@ const ProfilePage = () => {
   const openEditSection = (section) => {
     setIsEditing(true);
     setActiveSection(section);
+  };
+
+  const formatEmiratesId = (id) => {
+    if (!id) return "Not specified";
+    const digits = id.replace(/\D/g, ""); // remove non-digits
+
+    // Expected format: 784-1234-1234567-1
+    if (digits.length !== 15) return id; // fallback if not 15 digits
+
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(
+      7,
+      14
+    )}-${digits.slice(14)}`;
   };
 
   const formatDate = (birthday) => {
@@ -394,9 +409,9 @@ const ProfilePage = () => {
         </p>
       </div>
 
-      <div className="w-full flex gap-10">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Account Information */}
-        <div className="bg-white w-1/2 rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
             Account Information
           </h2>
@@ -411,13 +426,15 @@ const ProfilePage = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{user.email}</p>
+              <p className="font-medium break-words text-sm sm:text-base max-w-full">
+                {user.email}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Personal Information */}
-        <div className="bg-white w-full rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
               Personal Information
@@ -456,69 +473,93 @@ const ProfilePage = () => {
           {isEditing && activeSection === "personal" ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Birthday
                 </label>
                 <div className="grid grid-cols-3 gap-4">
-                  <select
-                    name="month"
-                    value={
-                      formData.birthday
-                        ? formData.birthday.split("-")[1] || ""
-                        : ""
-                    }
-                    onChange={handleBirthdayChange}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                  >
-                    <option value="">MM</option>
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <option
-                        key={i + 1}
-                        value={(i + 1).toString().padStart(2, "0")}
-                      >
-                        {(i + 1).toString().padStart(2, "0")}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    name="day"
-                    value={
-                      formData.birthday
-                        ? formData.birthday.split("-")[2] || ""
-                        : ""
-                    }
-                    onChange={handleBirthdayChange}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                  >
-                    <option value="">DD</option>
-                    {Array.from({ length: 31 }, (_, i) => (
-                      <option
-                        key={i + 1}
-                        value={(i + 1).toString().padStart(2, "0")}
-                      >
-                        {(i + 1).toString().padStart(2, "0")}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    name="year"
-                    value={
-                      formData.birthday
-                        ? formData.birthday.split("-")[0] || ""
-                        : ""
-                    }
-                    onChange={handleBirthdayChange}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                  >
-                    <option value="">YYYY</option>
-                    {Array.from({ length: 100 }, (_, i) => (
-                      <option key={2023 - i} value={2023 - i}>
-                        {2023 - i}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Month */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Month
+                    </label>
+                    <select
+                      name="month"
+                      value={
+                        formData.birthday
+                          ? formData.birthday.split("-")[1] || ""
+                          : ""
+                      }
+                      onChange={handleBirthdayChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                    >
+                      <option value="">MM</option>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option
+                          key={i + 1}
+                          value={(i + 1).toString().padStart(2, "0")}
+                        >
+                          {(i + 1).toString().padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Day */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Day
+                    </label>
+                    <select
+                      name="day"
+                      value={
+                        formData.birthday
+                          ? (formData.birthday.split("-")[2] || "").substring(
+                              0,
+                              2
+                            )
+                          : ""
+                      }
+                      onChange={handleBirthdayChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                    >
+                      <option value="">DD</option>
+                      {Array.from({ length: 31 }, (_, i) => (
+                        <option
+                          key={i + 1}
+                          value={(i + 1).toString().padStart(2, "0")}
+                        >
+                          {(i + 1).toString().padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Year */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Year
+                    </label>
+                    <select
+                      name="year"
+                      value={
+                        formData.birthday
+                          ? formData.birthday.split("-")[0] || ""
+                          : ""
+                      }
+                      onChange={handleBirthdayChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                    >
+                      <option value="">YYYY</option>
+                      {Array.from({ length: 100 }, (_, i) => (
+                        <option key={2023 - i} value={2023 - i}>
+                          {2023 - i}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Gender
@@ -535,6 +576,19 @@ const ProfilePage = () => {
                   <option value="Other">Other</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Emirates ID
+                </label>
+                <input
+                  type="text"
+                  name="emirates_id"
+                  value={formData.emirates_id}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  placeholder="Enter Emirates ID"
+                />
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
@@ -546,12 +600,18 @@ const ProfilePage = () => {
                 <p className="text-sm text-gray-500">Gender</p>
                 <p className="font-medium">{user.gender || "Not specified"}</p>
               </div>
+              <div>
+                <p className="text-sm text-gray-500">Emirates ID</p>
+                <p className="font-medium">
+                  {formatEmiratesId(user.emirates_id)}
+                </p>
+              </div>
             </div>
           )}
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white w-full rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
               Contact Information
@@ -602,7 +662,6 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 />
-                {/* {JSON.stringify(formData.address)} */}
               </div>
               <div>
                 <div>
@@ -630,7 +689,7 @@ const ProfilePage = () => {
                 </label>
                 <input
                   type="tel"
-                  name="phone"
+                  name="phone_number"
                   value={formData.phone_number}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
@@ -660,14 +719,15 @@ const ProfilePage = () => {
                 <p className="font-medium flex items-center gap-1">
                   <Phone className="h-4 w-4" />
                   {(() => {
-                    // Try all possible locations and types for phone number
-                    const phone =
-                      user.phone ??
+                    // Try all possible locations and types for phone_number number
+                    const phone_number =
+                      user.phone_number ??
                       user.phone_number ??
                       (user.contact &&
-                        (user.contact.phone || user.contact.phone_number));
-                    if (phone && String(phone).trim() !== "") {
-                      return phone;
+                        (user.contact.phone_number ||
+                          user.contact.phone_number));
+                    if (phone_number && String(phone_number).trim() !== "") {
+                      return phone_number;
                     }
                     return "Not specified";
                   })()}
