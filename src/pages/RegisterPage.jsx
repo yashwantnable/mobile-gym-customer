@@ -25,6 +25,7 @@ const RegisterPage = () => {
   const [openPrivacy, setPrivacyOpen] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countryData, setCountryData] = useState([]);
+  const [cityData, setCityData] = useState([]);
   const [allPolicies, setAllPolicies] = useState([]);
   const [allTerms, setAllTerms] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,35 +43,35 @@ const RegisterPage = () => {
     "Stress Relief",
   ];
 
-  const getPolicies=async()=>{
-    try{
-      handleLoading(true)
-      const res= await PoliciesApi.getAllPolicies();
-      setAllPolicies(res?.data?.data)
-      console.log("policies:",res?.data?.data)
-    }catch(err){
-      console.error(err)
-    }finally{
-      handleLoading(false)
+  const getPolicies = async () => {
+    try {
+      handleLoading(true);
+      const res = await PoliciesApi.getAllPolicies();
+      setAllPolicies(res?.data?.data);
+      console.log("policies:", res?.data?.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleLoading(false);
     }
-  }
-  const getTerms=async()=>{
-    try{
-      handleLoading(true)
-      const res= await PoliciesApi.getAllTerms();
-      setAllTerms(res?.data?.data)
-      console.log("Terms:",res?.data?.data)
-    }catch(err){
-      console.error(err)
-    }finally{
-      handleLoading(false)
+  };
+  const getTerms = async () => {
+    try {
+      handleLoading(true);
+      const res = await PoliciesApi.getAllTerms();
+      setAllTerms(res?.data?.data);
+      console.log("Terms:", res?.data?.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleLoading(false);
     }
-  }
- 
-  useEffect(()=>{
+  };
+
+  useEffect(() => {
     getPolicies();
     getTerms();
-  },[])
+  }, []);
 
   const registerSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
@@ -91,7 +92,7 @@ const RegisterPage = () => {
       .required("Age is required"),
     gender: Yup.string().required("Gender is required"),
     address: Yup.string().required("Address is required"),
-    country: Yup.string().required("Country is required"),
+    // country: Yup.string().required("Country is required"),
     fitnessGoals: Yup.array()
       .min(1, "Select at least one fitness goal")
       .required("Fitness goals are required"),
@@ -117,7 +118,8 @@ const RegisterPage = () => {
         gender: values.gender,
         address: values.address,
         profile_image: "https://example.com/profile.jpg",
-        country: values.country,
+        country: "66cd6e58bb9a967736a7f7ad",
+        city: values.city,
         fitness_goals: values.fitnessGoals.join(", "),
         emirates_id: values.emirates_id,
       };
@@ -181,8 +183,20 @@ const RegisterPage = () => {
     };
     fetchCountries();
   }, []);
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await AuthApi.city("66cd6e58bb9a967736a7f7ad");
+        setCityData(res.data?.data || []);
+        console.log("all city of UAE:",res.data?.data)
+      } catch (err) {
+        console.error("Failed to fetch countries:", err);
+      }
+    };
+    fetchCountries();
+  }, []);
 
-  const countryOptions = countryData.map((item) => ({
+  const cityOptions = cityData.map((item) => ({
     value: item?._id,
     label: item?.name || "",
   }));
@@ -232,7 +246,7 @@ const RegisterPage = () => {
                 age: "",
                 gender: "",
                 address: "",
-                country: "",
+                country: "66cd6e58bb9a967736a7f7ad",
                 fitnessGoals: [],
                 agreedToTerms: false,
               }}
@@ -484,7 +498,7 @@ const RegisterPage = () => {
                       </ErrorMessage>
                     </div>
 
-                    <div className="group">
+                    {/* <div className="group">
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                         Country
                       </label>
@@ -495,6 +509,30 @@ const RegisterPage = () => {
                       >
                         <option value="">Select country</option>
                         {countryOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </Field>
+                      <ErrorMessage name="country">
+                        {(msg) => (
+                          <p className="mt-1 text-xs sm:text-sm text-red-600">
+                            {msg}
+                          </p>
+                        )}
+                      </ErrorMessage>
+                    </div> */}
+                    <div className="group">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                        City
+                      </label>
+                      <Field
+                        as="select"
+                        name="city"
+                        className="block w-full px-3 py-2 sm:py-3 text-xs sm:text-sm border outline-none rounded-lg "
+                      >
+                        <option value="">Select City</option>
+                        {cityOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
@@ -623,7 +661,7 @@ const RegisterPage = () => {
               )}
             </Formik>
           </div>
-          
+
           {/* ✅ Modal */}
           {openTerm && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
@@ -636,11 +674,9 @@ const RegisterPage = () => {
                   ✕
                 </button>
 
-                <h2 className="text-lg font-semibold mb-4">
-                  {allTerms.title}
-                </h2>
+                <h2 className="text-lg font-semibold mb-4">{allTerms.title}</h2>
                 <div className="max-h-64 overflow-y-auto text-sm text-gray-600 space-y-2">
-                 {allTerms.content}
+                  {allTerms.content}
                 </div>
 
                 <div className="mt-6 flex justify-end">
@@ -669,7 +705,7 @@ const RegisterPage = () => {
                   {allPolicies.title}
                 </h2>
                 <div className="max-h-64 overflow-y-auto text-sm text-gray-600 space-y-2">
-                 {allPolicies.content}
+                  {allPolicies.content}
                 </div>
 
                 <div className="mt-6 flex justify-end">
