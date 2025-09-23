@@ -160,7 +160,7 @@ export default function OrderConfirmation() {
           <div className="flex gap-4 w-full">
             <button
               className="bg-fourth text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-custom-dark transition flex-1"
-              onClick={() => handleNavigation("/orders")}
+              onClick={() => handleNavigation("/my-sessions")}
             >
               View class details
             </button>
@@ -221,22 +221,24 @@ export default function OrderConfirmation() {
                   {moment(orderDetails?.createdAt).format("MMMM Do YYYY")}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Time Slot:</span>
-                <span>
-                  {orderDetails?.startTime && orderDetails?.endTime
-                    ? `${formatTime(orderDetails.startTime)} - ${formatTime(
-                        orderDetails.endTime
-                      )}`
-                    : "-" ||
-                      (orderDetails?.subscription?.startTime &&
-                        orderDetails?.subscription?.endTime)
-                    ? `${formatTime(
-                        orderDetails.subscription.startTime
-                      )} - ${formatTime(orderDetails.subscription.endTime)}`
-                    : "-"}
-                </span>
-              </div>
+              {orderDetails?.startTime && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Time Slot:</span>
+                  <span>
+                    {orderDetails?.startTime && orderDetails?.endTime
+                      ? `${formatTime(orderDetails?.startTime)} - ${formatTime(
+                          orderDetails?.endTime
+                        )}`
+                      : "-" ||
+                        (orderDetails?.subscription?.startTime &&
+                          orderDetails?.subscription?.endTime)
+                      ? `${formatTime(
+                          orderDetails?.subscription?.startTime
+                        )} - ${formatTime(orderDetails?.subscription?.endTime)}`
+                      : "-"}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-500">Price:</span>
                 <span>
@@ -246,24 +248,47 @@ export default function OrderConfirmation() {
                     500}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Address:</span>
-                <span className="text-right">
-                  {orderDetails?.streetName ||
-                    orderDetails?.subscription?.Address.landmark +
-                      ", " +
-                      orderDetails?.subscription?.Address.streetName +
-                      ", " +
-                      orderDetails?.subscription?.Address.city.name +
-                      ", " +
-                      orderDetails?.subscription?.Address.country.name ||
-                    "Dubai Jewel Park, 5 36a St - Port Saeed - Dubai - United Arab Emirates"}
-                </span>
-              </div>
+
+              {orderDetails.numberOfClasses && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">No. of Classes:</span>
+                  <span>{orderDetails.numberOfClasses}</span>
+                </div>
+              )}
+
+              {orderDetails.duration && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Duration:</span>
+                  <span>
+                    {{
+                      daily: "for a day",
+                      weekly: "for a week",
+                      monthly: "for a month",
+                    }[orderDetails.duration] || orderDetails.duration}
+                  </span>
+                </div>
+              )}
+
+              {orderDetails?.streetName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Address:</span>
+                  <span className="text-right">
+                    {orderDetails?.streetName ||
+                      orderDetails?.subscription?.Address.landmark +
+                        ", " +
+                        orderDetails?.subscription?.Address.streetName +
+                        ", " +
+                        orderDetails?.subscription?.Address.city.name +
+                        ", " +
+                        orderDetails?.subscription?.Address.country.name ||
+                      "Dubai Jewel Park, 5 36a St - Port Saeed - Dubai - United Arab Emirates"}
+                  </span>
+                </div>
+              )}
               {orderDetails?.paymentMethod && (
                 <div className="flex justify-between">
                   <span className="text-gray-500">Payment Method:</span>
-                  <span>{orderDetails.paymentMethod}</span>
+                  <span>{orderDetails?.paymentMethod}</span>
                 </div>
               )}
               {orderDetails?.paymentStatus && (

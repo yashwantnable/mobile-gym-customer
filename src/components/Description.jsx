@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const Description = ({ description = "", length }) => {
+const Description = ({ description = "", length,lightMode }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpand = () => setIsExpanded(!isExpanded);
 
@@ -9,7 +9,7 @@ const Description = ({ description = "", length }) => {
     const displayedText = isExpanded ? description : description.slice(0, MAX_LENGTH);
 
     return (
-        <div className="text-sm font-medium mb-1 capitalize text-third">
+        <div className={`text-sm font-medium mb-1 capitalize ${lightMode?"text-third":"text-gray-300"}`}>
             {displayedText}
             {shouldTruncate && !isExpanded && '...'}
             {shouldTruncate && (

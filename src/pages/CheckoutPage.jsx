@@ -5,6 +5,7 @@ import StripePayment from "./Payment/StripePayment";
 import Description from "../components/Description";
 import { useLoading } from "../loader/LoaderContext";
 import { BookingApi } from "../Api/Booking.api";
+import { useTheme } from "../contexts/ThemeContext";
 
 function formatTimeTo12Hour(time24) {
   if (!time24) return "";
@@ -28,12 +29,10 @@ export default function CheckoutPage() {
   const isPackage = Object.keys(packageData).length > 0;
   const data = isPackage ? packageData : classData;
   const [error, setError] = useState("");
-
-  console.log("classData:", classData);
+  const { lightMode } = useTheme();
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
-
     handleLoading(true);
     setLoading(true);
     setError("");
@@ -42,10 +41,8 @@ export default function CheckoutPage() {
         subscriptionId: data._id,
         promoCode: promoCode.trim(),
       };
-      console.log("payload:", payload);
       const response = await BookingApi.applyPromoCodeToSubscription(payload);
       setDiscountDetails(response.data?.data);
-      console.log(response.data?.data?.breakdown?.finalPrice);
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to apply promo code");
       setDiscountDetails(null);
@@ -56,7 +53,11 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center py-8">
+    <div
+      className={`min-h-screen ${
+        lightMode ? "bg-white text-gray-900" : "bg-gray-900 text-gray-100"
+      } flex flex-col items-center py-8`}
+    >
       <div className="w-full max-w-6xl flex mt-5 flex-col md:flex-row justify-center gap-8">
         {/* Left: section */}
         <div className="w-full md:w-1/2">
@@ -65,19 +66,39 @@ export default function CheckoutPage() {
             alt={data?.name || (isPackage ? "Package Image" : "Session Image")}
             className="w-full h-72 object-cover object-center rounded mb-4"
           />
-          <div className="text-lg tracking-widest text-gray-400 mb-1">
+
+          <div
+            className={`text-lg tracking-widest mb-1 ${
+              lightMode ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             {isPackage
               ? "PACKAGE"
               : data?.sessionType?.sessionName?.toUpperCase() ||
                 classData.sessionType.toUpperCase()}
           </div>
-          <div className="text-xl font-medium mb-1 capitalize">
+
+          <div
+            className={`text-xl font-medium mb-1 capitalize ${
+              lightMode ? "text-gray-900" : "text-white"
+            }`}
+          >
             {data?.name || (isPackage ? "Package Title" : "Session Title")}
           </div>
-          <div className="text-xs font-medium mb-1 capitalize">
+
+          <div
+            className={`text-xs font-medium mb-1 capitalize ${
+              lightMode ? "text-gray-600" : "text-gray-300"
+            }`}
+          >
             <Description description={data?.description} />
           </div>
-          <div className="text-md text-gray-500 mb-2">
+
+          <div
+            className={`text-md mb-2 ${
+              lightMode ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
             {isPackage ? (
               <>
                 <div className="font-semibold">Package Details:</div>
@@ -130,6 +151,7 @@ export default function CheckoutPage() {
                     </div>
                   </>
                 )}
+
                 <div className="flex items-center gap-2 mb-2">
                   <img
                     src={
@@ -141,10 +163,18 @@ export default function CheckoutPage() {
                     className="w-8 h-8 rounded-full"
                   />
                   <div>
-                    <div className="text-[10px] uppercase text-gray-400">
+                    <div
+                      className={`text-[10px] uppercase ${
+                        lightMode ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
                       Instructor
                     </div>
-                    <div className="text-xs">
+                    <div
+                      className={`text-xs ${
+                        lightMode ? "text-gray-800" : "text-white"
+                      }`}
+                    >
                       {data?.trainer?.first_name || classData?.trainer}{" "}
                       {data?.trainer?.last_name}
                     </div>
@@ -153,13 +183,24 @@ export default function CheckoutPage() {
               </>
             )}
           </div>
+
           <hr className="mt-5 mb-5" />
         </div>
 
         {/* Right: section */}
-        <div className="w-full md:w-1/2 bg-white rounded p-6 shadow-sm flex flex-col gap-6">
+        <div
+          className={`w-full md:w-1/2 rounded p-6 shadow-sm flex flex-col gap-6 ${
+            lightMode ? "bg-white text-gray-900" : "bg-gray-800 text-gray-100"
+          }`}
+        >
           <h3 className="ml-5 text-xl font-bold">Order Summary</h3>
-          <div className="bg-[#fafbfc] rounded-lg shadow-sm p-4 border border-gray-100">
+          <div
+            className={`rounded-lg shadow-sm p-4 border ${
+              lightMode
+                ? "bg-[#fafbfc] border-gray-100"
+                : "bg-gray-700 border-gray-600"
+            }`}
+          >
             <div className="flex justify-between text-sm mb-2">
               <span>Subtotal</span>
               <span>AED {data?.price}</span>
@@ -168,7 +209,7 @@ export default function CheckoutPage() {
               <span>VAT</span>
               <span className="font-medium">0</span>
             </div>
-            <div className="border-t border-gray-200 my-2"></div>
+            <div className="border-t border-gray-400 my-2"></div>
             <div
               className={`flex justify-between font-medium ${
                 discountDetails ? "text-sm" : "text-lg"
@@ -192,8 +233,18 @@ export default function CheckoutPage() {
             <hr className="mt-3" />
           </div>
 
-          <div className="bg-[#fafbfc] rounded-lg shadow-sm p-4 mb-4 border border-gray-100">
-            <div className="flex items-center mb-2 text-sm text-gray-700">
+          <div
+            className={`rounded-lg shadow-sm p-4 mb-4 border ${
+              lightMode
+                ? "bg-[#fafbfc] border-gray-100"
+                : "bg-gray-700 border-gray-600"
+            }`}
+          >
+            <div
+              className={`flex items-center mb-2 text-sm ${
+                lightMode ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
               <span className="material-icons text-base mr-2 text-blue-500">
                 local_offer
               </span>
@@ -204,7 +255,11 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   placeholder="Enter promo code"
-                  className="border px-4 py-2 rounded w-full pr-10"
+                  className={`border px-4 py-2 rounded w-full pr-10 ${
+                    lightMode
+                      ? "border-gray-300 text-gray-900 bg-white"
+                      : "border-gray-600 text-gray-100 bg-gray-800"
+                  }`}
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   disabled={!!discountDetails}
@@ -277,11 +332,19 @@ export default function CheckoutPage() {
       {/* Location Section - Only show for classData */}
       {!isPackage && (
         <div className="mt-10 md:mt-12 w-full max-w-6xl mx-auto">
-          <h3 className="text-xl sm:text-3xl font-semibold mb-3 sm:mb-4">
+          <h3
+            className={`text-xl sm:text-3xl font-semibold mb-3 sm:mb-4 ${
+              lightMode ? "text-gray-900" : "text-white"
+            }`}
+          >
             Location
           </h3>
           <div className="flex flex-col gap-1 sm:gap-2 mb-3 sm:mb-4 mt-6 sm:mt-10">
-            <div className="flex items-center gap-1 sm:gap-2 text-gray-700 text-sm sm:text-base">
+            <div
+              className={`flex items-center gap-1 sm:gap-2 text-sm sm:text-base ${
+                lightMode ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 sm:h-5 sm:w-5 inline-block"
@@ -298,11 +361,19 @@ export default function CheckoutPage() {
               </svg>
               {data?.trainer?.phone_number || "(503) 729-0349"}
             </div>
-            <div className="text-gray-800 text-sm sm:text-base">
+            <div
+              className={`text-sm sm:text-base ${
+                lightMode ? "text-gray-800" : "text-gray-100"
+              }`}
+            >
               {data?.streetName ||
                 "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223"}
             </div>
-            <div className="text-gray-600 text-sm sm:text-base">
+            <div
+              className={`text-sm sm:text-base ${
+                lightMode ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
               {data?.city?.name || "Metzger"}
             </div>
           </div>

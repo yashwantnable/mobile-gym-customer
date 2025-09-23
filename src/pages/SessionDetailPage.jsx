@@ -7,11 +7,12 @@ import { IoIosArrowForward } from "react-icons/io";
 import moment from "moment";
 import Description from "../components/Description";
 import { ReviewgApi } from "../Api/Review.api";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function SessionDetailPage() {
   const navigate = useNavigate();
   const [visibleReviews, setVisibleReviews] = useState(3);
-
+  const { lightMode } = useTheme();
   const { handleLoading } = useLoading();
 
   const [classData, setclassData] = useState({});
@@ -115,14 +116,14 @@ export default function SessionDetailPage() {
 
         {/* Details Section */}
         <div className="md:w-1/3 w-full mt-6 md:mt-0">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-2">
+          <h2 className={`text-xl sm:text-2xl font-semibold mb-2 ${lightMode?"":"text-gray-200"}`}>
             {classData?.name?.toUpperCase()}
           </h2>
 
           {/* Session Type Name */}
           {classData?.sessionType?.sessionName && (
-            <div className="text-sm text-gray-500 mb-2">
-              <span className="font-semibold text-custom-dark">
+            <div className={`text-sm ${lightMode?"text-gray-400":"text-gray-100"} mb-2`}>
+              <span className="font-semibold ">
                 {classData.sessionType.sessionName}
               </span>
             </div>
@@ -138,7 +139,7 @@ export default function SessionDetailPage() {
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
             />
 
-            <span className="text-gray-700 text-xs sm:text-sm">
+            <span className={`${lightMode?"text-gray-700":"text-gray-100"} text-xs sm:text-sm`}>
               {(classData?.trainer?.first_name || "").toUpperCase()}{" "}
               {(classData?.trainer?.last_name || "").toUpperCase()}
             </span>
@@ -164,7 +165,7 @@ export default function SessionDetailPage() {
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <p className="text-gray-700 text-xs sm:text-sm">
+              <p className={`${lightMode?"text-gray-700":"text-gray-200"} text-xs sm:text-sm`}>
                 {classData?.Address?.streetName || ""}
                 {classData?.Address?.landmark
                   ? `, ${classData.Address.landmark}`
@@ -271,16 +272,17 @@ export default function SessionDetailPage() {
 
       {/* About the class */}
       <div className="mt-8 md:mt-10 border-t pt-4 md:pt-6">
-        <h3 className="text-xl sm:text-3xl font-md mb-3 sm:mb-4">
+        <h3 className={`text-xl sm:text-3xl font-md mb-3 sm:mb-4 ${lightMode?"":"text-gray-300"}`}>
           About the class
         </h3>
-        <div>
-          <div className="text-xs font-semibold tracking-widest text-gray-700 mb-2">
+        <div className={`${lightMode?"text-gray-700":"text-gray-300"}`}>
+          <div className={`text-xs font-semibold tracking-widest   mb-2`}>
             DESCRIPTION
           </div>
           <Description
             description={classData?.description || ""}
             length={500}
+            lightMode={lightMode}
           />
         </div>
       </div>
@@ -288,11 +290,11 @@ export default function SessionDetailPage() {
 
       {/* Location Section */}
       <div className="mt-10 md:mt-12">
-        <h3 className="text-xl sm:text-3xl font-semibold mb-3 sm:mb-4">
+        <h3 className={`text-xl sm:text-3xl font-semibold mb-3 sm:mb-4 ${lightMode?"text-gray-700":"text-gray-200"}`}>
           Location
         </h3>
         <div className="flex flex-col gap-1 sm:gap-2 mb-3 sm:mb-4 mt-6 sm:mt-10">
-          <div className="flex items-center gap-1 sm:gap-2 text-gray-700 text-sm sm:text-base">
+          <div className={`flex items-center gap-1 sm:gap-2 ${lightMode?"text-gray-700":"text-gray-200"} text-sm sm:text-base`}>
             {/* Phone icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -310,11 +312,11 @@ export default function SessionDetailPage() {
             </svg>
             {classData?.trainer?.phone_number || "(503) 729-0349"}
           </div>
-          <div className="text-gray-800 text-sm sm:text-base">
+          <div className={`${lightMode?"text-gray-800":"text-gray-200"} text-sm sm:text-base`}>
             {classData?.Address?.streetName ||
               "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223"}
           </div>
-          <div className="text-gray-600 text-sm sm:text-base">
+          <div className={`${lightMode?"text-gray-600":"text-gray-200"} text-sm sm:text-base`}>
             {classData?.Address?.city?.name || "Metzger"}
           </div>
         </div>
@@ -369,7 +371,7 @@ export default function SessionDetailPage() {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-xs sm:text-sm">No reviews yet.</p>
+            <p className={`${lightMode?"text-gray-500":"text-gray-200"} text-xs sm:text-sm`}>No reviews yet.</p>
           )}
         </div>
 
@@ -383,7 +385,7 @@ export default function SessionDetailPage() {
               Load More
             </button>
           ) : (
-            <p className="text-gray-500 text-xs sm:text-sm">No more reviews</p>
+            <p className={`${lightMode?"text-gray-500":"text-gray-200"} text-xs sm:text-sm`}>No more reviews</p>
           )}
         </div>
       </div>

@@ -14,8 +14,10 @@ import PackageCard from "../components/PackageCard";
 import { PackagesApi } from "../Api/Package.api";
 import Classes from "./Classes";
 import Tooltip from "../components/Tooltip";
+import { useTheme } from "../contexts/ThemeContext";
 
 const HomePage = () => {
+  const { lightMode } = useTheme();
   const { _id } = useParams();
   const user = useSelector((state) => state.auth.user);
   const [location, setLocation] = useState("Select location");
@@ -324,7 +326,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="animate-fade-in bg-primary pb-10">
+    <div className={`animate-fade-in ${lightMode ? "bg-white text-gray-900" : "bg-gray-900 text-gray-100"} pb-10`}>
       {/* Hero Section */}
       <section
         className="relative text-gray-900"
