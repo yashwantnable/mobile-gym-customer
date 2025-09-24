@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const DayView = ({
   classes,
   selectedDate,
+  lightMode,
   onClassClick,
   joinedClassIds = [],
   joinedClasses,
@@ -77,9 +78,13 @@ const DayView = ({
                 onClick={() => onClassClick(cls)}
               >
                 <div
-                  className={`w-full md:w-32 flex-shrink-0 flex items-center justify-center py-4 md:py-0 bg-gradient-to-b from-sixth/10 to-indigo-100 rounded-t-xl md:rounded-l-xl md:rounded-tr-none
-                                    ${isJoined ? "bg-green-100" : ""}
-                                `}
+                  className={`w-full md:w-32 flex-shrink-0 flex items-center justify-center py-4 md:py-0 rounded-t-xl md:rounded-l-xl md:rounded-tr-none
+        ${
+          lightMode
+            ? "bg-gradient-to-b from-sixth/10 to-indigo-100" // Light mode styles
+            : "bg-gradient-to-b from-gray-800 to-gray-900"
+        } // Dark mode styles
+        ${isJoined ? "bg-green-100" : ""}`}
                 >
                   <span className="text-lg font-semibold text-sixth">
                     {classData.duration}
@@ -88,6 +93,7 @@ const DayView = ({
                 <div className="flex-1 w-full px-4 py-3 flex flex-col justify-center">
                   <ClassCard
                     classData={classData}
+                    lightMode={lightMode}
                     isJoined={isJoined}
                     joinedClassObj={joinedClassObj}
                   />
@@ -123,10 +129,12 @@ const DayView = ({
   );
 };
 
-const ClassCard = ({ classData, isJoined, joinedClassObj }) => {
+const ClassCard = ({ classData, isJoined, joinedClassObj, lightMode }) => {
   return (
     <div
-      className={`bg-white/80 border rounded-lg p-4 shadow-md transition-colors flex flex-col md:flex-row md:items-center md:justify-between 
+      className={`${
+        lightMode ? "bg-white/80" : ""
+      } border rounded-lg p-4 shadow-md transition-colors flex flex-col md:flex-row md:items-center md:justify-between 
             ${
               classData.isExpired
                 ? "border-gray-300 opacity-50 cursor-not-allowed"

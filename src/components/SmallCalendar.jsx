@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBrandColor } from "../contexts/BrandColorContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const SmallCalendar = ({ selectedDate, onDateSelect, classesData }) => {
   const [currentMonth, setCurrentMonth] = useState(
     new Date(selectedDate.getFullYear(), selectedDate.getMonth())
   );
-const { brandColor } = useBrandColor();
+  const { brandColor } = useBrandColor();
+  const { lightMode } = useTheme();
+
   const monthNames = [
     "January",
     "February",
@@ -21,8 +24,6 @@ const { brandColor } = useBrandColor();
     "November",
     "December",
   ];
-
-  // console.log("this is classesdffffffff data", classesData);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -47,19 +48,15 @@ const { brandColor } = useBrandColor();
     return days;
   };
 
-  const hasClasses = (date) => {
-    return classesData.some((cls) => {
-      const classDate = new Date(cls.date);
-      return classDate.toDateString() === date.toDateString();
-    });
-  };
+  const hasClasses = (date) =>
+    classesData.some(
+      (cls) => new Date(cls.date).toDateString() === date.toDateString()
+    );
 
-  const getClassForDate = (date) => {
-    return classesData.find((cls) => {
-      const classDate = new Date(cls.date);
-      return classDate.toDateString() === date.toDateString();
-    });
-  };
+  const getClassForDate = (date) =>
+    classesData.find(
+      (cls) => new Date(cls.date).toDateString() === date.toDateString()
+    );
 
   const goToPreviousMonth = () => {
     setCurrentMonth(
@@ -82,18 +79,34 @@ const { brandColor } = useBrandColor();
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={goToPreviousMonth}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+          className={`p-1 rounded-full transition-colors ${
+            lightMode ? "hover:bg-gray-100" : "hover:bg-gray-700"
+          }`}
         >
-          <ChevronLeft className="h-4 w-4 text-gray-600" />
+          <ChevronLeft
+            className={`h-4 w-4 ${
+              lightMode ? "text-gray-600" : "text-gray-300"
+            }`}
+          />
         </button>
-        <h3 className="text-sm font-medium text-gray-900">
+        <h3
+          className={`text-sm font-medium ${
+            lightMode ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
           {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </h3>
         <button
           onClick={goToNextMonth}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+          className={`p-1 rounded-full transition-colors ${
+            lightMode ? "hover:bg-gray-100" : "hover:bg-gray-700"
+          }`}
         >
-          <ChevronRight className="h-4 w-4 text-gray-600" />
+          <ChevronRight
+            className={`h-4 w-4 ${
+              lightMode ? "text-gray-600" : "text-gray-300"
+            }`}
+          />
         </button>
       </div>
 
@@ -102,7 +115,9 @@ const { brandColor } = useBrandColor();
         {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
           <div
             key={index}
-            className="text-center text-xs font-medium text-gray-500 py-2"
+            className={`text-center text-xs font-medium py-2 ${
+              lightMode ? "text-gray-500" : "text-gray-400"
+            }`}
           >
             {day}
           </div>
@@ -122,24 +137,30 @@ const { brandColor } = useBrandColor();
               key={index}
               onClick={() => onDateSelect(day)}
               className={`
-                relative h-8 w-8 text-xs rounded-full transition-colors
-                ${isCurrentMonth ? "text-gray-900" : "text-gray-400"}
-                ${isSelected ? "bg-sixth text-white" : ""}
-                ${isToday && !isSelected ? "bg-sixth/40 text-third" : ""}
-                ${!isSelected && !isToday ? "hover:bg-gray-100" : ""}
-            `}
+    relative h-8 w-8 text-xs rounded-full transition-colors border
+    ${
+      isCurrentMonth
+        ? lightMode
+          ? "text-gray-900"
+          : "text-gray-200"
+        : "text-gray-400"
+    }
+    ${isSelected ? `bg-${brandColor} text-white` : ""}
+    ${isToday && !isSelected ? `bg-${brandColor}/40 text-${brandColor}` : ""}
+    ${
+      !isSelected && !isToday
+        ? lightMode
+          ? "hover:bg-gray-100"
+          : "hover:bg-gray-200 hover:text-gray-500"
+        : ""
+    }
+  `}
             >
               <span className="relative z-10">{day.getDate()}</span>
               {hasClassesOnDay && !isSelected && (
                 <div
-                  className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5
-                    ${
-                      getClassForDate(day)?.isJoined ||
-                      getClassForDate(day)?.isBooked
-                        ? `bg-${brandColor}`
-                        : `bg-${brandColor}`
-                    }
-                    rounded-full`}
+                  className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 
+        bg-${brandColor} rounded-full`}
                 ></div>
               )}
             </button>

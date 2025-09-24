@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 const FilterPanel = ({
   filters,
   onFilterChange,
+  lightMode,
   onReset,
   locations = [],
   categories = [],
@@ -52,17 +53,23 @@ const FilterPanel = ({
     const remaining = filtered.length - visible.length;
     const isCollapsed = collapsed[key];
     return (
-      <div className="">
+      <div>
         <button
           className="flex items-center justify-between w-full mb-2 focus:outline-none"
           onClick={() => setCollapsed((c) => ({ ...c, [key]: !c[key] }))}
           type="button"
         >
-          <span className="font-semibold text-gray-800 text-sm">{label}</span>
-          <ChevronDown
-            className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${
-              isCollapsed ? "-rotate-90" : "rotate-0"
+          <span
+            className={`font-semibold text-sm ${
+              lightMode ? "text-gray-800" : "text-gray-200"
             }`}
+          >
+            {label}
+          </span>
+          <ChevronDown
+            className={`h-5 w-5 transition-transform duration-200 ${
+              lightMode ? "text-gray-500" : "text-gray-400"
+            } ${isCollapsed ? "-rotate-90" : "rotate-0"}`}
           />
         </button>
         {!isCollapsed && (
@@ -70,7 +77,9 @@ const FilterPanel = ({
             {visible.map((option) => (
               <label
                 key={option.id}
-                className="flex items-center gap-2 text-gray-700 text-sm cursor-pointer"
+                className={`flex items-center gap-2 text-sm cursor-pointer ${
+                  lightMode ? "text-gray-700" : "text-gray-300"
+                }`}
               >
                 <input
                   type="checkbox"
@@ -80,7 +89,11 @@ const FilterPanel = ({
                       : false
                   }
                   onChange={() => handleCheckboxChange(key, option.id)}
-                  className="w-5 h-5 rounded border-gray-300 focus:ring-blue-500"
+                  className={`w-5 h-5 rounded border ${
+                    lightMode
+                      ? "border-gray-300 focus:ring-blue-500"
+                      : "border-gray-600 focus:ring-blue-400"
+                  }`}
                 />
                 <span>{option.name}</span>
               </label>
@@ -100,9 +113,19 @@ const FilterPanel = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-xl shadow-md border border-gray-200 p-5 flex flex-col gap-4">
+    <div
+      className={`w-full rounded-xl shadow-md border p-5 flex flex-col gap-4 ${
+        lightMode ? "bg-white border-gray-200" : "bg-gray-900 border-gray-700"
+      }`}
+    >
       <div className="flex items-center justify-between mb-2">
-        <span className="font-bold text-lg text-gray-900">FILTERS</span>
+        <span
+          className={`font-bold text-lg ${
+            lightMode ? "text-gray-900" : "text-gray-100"
+          }`}
+        >
+          FILTERS
+        </span>
         {hasActiveFilters && (
           <button
             onClick={onReset}
@@ -118,9 +141,13 @@ const FilterPanel = ({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search..."
-        className="w-full mb-2 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none"
+        className={`w-full mb-2 px-3 py-2 border rounded-lg text-sm outline-none ${
+          lightMode
+            ? "border-gray-200 bg-white text-gray-900"
+            : "border-gray-600 bg-gray-800 text-gray-100 placeholder-gray-400"
+        }`}
       />
-      {/* Checkbox lists with collapse/expand */}
+      {/* Checkbox lists */}
       {renderCheckboxList("Location", "location", locations)}
       {renderCheckboxList("Category", "category", categories)}
       {renderCheckboxList("Session Type", "sessionType", sessionTypes)}

@@ -489,7 +489,7 @@ const HomePage = () => {
 
       {/* Top Sessions Section */}
       {sessionData?.length > 0 && (
-        <section className="bg-primary py-10 md:py-16 px-4 sm:px-6 lg:px-8">
+        <section className={`${lightMode?"bg-primary":"bg-primary/50"} py-10 md:py-16 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-7xl mx-auto">
             <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-8 capitalize text-third text-start">
               Top fitness Sessions
@@ -609,7 +609,7 @@ const HomePage = () => {
       </section>
       {/* Featured Membership */}
       {subscription?.length > 0 && (
-        <section className="bg-primary py-10 md:py-16 px-4 sm:px-6 lg:px-8">
+        <section className={`${lightMode?"bg-primary":"bg-primary/50"} py-10 md:py-16 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
               <h2 className="text-xl md:text-3xl font-bold capitalize text-third">

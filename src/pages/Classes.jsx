@@ -14,6 +14,7 @@ import { FaCalendarAlt, FaSearch } from "react-icons/fa";
 import JoinedClasses from "./JoinedClasses";
 import { CategoryApi } from "../Api/Category.api";
 import { useBrandColor } from "../contexts/BrandColorContext";
+import { useTheme } from "../contexts/ThemeContext";
 const transformPackageData = (apiPackage) => {
   return {
     id: apiPackage.package._id,
@@ -43,6 +44,7 @@ const transformPackageData = (apiPackage) => {
 };
 
 const Classes = ({ hide, category }) => {
+  const { lightMode } = useTheme();
   const { _id } = useParams();
   const { brandColor, setBrandColor } = useBrandColor();
   const [isOpen, setIsOpen] = useState(false);
@@ -339,13 +341,17 @@ const Classes = ({ hide, category }) => {
   };
 
   return (
-    <div
-      className={
-        !hide
-          ? " border bg-primary"
-          : `${filteredClasses.length > 0 ? "min-h-screen" : "h-60"}`
-      }
-    >
+   <div
+  className={`${!hide 
+    ? lightMode 
+      ? "border bg-white"   
+      : "border bg-gray-800" 
+    : filteredClasses.length > 0 
+      ? "min-h-screen" 
+      : "h-60"
+  }`}
+>
+
       {/* Package Select Modal (always open if no active package or when user clicks button) */}
       {showPackageModal && (
         <PackageSelectModal
@@ -357,32 +363,38 @@ const Classes = ({ hide, category }) => {
         />
       )}
       {!hide && (
-        <div className="flex border-b pt-10 border-gray-200 ml-[5.5%] mr-[5.5%]">
-          {" "}
-          <button
-            onClick={() => setActiveTab("joinNew")}
-            className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
-              activeTab === "joinNew"
-                ? getCategoryClass(activeCategoryName)
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <FaSearch className="mr-2" />
-            Join New Classes
-          </button>
-          <button
-            onClick={() => setActiveTab("myClasses")}
-            className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none ${
-              activeTab === "myClasses"
-                ? // ? "border-b-2 border-indigo-500 text-indigo-600"
-                  `border-b-2 border-${brandColor} text-${brandColor}`
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <FaCalendarAlt className="mr-2" />
-            My Classes
-          </button>
-        </div>
+       <div
+      className={`flex border-b pt-10 ml-[5.5%] mr-[5.5%] transition-colors ${
+        lightMode ? 'border-gray-200' : 'border-gray-700'
+      }`}
+    >
+      <button
+        onClick={() => setActiveTab('joinNew')}
+        className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none transition-colors ${
+          activeTab === 'joinNew'
+            ? `border-b-2 border-${brandColor} text-${brandColor}`
+            : lightMode
+              ? 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-400 hover:text-gray-200'
+        }`}
+      >
+        <FaSearch className="mr-2" />
+        Join New Classes
+      </button>
+      <button
+        onClick={() => setActiveTab('myClasses')}
+        className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none transition-colors ${
+          activeTab === 'myClasses'
+            ? `border-b-2 border-${brandColor} text-${brandColor}`
+            : lightMode
+              ? 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-400 hover:text-gray-200'
+        }`}
+      >
+        <FaCalendarAlt className="mr-2" />
+        My Classes
+      </button>
+    </div>
       )}
       {activeTab === "myClasses" && (
         <div>
@@ -488,7 +500,7 @@ const Classes = ({ hide, category }) => {
               <div className="lg:col-span-3 flex flex-col gap-6">
                 {/* Sidebar Header and Description */}
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  <h2 className={`text-2xl font-bold ${lightMode?"text-gray-900":"text-gray-200"} mb-1`}>
                     {/* {JSON.stringify(classes?.[0]?.category)} */}
                     <span>
                       {/* {JSON.stringify(classes[0]?.category)} */}
@@ -497,7 +509,7 @@ const Classes = ({ hide, category }) => {
                       }Class Schedule`}
                     </span>
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className={`text-sm ${lightMode?"text-gray-500":"text-gray-200"}`}>
                     Browse and filter available classes. Select a class to view
                     details, buy, or join using your package.
                   </p>
@@ -543,7 +555,7 @@ const Classes = ({ hide, category }) => {
                   </select>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className={`${lightMode?"bg-white border-gray-200" : "bg-gray-900 border-gray-700 "} border-gray-200 rounded-lg shadow-sm border  overflow-hidden`}>
                   <div className="px-4 py-3 border-b border-gray-200">
                     <h2 className="text-lg font-medium text-gray-900">
                       Calendar
@@ -551,6 +563,7 @@ const Classes = ({ hide, category }) => {
                   </div>
                   <div className="p-4">
                     <SmallCalendar
+                      lightMode={lightMode}
                       selectedDate={selectedDate}
                       selectedCatName={selectedCatName}
                       onDateSelect={handleDateSelect}
@@ -560,6 +573,7 @@ const Classes = ({ hide, category }) => {
                 </div>
 
                 <FilterPanel
+                  lightMode={lightMode}
                   filters={filters}
                   onFilterChange={handleFilterChange}
                   onReset={resetFilters}
@@ -591,6 +605,7 @@ const Classes = ({ hide, category }) => {
                   <div className="p-4">
                     <FilterPanel
                       filters={filters}
+                      lightMode={lightMode}
                       onFilterChange={handleFilterChange}
                       onReset={resetFilters}
                       locations={getUniqueValues("location")}
@@ -601,7 +616,7 @@ const Classes = ({ hide, category }) => {
                 </div>
               )}
               {/* Week View */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-[100vh]">
+              <div className={`${lightMode?"bg-white":"bg-gray-900 border-gray-500"} rounded-lg shadow-sm border border-gray-200 overflow-hidden h-[100vh]`}>
                 <div className="px-4 py-3 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg  text-gray-900 font-bold">
@@ -620,6 +635,7 @@ const Classes = ({ hide, category }) => {
                 </div>
                 <div className="overflow-hidden">
                   <WeekView
+                  lightMode={lightMode}
                     classes={filteredClasses}
                     selectedDate={selectedDate}
                     onClassClick={handleClassClick}
