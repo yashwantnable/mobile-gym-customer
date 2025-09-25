@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 
-const CustomLocationFilter = ({ value, onChange, options }) => {
+const CustomLocationFilter = ({ value, onChange, options,lightMode }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const selected = options.find((loc) => loc._id === value);
@@ -22,18 +22,18 @@ const CustomLocationFilter = ({ value, onChange, options }) => {
     <div ref={ref} className="relative inline-block min-w-[270px]">
       <button
         type="button"
-        className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 bg-white shadow-sm min-w-[270px] text-left focus:outline-none w-full"
+        className={`flex items-center gap-3 border border-gray-300 ${lightMode?" bg-white":" bg-gray-800"} rounded-lg px-4 py-2  shadow-sm min-w-[270px] text-left focus:outline-none`}
         style={{ height: 56 }}
         onClick={() => setOpen((o) => !o)}
       >
         <FaMapMarkerAlt className="text-green-600 text-2xl" />
         <span className="flex-1">
-          <span className="block text-xs text-gray-400 font-semibold">
+          <span className={`block text-xs ${lightMode?"text-gray-500":"text-gray-200"} font-semibold`}>
             LOCATION
           </span>
           <span
             className={`block text-base  ${
-              selected ? "text-green-600" : "text-green-600"
+              selected ? "text-green-700" : "text-green-600"
             }`}
           >
             {selected ? selected.streetName : "Select Location"}

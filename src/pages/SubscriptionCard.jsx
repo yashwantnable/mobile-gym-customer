@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass }) => {
+const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass,lightMode }) => {
   const navigate = useNavigate();
 
   // Calculate date range
@@ -22,7 +22,7 @@ const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass }) => {
 
   return (
     <div
-      className="bg-white rounded-2xl p-4  shadow-md cursor-pointer"
+      className={`${lightMode?"bg-white":"bg-gray-800"} rounded-2xl p-4  shadow-md cursor-pointer`}
       onClick={handleNavigate}
     >
       <img
@@ -31,14 +31,14 @@ const SubscriptionCard = ({ _id, media, name, price, date, isSingleClass }) => {
         className="w-full h-48 object-cover rounded-xl mb-4"
       />
       <div className="flex justify-between items-center mb-2">
-        <span className="text-[#6b6b6b] text-sm tracking-wide">
+        <span className={`${lightMode?"text-[#6b6b6b]":"text-gray-400"} text-sm tracking-wide`}>
           {dateRange}
         </span>
         <span className="bg-[#f3e6d6] text-[#7a5c3e] text-xs px-3 py-1 rounded-full font-semibold flex flex-col items-center justify-center leading-tight text-center min-w-[60px] min-h-[40px]">
           {classesText}
         </span>
       </div>
-      <div className="font-semibold text-xl text-[#1a1a1a]">{name}</div>
+      <div className={`font-semibold text-xl ${lightMode?"text-[#1a1a1a]":"text-gray-300"}`}>{name}</div>
       <div className="text-right">
         <span className="text-[#7a5c3e] text-sm font-bold">AED {price}</span>
       </div>

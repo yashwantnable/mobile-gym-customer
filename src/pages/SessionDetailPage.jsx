@@ -7,6 +7,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import moment from "moment";
 import Description from "../components/Description";
 import { ReviewgApi } from "../Api/Review.api";
+import { BookingApi } from "../Api/Booking.api"; // Import BookingApi
 import { useTheme } from "../contexts/ThemeContext";
 
 export default function SessionDetailPage() {
@@ -16,7 +17,9 @@ export default function SessionDetailPage() {
   const { handleLoading } = useLoading();
 
   const [classData, setclassData] = useState({});
-  const [reviewsdata, setReviewsdata] = useState([]); // Initialize as empty array
+  const [reviewsdata, setReviewsdata] = useState([]);
+  const [userClasses, setuserclasses] = useState([]); // Store booked classes
+  const [isPurchased, setIsPurchased] = useState(false); // Track if current session is booked
 
   const reviewsPerPage = 3;
   const { id } = useParams();
@@ -25,7 +28,6 @@ export default function SessionDetailPage() {
     handleLoading(true);
     try {
       const res = await CategoryApi.getAllDetails(id);
-
       setclassData(res?.data?.data || {});
     } catch (error) {
       console.log("Error", error);
@@ -37,9 +39,9 @@ export default function SessionDetailPage() {
   const sessionAllRating = async () => {
     handleLoading(true);
     try {
-      console.log("Calling reviews API for id:", id); // Add this
+      console.log("Calling reviews API for id:", id);
       const res = await ReviewgApi.getAllRatingReviews(id);
-      console.log("Review Response:", res.data); // Log response
+      console.log("Review Response:", res.data);
       setReviewsdata(
         Array.isArray(res?.data?.data?.reviews) ? res.data.data.reviews : []
       );
@@ -51,16 +53,34 @@ export default function SessionDetailPage() {
     }
   };
 
+  const getAllTraining = async () => {
+    handleLoading(true);
+    try {
+      const res = await BookingApi.getBookingHistory();
+      setuserclasses(res?.data?.data || []);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      handleLoading(false);
+    }
+  };
+
+  // Check if current session is in booked classes
+  useEffect(() => {
+    if (id && userClasses.length > 0) {
+      const isBooked = userClasses.some((bookedClass) => 
+        bookedClass._id === id || bookedClass.classId === id // Adjust based on API response structure
+      );
+      setIsPurchased(isBooked);
+    }
+  }, [id, userClasses]);
+
   useEffect(() => {
     console.log("id from params:", id);
     if (id) {
       sessionAllRating();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) {
       fetchSessionDetails();
+      getAllTraining(); // Fetch booked classes
     }
   }, [id]);
 
@@ -71,7 +91,9 @@ export default function SessionDetailPage() {
   const hasMoreReviews = reviewsdata && visibleReviews < reviewsdata.length;
 
   const handlePurchase = () => {
-    navigate("/checkout", { state: { classData } });
+    if (!isPurchased) {
+      navigate("/checkout", { state: { classData } });
+    }
   };
 
   function formatTimeTo12Hour(time24) {
@@ -84,7 +106,6 @@ export default function SessionDetailPage() {
     return `${hour}:${minute} ${ampm}`;
   }
 
-  // Helper to build address string for Google Maps
   function getAddressString() {
     const address = classData?.Address;
     if (address) {
@@ -96,7 +117,6 @@ export default function SessionDetailPage() {
       ].filter(Boolean);
       return parts.join(", ");
     }
-    // fallback
     return "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223";
   }
 
@@ -116,14 +136,14 @@ export default function SessionDetailPage() {
 
         {/* Details Section */}
         <div className="md:w-1/3 w-full mt-6 md:mt-0">
-          <h2 className={`text-xl sm:text-2xl font-semibold mb-2 ${lightMode?"":"text-gray-200"}`}>
+          <h2 className={`text-xl sm:text-2xl font-semibold mb-2 ${lightMode ? "" : "text-gray-200"}`}>
             {classData?.name?.toUpperCase()}
           </h2>
 
           {/* Session Type Name */}
           {classData?.sessionType?.sessionName && (
-            <div className={`text-sm ${lightMode?"text-gray-400":"text-gray-100"} mb-2`}>
-              <span className="font-semibold ">
+            <div className={`text-sm ${lightMode ? "text-gray-400" : "text-gray-100"} mb-2`}>
+              <span className="font-semibold">
                 {classData.sessionType.sessionName}
               </span>
             </div>
@@ -139,7 +159,7 @@ export default function SessionDetailPage() {
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
             />
 
-            <span className={`${lightMode?"text-gray-700":"text-gray-100"} text-xs sm:text-sm`}>
+            <span className={`${lightMode ? "text-gray-700" : "text-gray-100"} text-xs sm:text-sm`}>
               {(classData?.trainer?.first_name || "").toUpperCase()}{" "}
               {(classData?.trainer?.last_name || "").toUpperCase()}
             </span>
@@ -165,7 +185,7 @@ export default function SessionDetailPage() {
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <p className={`${lightMode?"text-gray-700":"text-gray-200"} text-xs sm:text-sm`}>
+              <p className={`${lightMode ? "text-gray-700" : "text-gray-200"} text-xs sm:text-sm`}>
                 {classData?.Address?.streetName || ""}
                 {classData?.Address?.landmark
                   ? `, ${classData.Address.landmark}`
@@ -260,23 +280,32 @@ export default function SessionDetailPage() {
             {/* Purchase Button */}
             <button
               onClick={handlePurchase}
-              className="flex items-center gap-2 bg-custom-dark hover:bg-black transition-colors text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg font-semibold text-base sm:text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-dark w-full sm:w-auto justify-center overflow-hidden"
+              className={`flex items-center gap-2 ${isPurchased ? 'bg-gray-400 cursor-not-allowed' : 'bg-custom-dark hover:bg-black transition-colors'} text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg font-semibold text-base sm:text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-dark w-full sm:w-auto justify-center overflow-hidden`}
               style={{ letterSpacing: "0.1em" }}
+              disabled={isPurchased}
             >
-              SUBSCRIBE
-              <IoIosArrowForward className="text-white w-6 h-6 flex-shrink-0" />
+              {isPurchased ? 'Already Booked' : 'SUBSCRIBE'}
+              {!isPurchased && <IoIosArrowForward className="text-white w-6 h-6 flex-shrink-0" />}
             </button>
           </div>
+          {/* Purchased Badge (if needed) */}
+          {isPurchased && (
+            <div className="absolute top-4 left-4 z-50" style={{ position: 'absolute' }}>
+              <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                ✓ Purchased
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* About the class */}
       <div className="mt-8 md:mt-10 border-t pt-4 md:pt-6">
-        <h3 className={`text-xl sm:text-3xl font-md mb-3 sm:mb-4 ${lightMode?"":"text-gray-300"}`}>
+        <h3 className={`text-xl sm:text-3xl font-md mb-3 sm:mb-4 ${lightMode ? "" : "text-gray-300"}`}>
           About the class
         </h3>
-        <div className={`${lightMode?"text-gray-700":"text-gray-300"}`}>
-          <div className={`text-xs font-semibold tracking-widest   mb-2`}>
+        <div className={`${lightMode ? "text-gray-700" : "text-gray-300"}`}>
+          <div className={`text-xs font-semibold tracking-widest mb-2`}>
             DESCRIPTION
           </div>
           <Description
@@ -290,11 +319,11 @@ export default function SessionDetailPage() {
 
       {/* Location Section */}
       <div className="mt-10 md:mt-12">
-        <h3 className={`text-xl sm:text-3xl font-semibold mb-3 sm:mb-4 ${lightMode?"text-gray-700":"text-gray-200"}`}>
+        <h3 className={`text-xl sm:text-3xl font-semibold mb-3 sm:mb-4 ${lightMode ? "text-gray-700" : "text-gray-200"}`}>
           Location
         </h3>
         <div className="flex flex-col gap-1 sm:gap-2 mb-3 sm:mb-4 mt-6 sm:mt-10">
-          <div className={`flex items-center gap-1 sm:gap-2 ${lightMode?"text-gray-700":"text-gray-200"} text-sm sm:text-base`}>
+          <div className={`flex items-center gap-1 sm:gap-2 ${lightMode ? "text-gray-700" : "text-gray-200"} text-sm sm:text-base`}>
             {/* Phone icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -312,11 +341,11 @@ export default function SessionDetailPage() {
             </svg>
             {classData?.trainer?.phone_number || "(503) 729-0349"}
           </div>
-          <div className={`${lightMode?"text-gray-800":"text-gray-200"} text-sm sm:text-base`}>
+          <div className={`${lightMode ? "text-gray-800" : "text-gray-200"} text-sm sm:text-base`}>
             {classData?.Address?.streetName ||
               "10121 Southwest Nimbus Avenue Suite C2, Tigard, OR 97223"}
           </div>
-          <div className={`${lightMode?"text-gray-600":"text-gray-200"} text-sm sm:text-base`}>
+          <div className={`${lightMode ? "text-gray-600" : "text-gray-200"} text-sm sm:text-base`}>
             {classData?.Address?.city?.name || "Metzger"}
           </div>
         </div>
@@ -371,7 +400,9 @@ export default function SessionDetailPage() {
               </div>
             ))
           ) : (
-            <p className={`${lightMode?"text-gray-500":"text-gray-200"} text-xs sm:text-sm`}>No reviews yet.</p>
+            <p className={`${lightMode ? "text-gray-500" : "text-gray-200"} text-xs sm:text-sm`}>
+              No reviews yet.
+            </p>
           )}
         </div>
 
@@ -380,12 +411,14 @@ export default function SessionDetailPage() {
           {hasMoreReviews ? (
             <button
               onClick={handleLoadMore}
-              className="text-custom-dark px-4 py-2 sm:px-6 sm:py-2 rounded-lg  "
+              className="text-custom-dark px-4 py-2 sm:px-6 sm:py-2 rounded-lg"
             >
               Load More
             </button>
           ) : (
-            <p className={`${lightMode?"text-gray-500":"text-gray-200"} text-xs sm:text-sm`}>No more reviews</p>
+            <p className={`${lightMode ? "text-gray-500" : "text-gray-200"} text-xs sm:text-sm`}>
+              No more reviews
+            </p>
           )}
         </div>
       </div>

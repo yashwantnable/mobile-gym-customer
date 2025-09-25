@@ -20,7 +20,7 @@ import { BookingApi } from "../Api/Booking.api";
 import Pagination from "../components/Pagination";
 import { Link } from "react-router-dom";
 
-const JoinedClasses = ({ myJoinedClasses }) => {
+const JoinedClasses = ({ myJoinedClasses,lightMode }) => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
   const [attendanceStatus, setAttendanceStatus] = useState({});

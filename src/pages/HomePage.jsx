@@ -635,7 +635,7 @@ const HomePage = () => {
       <section id="packages" className="py-10 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8 gap-2 md:gap-0">
-            <h2 className="text-xl md:text-3xl font-bold capitalize text-third">
+            <h2 className={`text-xl md:text-3xl font-bold capitalize ${lightMode?"text-third":"text-gray-50"}`}>
               Find Your New Latest Packages
             </h2>
           </div>
@@ -673,6 +673,7 @@ const HomePage = () => {
               );
             }}
             itemClass="mr-4 md:mr-6"
+            style={{ position: 'relative', zIndex: 10 }}
           />
         </div>
       </section>

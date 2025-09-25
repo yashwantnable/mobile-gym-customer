@@ -42,7 +42,7 @@ const PackageCard = ({
   return (
     <div
       className={`rounded-2xl overflow-hidden w-80 flex-shrink-0 flex flex-col h-full transition-all duration-300 border border-second ${style.bg} cursor-pointer relative shadow-lg group font-sans`}
-    
+      style={{ position: "relative" }}
     >
       {/* Decorative accent */}
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-2xl opacity-20 pointer-events-none bg-fourth"></div>
@@ -50,7 +50,10 @@ const PackageCard = ({
 
       {/* Purchased badge */}
       {isPurchased && (
-        <div className="absolute top-4 left-4 z-20">
+        <div
+          className="absolute top-4 left-4 z-50"
+          style={{ position: "absolute", zIndex: 50 }}
+        >
           <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             ✓ Purchased
           </span>
@@ -79,9 +82,7 @@ const PackageCard = ({
             {name}
           </h3>
           <div className="mb-2 flex items-end gap-2">
-            <span className="text-3xl font-black text-third">
-              AED {price}
-            </span>
+            <span className="text-3xl font-black text-third">AED {price}</span>
             <span className="text-xs text-custom-gray font-medium mb-1">
               / package
             </span>

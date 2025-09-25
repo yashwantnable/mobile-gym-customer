@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 
-const CustomDatePicker = ({ selected, onChange }) => {
+const CustomDatePicker = ({ selected, onChange,lightMode }) => {
   const formatted = selected
     ? format(selected, "EEEE, dd MMM ''yy")
     : "Select date";
@@ -15,7 +15,7 @@ const CustomDatePicker = ({ selected, onChange }) => {
       customInput={
         <button
           type="button"
-          className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 bg-white shadow-sm min-w-[270px] text-left focus:outline-none"
+          className={`flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 ${lightMode?"bg-white":"bg-gray-800"} shadow-sm min-w-[270px] text-left focus:outline-none`}
         >
           <span className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
             {/* Calendar SVG */}
@@ -47,7 +47,7 @@ const CustomDatePicker = ({ selected, onChange }) => {
             </svg>
           </span>
           <span>
-            <span className="block text-xs text-gray-500 font-semibold">
+            <span className={`block text-xs ${lightMode?"text-gray-500":"text-gray-200"} font-semibold`}>
               DATE
             </span>
             <span className="block text-base font-medium text-green-700">

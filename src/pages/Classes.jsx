@@ -398,7 +398,7 @@ const Classes = ({ hide, category }) => {
       )}
       {activeTab === "myClasses" && (
         <div>
-          <JoinedClasses myJoinedClasses={myJoinedClasses} />
+          <JoinedClasses myJoinedClasses={myJoinedClasses} lightMode={lightMode}/>
         </div>
       )}
       {activeTab === "joinNew" && (

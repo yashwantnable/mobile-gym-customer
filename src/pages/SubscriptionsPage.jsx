@@ -10,8 +10,10 @@ import moment from "moment";
 import { FilterApi } from "../Api/Filteration.api";
 import SubscriptionCard from "./SubscriptionCard";
 import { ClassesApi } from "../Api/Classes.api";
+import { useTheme } from "../contexts/ThemeContext";
 
 const SubscriptionsPage = () => {
+  const {lightMode}=useTheme();
   const [selectedType, setSelectedType] = useState("");
   const [selectedTab, setSelectedTab] = useState("classes");
   const [selectedActivities, setSelectedActivities] = useState([]);
@@ -399,7 +401,7 @@ const SubscriptionsPage = () => {
   };
 
   return (
-    <div className="bg-primary min-h-screen overflow-x-hidden">
+    <div className={`${lightMode?"bg-primary":"bg-gray-900"} min-h-screen overflow-x-hidden`}>
       <div className="mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pt-6 sm:pt-8">
         {/* Top bar */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
@@ -448,12 +450,14 @@ const SubscriptionsPage = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 md:gap-8 ml-0 sm:ml-2 mb-2">
             <div className="w-full sm:w-auto">
               <CustomDatePicker
+                lightMode={lightMode}
                 selected={selectedDate}
                 onChange={(date) => handleDateFilter(date)}
               />
             </div>
             <div className="w-full sm:w-auto">
               <CustomDistanceFilter
+                lightMode={lightMode}
                 value={selectedDistance}
                 onChange={(dis) => handleDistanceFilter(dis)}
                 options={[
@@ -470,6 +474,7 @@ const SubscriptionsPage = () => {
             <div className="w-full sm:w-auto">
               <CustomLocationFilter
                 value={selectedLocation}
+                lightMode={lightMode}
                 onChange={handleLocationFilter}
                 options={Array.isArray(locationdata) ? locationdata : []}
               />
@@ -477,7 +482,7 @@ const SubscriptionsPage = () => {
           </div>
         )}
 
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">
+        <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 ${lightMode?"text-gray-900":"text-gray-200"}`}>
           Best {selectedTab === "classes" ? "Classes" : "Instructors"} in United
           Arab Emirates
         </h1>
@@ -599,11 +604,11 @@ const SubscriptionsPage = () => {
             {selectedTab === "classes" ? (
               <>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4 gap-2 sm:gap-0">
-                  <div className="text-gray-700 text-xs sm:text-base">
+                  <div className={`${lightMode?"text-gray-700":"text-gray-300"} text-xs sm:text-base`}>
                     {filteredClasses.length} classes found
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-gray-500 text-xs sm:text-sm">
+                    <span className={`${lightMode?"text-gray-700":"text-gray-300"}  text-xs sm:text-sm`}>
                       Sort By
                     </span>
                     <select
@@ -620,6 +625,7 @@ const SubscriptionsPage = () => {
                   {paginatedClasses.map((classItem, index) => (
                     <SubscriptionCard
                       key={classItem._id}
+                      lightMode={lightMode}
                       _id={classItem._id}
                       media={classItem.media}
                       name={classItem.name}
@@ -644,7 +650,7 @@ const SubscriptionsPage = () => {
                   {paginatedInstructors.map((inst, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-white rounded-xl shadow p-3 sm:p-4 cursor-pointer"
+                      className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-4 ${lightMode?"bg-white":"bg-gray-800"} rounded-xl shadow p-3 sm:p-4 cursor-pointer`}
                       onClick={() => handleFilterByTrainer(inst._id)}
                     >
                       <img
@@ -653,18 +659,18 @@ const SubscriptionsPage = () => {
                         className="w-20 h-20 rounded-full object-cover mb-2 sm:mb-0"
                       />
                       <div className="text-center sm:text-left">
-                        <div className="font-bold text-base sm:text-lg">
+                        <div className={`${lightMode?"text-gray-900":"text-gray-300"} font-bold text-base sm:text-lg`}>
                           {inst.first_name} {inst.last_name}
                         </div>
-                        <div className="uppercase text-xs font-semibold text-gray-600">
+                        <div className={`uppercase text-xs font-semibold ${lightMode?"text-gray-600":"text-gray-400"}`}>
                           {inst.specialization}
                         </div>
-                        <div className="text-gray-500 text-xs sm:text-sm">
+                        <div className={`${lightMode?"text-gray-600":"text-gray-400"} text-xs sm:text-sm`}>
                           {inst.city?.name}
                           {inst.city?.name && inst.country?.name ? ", " : ""}
                           {inst.country?.name}
                         </div>
-                        <div className="text-gray-500 text-xs mt-1">
+                        <div className={`${lightMode?"text-gray-600":"text-gray-400"} mb-1  text-xs mt-1`}>
                           Experience: {inst.experienceYear} years
                         </div>
                         <div className="text-green-600 text-xs font-semibold">

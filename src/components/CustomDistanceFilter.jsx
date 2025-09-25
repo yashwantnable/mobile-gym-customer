@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {FaWalking} from "react-icons/fa";
 
-const CustomDistanceFilter = ({ value, onChange, options }) => {
+const CustomDistanceFilter = ({ value, onChange, options,lightMode }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef();
 
@@ -19,13 +19,13 @@ const CustomDistanceFilter = ({ value, onChange, options }) => {
     <div className="relative inline-block min-w-[270px]" ref={ref}>
       <button
         type="button"
-        className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 bg-white shadow-sm min-w-[270px] text-left focus:outline-none"
+        className={`flex items-center gap-3 border border-gray-300 ${lightMode?" bg-white":" bg-gray-800"} rounded-lg px-4 py-2  shadow-sm min-w-[270px] text-left focus:outline-none`}
         style={{ height: 56 }}
         onClick={() => setOpen((o) => !o)}
       >
         <i className="text-[#008363] text-2xl"><FaWalking /></i>
         <span>
-          <span className="block text-xs text-gray-500 font-semibold">DISTANCE</span>
+          <span className={`block text-xs ${lightMode?"text-gray-500":"text-gray-200"} font-semibold`}>DISTANCE</span>
           <span className="block text-base font-medium text-green-700">{value}</span>
         </span>
         <span className="ml-auto">
