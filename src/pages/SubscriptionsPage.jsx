@@ -13,7 +13,7 @@ import { ClassesApi } from "../Api/Classes.api";
 import { useTheme } from "../contexts/ThemeContext";
 
 const SubscriptionsPage = () => {
-  const {lightMode}=useTheme();
+  const { lightMode } = useTheme();
   const [selectedType, setSelectedType] = useState("");
   const [selectedTab, setSelectedTab] = useState("classes");
   const [selectedActivities, setSelectedActivities] = useState([]);
@@ -401,7 +401,11 @@ const SubscriptionsPage = () => {
   };
 
   return (
-    <div className={`${lightMode?"bg-primary":"bg-gray-900"} min-h-screen overflow-x-hidden`}>
+    <div
+      className={`${
+        lightMode ? "bg-primary" : "bg-gray-900"
+      } min-h-screen overflow-x-hidden`}
+    >
       <div className="mx-auto px-2 sm:px-4 md:px-6 lg:px-8 pt-6 sm:pt-8">
         {/* Top bar */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
@@ -482,7 +486,11 @@ const SubscriptionsPage = () => {
           </div>
         )}
 
-        <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 ${lightMode?"text-gray-900":"text-gray-200"}`}>
+        <h1
+          className={`text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 ${
+            lightMode ? "text-gray-900" : "text-gray-200"
+          }`}
+        >
           Best {selectedTab === "classes" ? "Classes" : "Instructors"} in United
           Arab Emirates
         </h1>
@@ -491,13 +499,23 @@ const SubscriptionsPage = () => {
           {/* Filters Sidebar */}
           {selectedTab === "classes" && (
             <aside className="w-full md:w-64 flex-shrink-0 mb-4 md:mb-0">
-              <div className="bg-white rounded-xl shadow p-4 sm:p-6 mb-4 md:mb-6">
+              <div
+                className={`${
+                  lightMode ? "bg-white" : "bg-gray-800 border"
+                } rounded-xl shadow p-4 sm:p-6 mb-4 md:mb-6`}
+              >
                 <div className="flex justify-between items-center mb-3 sm:mb-4">
-                  <span className="font-semibold text-base sm:text-lg">
+                  <span
+                    className={`font-semibold text-base sm:text-lg ${
+                      lightMode ? "" : "text-gray-200"
+                    }`}
+                  >
                     FILTERS
                   </span>
                   <button
-                    className="text-xs sm:text-sm text-primary-600 font-semibold"
+                    className={`text-xs sm:text-sm ${
+                      lightMode ? "" : "text-gray-200"
+                    } font-semibold `}
                     onClick={clearAllFilters}
                   >
                     Clear all
@@ -531,12 +549,18 @@ const SubscriptionsPage = () => {
                 </div>
 
                 {/* CLASS TYPE FILTER */}
-                <div>
-                  <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-base">
+                <div
+                  className={` ${
+                    lightMode ? "text-gray-800" : "text-gray-300"
+                  }`}
+                >
+                  <div
+                    className={`font-semibold text-gray-100 mb-1 sm:mb-2 text-xs sm:text-base`}
+                  >
                     Class Type
                   </div>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className={`flex items-center gap-2 cursor-pointer `}>
                     <input
                       type="checkbox"
                       checked={selectedType === "single"}
@@ -604,15 +628,28 @@ const SubscriptionsPage = () => {
             {selectedTab === "classes" ? (
               <>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4 gap-2 sm:gap-0">
-                  <div className={`${lightMode?"text-gray-700":"text-gray-300"} text-xs sm:text-base`}>
+                  <div
+                    className={`${
+                      lightMode ? "text-gray-700" : "text-gray-300"
+                    } text-xs sm:text-base`}
+                  >
                     {filteredClasses.length} classes found
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2">
-                    <span className={`${lightMode?"text-gray-700":"text-gray-300"}  text-xs sm:text-sm`}>
+                    <span
+                      className={`${
+                        lightMode ? "text-gray-700" : "text-gray-300"
+                      }  text-xs sm:text-sm`}
+                    >
                       Sort By
                     </span>
                     <select
-                      className="border border-gray-300 font-bold outline-none cursor-pointer rounded px-2 py-1 w-32 sm:w-48 text-xs sm:text-sm"
+                      className={`border font-bold outline-none cursor-pointer rounded px-2 py-1 w-32 sm:w-48 text-xs sm:text-sm
+  ${
+    lightMode
+      ? "border-gray-300 bg-white text-gray-700"
+      : "border-gray-600 bg-gray-800 text-gray-200"
+  }`}
                       onChange={(e) => handleFilterSortBy(e)}
                     >
                       <option>Price</option>
@@ -650,7 +687,9 @@ const SubscriptionsPage = () => {
                   {paginatedInstructors.map((inst, idx) => (
                     <div
                       key={idx}
-                      className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-4 ${lightMode?"bg-white":"bg-gray-800"} rounded-xl shadow p-3 sm:p-4 cursor-pointer`}
+                      className={`flex flex-col sm:flex-row items-center gap-3 sm:gap-4 ${
+                        lightMode ? "bg-white" : "bg-gray-800"
+                      } rounded-xl shadow p-3 sm:p-4 cursor-pointer`}
                       onClick={() => handleFilterByTrainer(inst._id)}
                     >
                       <img
@@ -659,18 +698,34 @@ const SubscriptionsPage = () => {
                         className="w-20 h-20 rounded-full object-cover mb-2 sm:mb-0"
                       />
                       <div className="text-center sm:text-left">
-                        <div className={`${lightMode?"text-gray-900":"text-gray-300"} font-bold text-base sm:text-lg`}>
+                        <div
+                          className={`${
+                            lightMode ? "text-gray-900" : "text-gray-300"
+                          } font-bold text-base sm:text-lg`}
+                        >
                           {inst.first_name} {inst.last_name}
                         </div>
-                        <div className={`uppercase text-xs font-semibold ${lightMode?"text-gray-600":"text-gray-400"}`}>
+                        <div
+                          className={`uppercase text-xs font-semibold ${
+                            lightMode ? "text-gray-600" : "text-gray-400"
+                          }`}
+                        >
                           {inst.specialization}
                         </div>
-                        <div className={`${lightMode?"text-gray-600":"text-gray-400"} text-xs sm:text-sm`}>
+                        <div
+                          className={`${
+                            lightMode ? "text-gray-600" : "text-gray-400"
+                          } text-xs sm:text-sm`}
+                        >
                           {inst.city?.name}
                           {inst.city?.name && inst.country?.name ? ", " : ""}
                           {inst.country?.name}
                         </div>
-                        <div className={`${lightMode?"text-gray-600":"text-gray-400"} mb-1  text-xs mt-1`}>
+                        <div
+                          className={`${
+                            lightMode ? "text-gray-600" : "text-gray-400"
+                          } mb-1  text-xs mt-1`}
+                        >
                           Experience: {inst.experienceYear} years
                         </div>
                         <div className="text-green-600 text-xs font-semibold">

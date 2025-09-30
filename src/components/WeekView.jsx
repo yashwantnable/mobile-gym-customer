@@ -68,9 +68,9 @@ const DayView = ({
             return (
               <div
                 key={idx}
-                className={`rounded-xl shadow-lg bg-gradient-to-r from-white via-slate-50 to-slate-100 border flex flex-col md:flex-row items-center md:items-stretch transition hover:shadow-2xl cursor-pointer
+                className={`rounded-xl shadow-lg   ${lightMode?"from-white via-slate-50 to-slate-100":"bg-gray-800"} border flex flex-col md:flex-row items-center md:items-stretch transition hover:shadow-2xl cursor-pointer
                                     ${
-                                      isJoined
+                                      isJoined && !lightMode
                                         ? "border-green-500 bg-green-50"
                                         : "border-slate-200"
                                     }
@@ -83,8 +83,8 @@ const DayView = ({
           lightMode
             ? "bg-gradient-to-b from-sixth/10 to-indigo-100" // Light mode styles
             : "bg-gradient-to-b from-gray-800 to-gray-900"
-        } // Dark mode styles
-        ${isJoined ? "bg-green-100" : ""}`}
+        }   
+         `}
                 >
                   <span className="text-lg font-semibold text-sixth">
                     {classData.duration}
@@ -132,9 +132,7 @@ const DayView = ({
 const ClassCard = ({ classData, isJoined, joinedClassObj, lightMode }) => {
   return (
     <div
-      className={`${
-        lightMode ? "bg-white/80" : ""
-      } border rounded-lg p-4 shadow-md transition-colors flex flex-col md:flex-row md:items-center md:justify-between 
+      className={`border rounded-lg p-4 shadow-md transition-colors flex flex-col md:flex-row md:items-center md:justify-between 
             ${
               classData.isExpired
                 ? "border-gray-300 opacity-50 cursor-not-allowed"
@@ -142,7 +140,7 @@ const ClassCard = ({ classData, isJoined, joinedClassObj, lightMode }) => {
             }`}
     >
       <div className="flex-1">
-        <h4 className="font-semibold text-gray-900 text-base mb-1 md:mb-0 capitalize">
+        <h4 className={`font-semibold ${lightMode?"text-gray-900":"text-gray-200"} text-base mb-1 md:mb-0 capitalize`}>
           {classData.name}
           {classData.isExpired && (
             <span className="ml-2 text-xs text-red-500">(Expired)</span>

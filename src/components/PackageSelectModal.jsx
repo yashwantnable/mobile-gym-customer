@@ -67,7 +67,7 @@ const PackageSelectModal = ({
                 <div
                   key={pkg.id}
                   onClick={() => handleActivate(pkg?.originalData?._id)}
-                  className={`relative flex flex-col items-center hover:bg-primary rounded-xl border-2 p-6 transition-all duration-200 cursor-pointer w-72
+                  className={`relative flex flex-col items-center ${lightMode?"hover:bg-primary":"hover:bg-gray-700"} rounded-xl border-2 p-6 transition-all duration-200 cursor-pointer w-72
                     ${lightMode 
                       ? 'bg-white border-gray-200 text-gray-800' // Light mode card
                       : 'bg-gray-800 border-gray-600 text-white' // Dark mode card

@@ -468,7 +468,7 @@ const Classes = ({ hide, category }) => {
                   </div>
                   {userPackages.length > 0 ? (
                     <button
-                      className={`bg-${brandColor} px-4 py-2.5 rounded-lg text-white font-semibold text-sm shadow-md hover:opacity-90 transition-colors focus:ring-2 focus:ring-offset-1 focus:outline-none`}
+                      className={`${lightMode?`bg-${brandColor}`:`bg-gray-900 hover:bg-gray-700`} px-4 py-2.5 rounded-lg text-white font-semibold text-sm shadow-md hover:opacity-90 transition-colors focus:ring-2 focus:ring-offset-1 focus:outline-none`}
                       onClick={() => setShowPackageModal(true)}
                     >
                       Choose Package
@@ -542,7 +542,7 @@ const Classes = ({ hide, category }) => {
                         setBrandColor("sixth");
                       }
                     }}
-                    className="block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`block w-full px-4 py-2 ${lightMode?"bg-white text-gray-700":"bg-gray-800 text-gray-100"} border border-gray-300 rounded-md shadow-sm text-sm  focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   >
                     <option value="" disabled>
                       Select Category
@@ -557,7 +557,7 @@ const Classes = ({ hide, category }) => {
 
                 <div className={`${lightMode?"bg-white border-gray-200" : "bg-gray-900 border-gray-700 "} border-gray-200 rounded-lg shadow-sm border  overflow-hidden`}>
                   <div className="px-4 py-3 border-b border-gray-200">
-                    <h2 className="text-lg font-medium text-gray-900">
+                    <h2 className={`text-lg font-medium ${lightMode?" text-gray-900":"text-gray-200"}`}>
                       Calendar
                     </h2>
                   </div>

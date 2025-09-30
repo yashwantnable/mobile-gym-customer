@@ -75,7 +75,7 @@ const CustomDatePicker = ({ selected, onChange,lightMode }) => {
         </button>
       }
       popperPlacement="bottom-start"
-      calendarClassName="shadow-lg border border-gray-200 rounded-xl"
+      calendarClassName={`shadow-lg border ${lightMode?"bg-gray-100":"bg-gray-700"} border-gray-200 rounded-xl`}
       dayClassName={() => "!rounded-full"}
       wrapperClassName="inline-block"
       dateFormat="EEEE, dd MMM ''yy"
