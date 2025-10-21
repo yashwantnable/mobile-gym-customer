@@ -15,6 +15,7 @@ import JoinedClasses from "./JoinedClasses";
 import { CategoryApi } from "../Api/Category.api";
 import { useBrandColor } from "../contexts/BrandColorContext";
 import { useTheme } from "../contexts/ThemeContext";
+import MySessionPage from "./MySessionPage";
 const transformPackageData = (apiPackage) => {
   return {
     id: apiPackage.package._id,
@@ -394,11 +395,29 @@ const Classes = ({ hide, category }) => {
         <FaCalendarAlt className="mr-2" />
         My Classes
       </button>
+      <button
+        onClick={() => setActiveTab('other')}
+        className={`flex items-center py-4 px-6 font-medium text-sm focus:outline-none transition-colors ${
+          activeTab === 'other'
+            ? `border-b-2 border-${brandColor} text-${brandColor}`
+            : lightMode
+              ? 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-400 hover:text-gray-200'
+        }`}
+      >
+        <FaCalendarAlt className="mr-2" />
+        Other Classes
+      </button>
     </div>
       )}
       {activeTab === "myClasses" && (
         <div>
           <JoinedClasses myJoinedClasses={myJoinedClasses} lightMode={lightMode}/>
+        </div>
+      )}
+      {activeTab === "other" && (
+        <div>
+          <MySessionPage myJoinedClasses={myJoinedClasses} lightMode={lightMode}/>
         </div>
       )}
       {activeTab === "joinNew" && (

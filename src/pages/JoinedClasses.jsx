@@ -11,6 +11,7 @@ import {
   FaChevronUp,
   FaTimes,
   FaCheckCircle,
+  FaInfoCircle ,
   FaBox, // Added for package icon
 } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -19,6 +20,7 @@ import toast from "react-hot-toast";
 import { BookingApi } from "../Api/Booking.api";
 import Pagination from "../components/Pagination";
 import { Link } from "react-router-dom";
+import Tooltip from "../components/Tooltip";
 
 const JoinedClasses = ({ myJoinedClasses,lightMode }) => {
   const [selectedClass, setSelectedClass] = useState(null);
@@ -114,16 +116,17 @@ const JoinedClasses = ({ myJoinedClasses,lightMode }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1
-    className={`text-3xl font-bold mb-8 flex items-center ${
-      lightMode ? "text-gray-800" : "text-gray-100"
-    }`}
-  >
+    <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+ <div className="flex items-center mb-8">
+  <h1 className={`text-3xl font-bold flex items-center ${lightMode ? "text-gray-800" : "text-gray-100"}`}>
     <FaCalendarAlt className="mr-2 text-sixth" />
     My Joined Classes
   </h1>
-
+  <div className="relative group inline-block ml-3">
+    <FaInfoCircle className={`cursor-pointer text-xl ${lightMode ? "text-gray-800" : "text-gray-100"}`} />
+    <Tooltip text="This section only shows classes that you purchased inside a package." />
+  </div>
+</div>
   {myJoinedClasses.length === 0 ? (
     <div
       className={`text-center py-12 rounded-lg ${
