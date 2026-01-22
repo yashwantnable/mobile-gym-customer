@@ -273,7 +273,7 @@ const NavBar = () => {
                     className="flex items-center space-x-1 focus:outline-none"
                   >
                     <div
-                      className={`w-9 h-9 rounded-full bg-third/40  flex items-center justify-center overflow-hidden`}
+                      className={`w-9 h-9 rounded-full border border-gray-500 bg-third/40  flex items-center justify-center overflow-hidden`}
                     >
                       {user?.image ? (
                         <img
@@ -282,7 +282,7 @@ const NavBar = () => {
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : user?.name ? (
-                        <span className="text-third text-lg font-bold">
+                        <span className={`${lightMode?"text-third":"text-gray-400"}  text-lg font-bold `}>
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       ) : (
@@ -327,7 +327,7 @@ const NavBar = () => {
                 <div className="flex gap-3 items-center">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-white/10 transition-colors"
+                    className={`${lightMode?"text-third":"text-gray-200"} px-4 py-2 text-sm font-medium rounded-lg hover:bg-white/10 transition-colors`}
                   >
                     LOG IN
                   </Link>

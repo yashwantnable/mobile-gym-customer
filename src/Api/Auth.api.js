@@ -7,4 +7,7 @@ export const AuthApi = {
   city: (countryId) => Api.get(`master/get-all-city/${countryId}`),
   getuserProfile: (id) => Api.get(`user/get-userby-id/${id}`),
   updateProfile: (playlaod) => Api.put("user/update-user", playlaod),
+  generateOTP: (playlaod) => Api.post("auth/generate-otp", playlaod),
+  verifyOTP: (playlaod) => Api.post("auth/verify-otp", playlaod),
+  resetPassword: (playlaod) => Api.post("auth/reset-password", playlaod),
 };

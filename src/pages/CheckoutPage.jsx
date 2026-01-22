@@ -37,8 +37,9 @@ export default function CheckoutPage() {
     setLoading(true);
     setError("");
     try {
+      console.log("data:",data)
       const payload = {
-        subscriptionId: data._id,
+        subscriptionId: data.id,
         promoCode: promoCode.trim(),
       };
       const response = await BookingApi.applyPromoCodeToSubscription(payload);

@@ -16,6 +16,7 @@ import { CategoryApi } from "../Api/Category.api";
 import { useBrandColor } from "../contexts/BrandColorContext";
 import { useTheme } from "../contexts/ThemeContext";
 import MySessionPage from "./MySessionPage";
+import { BookingApi } from "../Api/Booking.api";
 const transformPackageData = (apiPackage) => {
   return {
     id: apiPackage.package._id,
@@ -52,6 +53,7 @@ const Classes = ({ hide, category }) => {
   const [selectedCatName, setSelectedCatName] = useState("Select Category");
   const [activeTab, setActiveTab] = useState("joinNew");
   const [myJoinedClasses, setMyJoinedClasses] = useState([]);
+  const [myAllJoinedClasses, setMyAllJoinedClasses] = useState([]);
   const [categories, setCategory] = useState([]);
   const [selected, setSelected] = useState(_id || "");
   const [userPackages, setUserPackages] = useState([]);
@@ -79,7 +81,9 @@ const Classes = ({ hide, category }) => {
     handleLoading(true);
     try {
       const res = await ClassesApi.getClassesSubByUser();
+      const result = await BookingApi.getBookingHistory();
       setMyJoinedClasses(res.data?.data);
+      setMyAllJoinedClasses(result.data?.data);
     } catch (err) {
       console.log(err);
     } finally {
@@ -412,7 +416,7 @@ const Classes = ({ hide, category }) => {
       )}
       {activeTab === "myClasses" && (
         <div>
-          <JoinedClasses myJoinedClasses={myJoinedClasses} lightMode={lightMode}/>
+          <JoinedClasses myJoinedClasses={myJoinedClasses} myAllJoinedClasses={myAllJoinedClasses} lightMode={lightMode}/>
         </div>
       )}
       {activeTab === "other" && (
